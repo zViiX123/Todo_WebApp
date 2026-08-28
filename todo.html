@@ -42,15 +42,25 @@
 
         .col-count { background: var(--btn-bg); padding: 2px 8px; border-radius: 4px; font-size: 12px; }
         
-        .col-btn-group { display: flex; gap: 4px; align-items: center; }
+        .col-btn-group { display: flex; gap: 12px; align-items: center; margin-right: 12px; }
         
-        .col-btn {
-            background: rgba(255, 255, 255, 0.1); border: none; color: var(--text-muted);
-            border-radius: 4px; cursor: pointer; padding: 4px 8px; font-size: 10px;
-            display: flex; align-items: center; justify-content: center; height: 24px;
+        .icon-btn {
+            background: transparent; border: none; font-size: 18px; font-weight: bold;
+            cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center;
         }
-        .col-btn:hover { background: rgba(255, 255, 255, 0.2); color: var(--text-light); }
-        .col-btn.danger:hover { background: var(--danger); color: white; }
+        .icon-btn.add { color: #51A15F; /* Green + */ }
+        .icon-btn.add:hover { color: #6BE87F; }
+        .icon-btn.del { color: #A64D4D; /* Red X */ }
+        .icon-btn.del:hover { color: #E86B6B; }
+        
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+        .card-title { font-size: 14px; font-weight: bold; word-wrap: break-word; margin: 0; }
+        
+        .card-del-btn {
+            background: transparent; border: none; color: #A64D4D; font-size: 14px; font-weight: bold;
+            cursor: pointer; padding: 0; opacity: 0; transition: opacity 0.2s;
+        }
+        .card:hover .card-del-btn { opacity: 1; } /* Only shows X when you hover the card */
         
         .color-picker-wrapper {
             width: 24px; height: 24px; border-radius: 4px; overflow: hidden;
@@ -200,21 +210,19 @@
                 colEl.style.backgroundColor = data.columnColors[colName] || 'var(--bg-col)';
                 
                 // Column Header (Uses a semi-transparent black overlay to naturally darken the chosen custom color)
+                // Column Header (Matches image layout: Title -> [+] [✕] -> Count)
                 colEl.innerHTML = `
-                    <div class="col-header" style="background: rgba(0,0,0,0.2);">
-                        <span>${colName} <span class="col-count">${colTasks.length}</span></span>
+                    <div class="col-header" style="background: rgba(0,0,0,0.2); display: flex; align-items: center;">
+                        <span style="flex-grow: 1;">${colName}</span>
                         <div class="col-btn-group">
-                            ${index > 0 ? `<button class="col-btn" title="Move Left" onclick="moveCol('${colName}', -1)">◀</button>` : ''}
-                            ${index < data.columns.length - 1 ? `<button class="col-btn" title="Move Right" onclick="moveCol('${colName}', 1)">▶</button>` : ''}
-                            <div class="color-picker-wrapper" title="Change Color">
-                                <input type="color" value="${data.columnColors[colName] || '#31224A'}" onchange="updateColColor('${colName}', this.value)">
-                            </div>
-                            <button class="col-btn danger" title="Delete List" onclick="deleteCol('${colName}')">✕</button>
+                            <button class="icon-btn add" title="Add Todo" onclick="quickAddTask('${colName}')">+</button>
+                            <button class="icon-btn del" title="Delete List" onclick="deleteCol('${colName}')">✕</button>
                         </div>
+                        <span class="col-count">${colTasks.length}</span>
                     </div>
                     <div class="card-list" ondragover="allowDrop(event)" ondrop="drop(event, '${colName}')"></div>
-                    <button class="add-card-btn" onclick="quickAddTask('${colName}')">+ Add a card</button>
                 `;
+                // Notice the bottom "+ Add a card" button has been completely removed!
 
                 // Render Tasks
                 const listEl = colEl.querySelector(".card-list");
@@ -230,7 +238,12 @@
                     if(task.priority === "Medium") card.style.borderLeftColor = "var(--pri-med)";
                     if(task.priority === "Low") card.style.borderLeftColor = "var(--pri-low)";
 
-                    let html = `<div class="card-title">${task.text}</div>`;
+                    let html = `
+                        <div class="card-header">
+                            <div class="card-title">${task.text}</div>
+                            <button class="card-del-btn" title="Delete Card" onclick="event.stopPropagation(); quickDeleteTask('${task.id}')">✕</button>
+                        </div>
+                    `;
                     
                     if (task.checklist && task.checklist.length > 0) {
                         const done = task.checklist.filter(c => c.done).length;
@@ -421,6 +434,13 @@
             if (task) {
                 task.checklist[chkIndex].done = isChecked;
                 saveData(); // This instantly updates the progress bar when you check a box!
+            }
+        }
+
+        function quickDeleteTask(id) {
+            if (confirm("Delete this card?")) {
+                data.tasks = data.tasks.filter(t => t.id !== id);
+                saveData();
             }
         }
 
