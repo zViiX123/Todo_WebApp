@@ -273,6 +273,18 @@
             tasks: []
         };
 
+        // Escapes user-typed text before it's inserted via innerHTML, so a card title,
+        // checklist item, column name, or board name can never be parsed as markup/script.
+        function escapeHtml(str) {
+            if (str == null) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
         // --- Multi-board storage, migrating any pre-existing single-board save ---
         let boards = JSON.parse(localStorage.getItem("todoBoardsStudio"));
         let activeBoardId = localStorage.getItem("todoActiveBoardId");
@@ -308,7 +320,7 @@
         function renderBoardSelector() {
             const sel = document.getElementById("boardSelect");
             sel.innerHTML = Object.keys(boards).map(id =>
-                `<option value="${id}" ${id === activeBoardId ? 'selected' : ''}>${boards[id].boardTitle || 'Untitled Board'}</option>`
+                `<option value="${id}" ${id === activeBoardId ? 'selected' : ''}>${escapeHtml(boards[id].boardTitle || 'Untitled Board')}</option>`
             ).join('');
         }
 
@@ -395,17 +407,17 @@
                 // Column header (title text is dynamically colored)
                 colEl.innerHTML = `
                     <div class="col-header" style="background: rgba(0,0,0,0.2); display: flex; align-items: center;">
-                        <span id="col-title-${index}" contenteditable="true" onblur="updateColName('${colName}', this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" style="flex-grow: 1; outline: none; cursor: text; color: ${dynText};">${colName}</span>
+                        <span id="col-title-${index}" contenteditable="true" onblur="updateColName(${index}, this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" style="flex-grow: 1; outline: none; cursor: text; color: ${dynText};">${escapeHtml(colName)}</span>
                         <div class="col-btn-group">
                             <div class="tiny-color-picker" title="Change Color">
-                                <input type="color" value="${data.columnColors[colName] || '#31224A'}" onchange="updateColColor('${colName}', this.value)">
+                                <input type="color" value="${data.columnColors[colName] || '#31224A'}" onchange="updateColColor(${index}, this.value)">
                             </div>
-                            <button class="icon-btn add" title="Add Todo" onclick="quickAddTask('${colName}')">+</button>
-                            <button class="icon-btn del" title="Delete List" onclick="deleteCol('${colName}')">✕</button>
+                            <button class="icon-btn add" title="Add Todo" onclick="quickAddTask(${index})">+</button>
+                            <button class="icon-btn del" title="Delete List" onclick="deleteCol(${index})">✕</button>
                         </div>
                         <span class="col-count">${colTasks.length}</span>
                     </div>
-                    <div class="card-list" ondragover="allowDrop(event)" ondrop="drop(event, '${colName}')"></div>
+                    <div class="card-list" ondragover="allowDrop(event)" ondrop="drop(event, ${index})"></div>
                 `;
 
                 // Render tasks
@@ -470,7 +482,7 @@
                             </select>
                         </div>
                         <div class="card-header">
-                            <div id="card-title-${task.id}" class="card-title" contenteditable="true" onblur="updateCardName('${task.id}', this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="outline: none; cursor: text; min-height: 18px; flex-grow: 1; color: ${dynText};">${task.text}</div>
+                            <div id="card-title-${task.id}" class="card-title" contenteditable="true" onblur="updateCardName('${task.id}', this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="outline: none; cursor: text; min-height: 18px; flex-grow: 1; color: ${dynText};">${escapeHtml(task.text)}</div>
                             <button class="card-del-btn" title="Delete Card" onclick="event.stopPropagation(); quickDeleteTask('${task.id}')">✕</button>
                         </div>
                     `;
@@ -479,7 +491,7 @@
                     let chkHtml = task.checklist.map((c, i) => `
                         <div style="font-size: 12px; margin-top: 4px; display: flex; align-items: center; gap: 6px;">
                             <input type="checkbox" ${c.done ? 'checked' : ''} onclick="event.stopPropagation(); toggleCardCheck('${task.id}', ${i}, this.checked)">
-                            <span id="chk-title-${task.id}-${i}" contenteditable="true" onblur="updateChkName('${task.id}', ${i}, this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="flex-grow: 1; outline: none; cursor: text; color: ${dynText}; ${c.done ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${c.text}</span>
+                            <span id="chk-title-${task.id}-${i}" contenteditable="true" onblur="updateChkName('${task.id}', ${i}, this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="flex-grow: 1; outline: none; cursor: text; color: ${dynText}; ${c.done ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${escapeHtml(c.text)}</span>
                             <button class="chk-icon-btn del" title="Delete Item" onclick="event.stopPropagation(); quickDelCheck('${task.id}', ${i})">✕</button>
                         </div>
                     `).join('');
@@ -535,12 +547,13 @@
 
         function allowDrop(ev) { ev.preventDefault(); }
 
-        function drop(ev, toCol) {
+        function drop(ev, idx) {
             ev.preventDefault();
             ev.stopPropagation();
             const id = ev.dataTransfer.getData("card-id");
             if (!id) return;
 
+            const toCol = data.columns[idx];
             const task = data.tasks.find(t => t.id === id);
             if (task && task.column !== toCol) {
                 task.column = toCol;
@@ -590,7 +603,8 @@
             saveData();
         }
 
-        function updateColColor(name, color) {
+        function updateColColor(idx, color) {
+            const name = data.columns[idx];
             data.columnColors[name] = color;
             saveData();
         }
@@ -614,19 +628,19 @@
         }
 
         // --- Column actions ---
-        function deleteCol(name) {
+        function deleteCol(idx) {
             if (data.columns.length <= 1) return alert("You need at least one list.");
 
-            const colIdx = data.columns.indexOf(name);
+            const name = data.columns[idx];
             const removedTasks = data.tasks.filter(t => t.column === name);
             const color = data.columnColors[name];
 
-            data.columns.splice(colIdx, 1);
+            data.columns.splice(idx, 1);
             data.tasks = data.tasks.filter(t => t.column !== name);
             delete data.columnColors[name];
 
             showUndoToast(`Deleted list "${name}"`, () => {
-                data.columns.splice(colIdx, 0, name);
+                data.columns.splice(idx, 0, name);
                 data.tasks.push(...removedTasks);
                 if (color) data.columnColors[name] = color;
                 saveData();
@@ -634,12 +648,12 @@
             saveData();
         }
 
-        function updateColName(oldName, newName) {
+        function updateColName(idx, newName) {
+            const oldName = data.columns[idx];
             newName = newName.trim();
             if (!newName || newName === oldName || data.columns.includes(newName)) return renderBoard();
 
-            const idx = data.columns.indexOf(oldName);
-            if (idx > -1) data.columns[idx] = newName;
+            data.columns[idx] = newName;
 
             data.tasks.forEach(t => { if (t.column === oldName) t.column = newName; });
             if (data.columnColors[oldName]) {
@@ -678,7 +692,8 @@
         }
 
         // --- Checklist actions ---
-        function quickAddTask(col) {
+        function quickAddTask(idx) {
+            const col = data.columns[idx];
             const id = Date.now().toString();
             data.tasks.push({ id, text: "New Card", column: col, priority: "Low", desc: "", checklist: [], checklistOpen: true });
             saveData();
