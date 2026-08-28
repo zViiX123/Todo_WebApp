@@ -633,21 +633,6 @@
             saveData();
         }
 
-        // --- Task actions ---
-        // NOTE: quickAddTask is intentionally defined twice in the original file; the second
-        // definition (priority "Low") below overrides this first one at runtime. Left both
-        // in place since no logic changes were requested.
-        function quickAddTask(col) {
-            const id = Date.now().toString();
-            // Added checklistOpen: true so it drops down instantly
-            data.tasks.push({ id, text: "New Card", column: col, priority: "None", desc: "", checklist: [], checklistOpen: true });
-            saveData();
-            setTimeout(() => {
-                const el = document.getElementById(`card-title-${id}`);
-                if (el) { el.focus(); document.execCommand('selectAll', false, null); }
-            }, 10);
-        }
-
         function updateCardName(id, newText) {
             const task = data.tasks.find(t => t.id === id);
             if (task) {
@@ -679,6 +664,15 @@
                 const el = document.getElementById(`card-title-${id}`);
                 if (el) { el.focus(); document.execCommand('selectAll', false, null); }
             }, 10);
+        }
+
+        function quickAddCheck(taskId) {
+            const task = data.tasks.find(t => t.id === taskId);
+            if (task) {
+                task.checklist.push({ text: "New Item", done: false });
+                task.checklistOpen = true;
+                saveData();
+            }
         }
 
         function updateChkName(taskId, idx, newText) {
