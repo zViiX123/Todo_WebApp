@@ -530,6 +530,13 @@
                 saveData();
             }
         }
+        function updatePriority(id, pri) {
+            const task = data.tasks.find(t => t.id === id);
+            if (task) {
+                task.priority = pri;
+                saveData();
+            }
+        }
 
         function quickDeleteTask(id) {
             data.tasks = data.tasks.filter(t => t.id !== id);
