@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo Board Studio</title>
+    <style>
+        :root {
+            --bg-main: #241735; --bg-col: #31224A; --bg-col-head: #3D2A5C;
+            --bg-card: #4A3570; --bg-card-hover: #5B4386;
+            --text-light: #F1E9FF; --text-muted: #B9A6DE;
+            --btn-bg: #5B4386; --btn-hover: #7657B8;
+            --danger: #C1667F; --entry-bg: #3D2A5C; --entry-fg: #F1E9FF;
+            --pri-high: #E06C75; --pri-med: #E5A66F; --pri-low: #6FA8E5; --pri-none: transparent;
+        }
+
+        /* Semi-translucent glass effect for columns and cards */
+        .column {
+            background: color-mix(in srgb, var(--bg-col) 85%, transparent);
+            backdrop-filter: blur(8px);
+        }
+        header {
+            background: color-mix(in srgb, var(--bg-col-head) 85%, transparent) !important;
+            backdrop-filter: blur(8px);
+        }
+
+        /* New Themes! */
+        [data-theme="dark"] {
+            --bg-main: #1D1E20; --bg-col: #28292C; --bg-col-head: #323336;
+            --bg-card: #3E3F43; --bg-card-hover: #4D4F54;
+            --text-muted: #9BA0A5; --btn-bg: #4A4D55; --entry-bg: #2E3035;
+        }
+        
+        [data-theme="blue"] {
+            --bg-main: #0F172A; --bg-col: #1E293B; --bg-col-head: #334155;
+            --bg-card: #475569; --bg-card-hover: #64748B;
+            --text-muted: #94A3B8; --btn-bg: #475569; --entry-bg: #1E293B;
+        }
+
+        /* 10 New Themes! */
+        [data-theme="forest"] {
+            --bg-main: #141C14; --bg-col: #1B291B; --bg-col-head: #283D28;
+            --bg-card: #354F35; --bg-card-hover: #466646;
+            --text-muted: #95B095; --btn-bg: #354F35; --entry-bg: #1B291B;
+        }
+        
+        [data-theme="crimson"] {
+            --bg-main: #201111; --bg-col: #2D1818; --bg-col-head: #422323;
+            --bg-card: #572F2F; --bg-card-hover: #703D3D;
+            --text-muted: #B89292; --btn-bg: #572F2F; --entry-bg: #2D1818;
+        }
+
+        [data-theme="mocha"] {
+            --bg-main: #231B15; --bg-col: #33261C; --bg-col-head: #453427;
+            --bg-card: #574333; --bg-card-hover: #6E5642;
+            --text-muted: #B09C8B; --btn-bg: #574333; --entry-bg: #33261C;
+        }
+
+        [data-theme="teal"] {
+            --bg-main: #0F1E1E; --bg-col: #162E2E; --bg-col-head: #204242;
+            --bg-card: #2B5757; --bg-card-hover: #3B7575;
+            --text-muted: #8BB3B3; --btn-bg: #2B5757; --entry-bg: #162E2E;
+        }
+
+        [data-theme="sunset"] {
+            --bg-main: #24130F; --bg-col: #361D16; --bg-col-head: #4A281E;
+            --bg-card: #613528; --bg-card-hover: #7D4434;
+            --text-muted: #B88A7D; --btn-bg: #613528; --entry-bg: #361D16;
+        }
+
+        [data-theme="nord"] {
+            --bg-main: #2E3440; --bg-col: #3B4252; --bg-col-head: #434C5E;
+            --bg-card: #4C566A; --bg-card-hover: #5E6A80;
+            --text-muted: #D8DEE9; --btn-bg: #4C566A; --entry-bg: #3B4252;
+        }
+
+        [data-theme="dracula"] {
+            --bg-main: #282A36; --bg-col: #44475A; --bg-col-head: #50536B;
+            --bg-card: #6272A4; --bg-card-hover: #7988B5;
+            --text-muted: #F8F8F2; --btn-bg: #6272A4; --entry-bg: #44475A;
+        }
+
+        [data-theme="retro"] {
+            --bg-main: #000000; --bg-col: #080D1A; --bg-col-head: #101A33;
+            --bg-card: #1A2A4D; --bg-card-hover: #243B6B;
+            --text-muted: #8099CC; --btn-bg: #1A2A4D; --entry-bg: #080D1A;
+        }
+
+        [data-theme="viewport"] {
+            --bg-main: #1D1D1D; --bg-col: #282828; --bg-col-head: #303030;
+            --bg-card: #3A3A3A; --bg-card-hover: #474747;
+            --text-muted: #9E9E9E; --btn-bg: #3A3A3A; --entry-bg: #282828;
+        }
+
+        [data-theme="engine"] {
+            --bg-main: #222222; --bg-col: #2A2A2A; --bg-col-head: #333333;
+            --bg-card: #404040; --bg-card-hover: #555555;
+            --text-muted: #AAAAAA; --btn-bg: #404040; --entry-bg: #2A2A2A;
+        }
+
+        body {
+            margin: 0; padding: 0; background: var(--bg-main); color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+        }
+
+        header {
+            background: var(--bg-col-head); padding: 16px 24px;
+            display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+        }
+
+        #board {
+            display: flex; gap: 16px; padding: 20px; flex-grow: 1;
+            align-items: flex-start; align-content: flex-start;
+            flex-wrap: wrap; /* Forces columns to a new row when they don't fit */
+            overflow-y: auto; /* Enables vertical scrolling for the whole board */
+            overflow-x: hidden; /* Kills horizontal scrolling entirely */
+        }
+
+        .column {
+            background: var(--bg-col); border-radius: 8px; width: 280px; min-width: 280px;
+            display: flex; flex-direction: column; 
+            height: 65vh; /* Locks all columns to exactly 65% of screen height */
+        }
+        .column.col-dragging { opacity: 0.4; border: 2px dashed var(--text-muted); }
+
+        .col-header {
+            background: var(--bg-col-head); padding: 12px 16px; border-radius: 8px 8px 0 0;
+            display: flex; justify-content: space-between; align-items: center; font-weight: bold;
+        }
+
+        .col-count { background: var(--btn-bg); padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+        
+        .col-btn-group { display: flex; gap: 12px; align-items: center; margin-right: 12px; }
+        
+        .icon-btn {
+            background: transparent; border: none; font-weight: bold;
+            cursor: pointer; padding: 0; display: inline-flex; align-items: center; justify-content: center;
+            transition: text-shadow 0.2s, color 0.2s;
+        }
+        .icon-btn.add { color: #51A15F; font-size: 18px; width: 20px; height: 20px; }
+        .icon-btn.add:hover { color: #6BE87F; text-shadow: 0 0 8px rgba(107, 232, 127, 0.8); }
+        .icon-btn.del { color: #A64D4D; font-size: 14px; width: 20px; height: 20px; } 
+        .icon-btn.del:hover { color: #E86B6B; text-shadow: 0 0 8px rgba(232, 107, 107, 0.8); }
+
+        .tiny-color-picker {
+            width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.2);
+            overflow: hidden; cursor: pointer; display: inline-block; position: relative;
+        }
+        .tiny-color-picker:hover { border-color: rgba(255,255,255,0.6); }
+        .tiny-color-picker input[type="color"] {
+            position: absolute; top: -5px; left: -5px; width: 24px; height: 24px; cursor: pointer; border: none;
+        }
+        
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+        .card-title { font-size: 14px; font-weight: bold; word-wrap: break-word; margin: 0; }
+        
+        .card-del-btn {
+            background: transparent; border: none; color: #A64D4D; font-size: 14px; font-weight: bold;
+            cursor: pointer; padding: 0; opacity: 0; transition: opacity 0.2s;
+        }
+        .card:hover .card-del-btn { opacity: 1; } 
+        
+        .card-list {
+            padding: 8px; overflow-y: auto; flex-grow: 1; min-height: 50px;
+        }
+
+        .card {
+            background: var(--bg-card); border-radius: 6px; padding: 12px; margin-bottom: 8px;
+            cursor: pointer; 
+            border: 1px solid #000000;
+            border-left: 4px solid var(--pri-none);
+        }
+        .card:hover { filter: brightness(1.2); }
+        .card.dragging { opacity: 0.5; }
+        
+        .progress-bg { background: var(--entry-bg); height: 6px; border-radius: 3px; margin-top: 8px; overflow: hidden;}
+        .progress-fill { height: 100%; background: var(--pri-med); transition: width 0.3s; }
+        .progress-fill.done { background: #7FCB8E; }
+
+        .add-list-btn {
+            background: rgba(0, 0, 0, 0.15); color: var(--text-muted); border: 2px dashed rgba(255, 255, 255, 0.15); 
+            border-radius: 8px; width: 280px; min-width: 280px; height: 65vh; 
+            display: flex; align-items: center; justify-content: center; font-size: 64px; font-weight: 300;
+            cursor: pointer; transition: background 0.2s, border-color 0.2s, color 0.2s;
+        }
+        .add-list-btn:hover { 
+            background: rgba(0, 0, 0, 0.3); border-color: rgba(255, 255, 255, 0.3); color: var(--text-light); 
+        }
+
+        /* Glowing checklist dropdown text on hover */
+        .glow-hover { transition: text-shadow 0.2s, color 0.2s; }
+        .glow-hover:hover { text-shadow: 0 0 8px rgba(255, 255, 255, 0.6); color: #FFF; }
+        
+        /* Mini buttons for the checklist items */
+        .chk-icon-btn {
+            background: transparent; border: none; font-weight: bold; cursor: pointer;
+            padding: 0 4px; font-size: 14px; transition: text-shadow 0.2s, color 0.2s;
+        }
+        .chk-icon-btn.add { color: #51A15F; font-size: 16px; }
+        .chk-icon-btn.add:hover { color: #6BE87F; text-shadow: 0 0 8px rgba(107, 232, 127, 0.8); }
+        .chk-icon-btn.del { color: #A64D4D; }
+        .chk-icon-btn.del:hover { color: #E86B6B; text-shadow: 0 0 8px rgba(232, 107, 107, 0.8); }
+
+        input, select {
+            background: var(--entry-bg); color: var(--entry-fg); border: none; padding: 8px;
+            border-radius: 4px; font-family: inherit; font-size: 14px;
+        }
+        button.primary { background: var(--btn-bg); color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
+        button.danger { background: var(--danger); color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
+
+        /* Undo toast for soft-deleted cards and lists */
+        #undoToast {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            background: var(--bg-col-head); color: var(--text-light); padding: 10px 16px;
+            border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+            align-items: center; gap: 12px; z-index: 999; display: none;
+        }
+        #undoToast.show { display: flex; }
+
+        /* Custom themed scrollbars */
+        ::-webkit-scrollbar { height: 12px; width: 12px; }
+        ::-webkit-scrollbar-track { background: var(--bg-main); }
+        ::-webkit-scrollbar-thumb { background: var(--btn-bg); border-radius: 6px; border: 3px solid var(--bg-main); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--btn-hover); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <select id="boardSelect" onchange="switchBoard(this.value)" title="Switch board" style="background: var(--entry-bg); color: var(--text-light); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 4px 8px; font-weight: bold; font-size: 14px; outline: none; cursor: pointer; max-width: 160px;"></select>
+            <button onclick="addBoard()" title="New board" style="background: var(--entry-bg); color: var(--text-light); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 4px 8px; font-weight: bold; font-size: 14px; cursor: pointer; outline: none;">＋</button>
+            <button onclick="deleteBoard()" title="Delete this board" style="background: var(--entry-bg); color: var(--danger); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 4px 8px; font-weight: bold; font-size: 14px; cursor: pointer; outline: none;">🗑</button>
+        </div>
+        <span id="board-title" contenteditable="true" onblur="updateBoardTitle(this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" style="font-size: 20px; font-weight: bold; outline: none; cursor: text; text-align: center;">✦ Todo Board Studio</span>
+
+        <div style="justify-self: end; display: flex; gap: 8px; align-items: center;">
+            <button onclick="exportData()" title="Save backup to PC" style="background: var(--entry-bg); color: var(--text-light); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 4px 8px; font-weight: bold; font-size: 14px; cursor: pointer; outline: none;">💾 Export</button>
+            <label title="Load backup from PC" style="background: var(--entry-bg); color: var(--text-light); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 4px 8px; font-weight: bold; font-size: 14px; cursor: pointer; outline: none;">
+                📂 Import
+                <input type="file" accept=".json" onchange="importData(event)" style="display: none;">
+            </label>
+
+            <select id="themeSelect" onchange="changeTheme(this.value)" style="background: var(--entry-bg); color: var(--text-light); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 4px 8px; font-weight: bold; font-size: 14px; outline: none; cursor: pointer;">
+                <option value="purple">Midnight Purple</option>
+                <option value="dark">Classic Dark</option>
+                <option value="blue">Slate Blue</option>
+                <option value="forest">Forest Green</option>
+                <option value="crimson">Crimson Red</option>
+                <option value="mocha">Coffee Mocha</option>
+                <option value="teal">Ocean Teal</option>
+                <option value="sunset">Sunset Orange</option>
+                <option value="nord">Nordic Frost</option>
+                <option value="dracula">Dracula</option>
+                <option value="viewport">3D Viewport Dark</option>
+                <option value="engine">Game Engine Graphite</option>
+                <option value="retro">Retro Console Boot</option>
+            </select>
+        </div>
+    </header>
+    <div id="board"></div>
+
+    <div id="undoToast">
+        <span id="undoToastMsg"></span>
+        <button class="primary" onclick="undoDelete()">Undo</button>
+    </div>
+
+    <script>
+        // --- State management ---
+        const DEFAULT_DATA = {
+            columns: [],
+            tasks: []
+        };
+
+        // Escapes user-typed text before it's inserted via innerHTML, so a card title,
+        // checklist item, column name, or board name can never be parsed as markup/script.
+        function escapeHtml(str) {
+            if (str == null) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // --- Multi-board storage, migrating any pre-existing single-board save ---
+        let boards = {};
+        let activeBoardId = null;
+
+        // Async IIFE to load data before rendering
+        (async () => {
+            const savedJson = await window.electronAPI.loadData();
+            if (savedJson) {
+            boards = JSON.parse(savedJson);
+                activeBoardId = Object.keys(boards)[0];
+            } else {
+                // First time boot setup
+                const id = "board-" + Date.now();
+                boards = { [id]: DEFAULT_DATA };
+                activeBoardId = id;
+            }
+
+            data = boards[activeBoardId];
+            if (!data.theme) data.theme = "purple";
+            if (!data.boardTitle) data.boardTitle = "✦ Todo Board Studio";
+            if (!data.columnColors) data.columnColors = {};
+    
+            document.documentElement.setAttribute('data-theme', data.theme);
+            renderBoard();
+    
+            document.getElementById('themeSelect').value = data.theme;
+            document.getElementById('board-title').innerText = data.boardTitle;
+            renderBoardSelector();
+            })();
+
+        let pendingDelete = null;
+        let undoTimeoutId = null;
+
+        function saveData() {
+            boards[activeBoardId] = data;
+            // Save to native hard drive instead of browser cache!
+            window.electronAPI.saveData(JSON.stringify(boards));
+            renderBoardSelector();
+            renderBoard();
+        }
+
+        // --- Board switching ---
+        function renderBoardSelector() {
+            const sel = document.getElementById("boardSelect");
+            sel.innerHTML = Object.keys(boards).map(id =>
+                `<option value="${id}" ${id === activeBoardId ? 'selected' : ''}>${escapeHtml(boards[id].boardTitle || 'Untitled Board')}</option>`
+            ).join('');
+        }
+
+        function switchBoard(id) {
+            if (!boards[id]) return;
+            activeBoardId = id;
+            data = boards[activeBoardId];
+            if (!data.theme) data.theme = "purple";
+            if (!data.boardTitle) data.boardTitle = "✦ Todo Board Studio";
+            if (!data.columnColors) data.columnColors = {};
+            localStorage.setItem("todoActiveBoardId", activeBoardId);
+            document.documentElement.setAttribute('data-theme', data.theme);
+            document.getElementById('themeSelect').value = data.theme;
+            document.getElementById('board-title').innerText = data.boardTitle;
+            renderBoardSelector();
+            renderBoard();
+        }
+
+        function addBoard() {
+            const id = "board-" + Date.now();
+            boards[id] = {
+                columns: [],
+                tasks: [],
+                boardTitle: "New Board",
+                theme: "purple",
+                columnColors: {}
+            };
+            localStorage.setItem("todoBoardsStudio", JSON.stringify(boards));
+            switchBoard(id);
+        }
+
+        function deleteBoard() {
+            const ids = Object.keys(boards);
+            if (ids.length <= 1) return alert("You need at least one board.");
+            if (!confirm(`Delete the board "${data.boardTitle}"? This cannot be undone.`)) return;
+            delete boards[activeBoardId];
+            localStorage.setItem("todoBoardsStudio", JSON.stringify(boards));
+            switchBoard(Object.keys(boards)[0]);
+        }
+
+        // --- Undo toast ---
+        function showUndoToast(message, restoreFn) {
+            pendingDelete = restoreFn;
+            clearTimeout(undoTimeoutId);
+            const toast = document.getElementById("undoToast");
+            document.getElementById("undoToastMsg").innerText = message;
+            toast.classList.add("show");
+            undoTimeoutId = setTimeout(() => {
+                toast.classList.remove("show");
+                pendingDelete = null;
+            }, 5000);
+        }
+
+        function undoDelete() {
+            if (!pendingDelete) return;
+            clearTimeout(undoTimeoutId);
+            document.getElementById("undoToast").classList.remove("show");
+            const restore = pendingDelete;
+            pendingDelete = null;
+            restore();
+        }
+
+        // --- Helper: determine if a color is light or dark ---
+        function isLightColor(hex) {
+            // Remove # if present
+            hex = hex.replace('#', '');
+            // Parse RGB
+            const r = parseInt(hex.substr(0, 2), 16);
+            const g = parseInt(hex.substr(2, 2), 16);
+            const b = parseInt(hex.substr(4, 2), 16);
+            // Calculate luminance using standard formula
+            const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+            return luminance > 0.5;
+        }
+
+        // --- Rendering ---
+        function renderBoard() {
+            const board = document.getElementById("board");
+            board.innerHTML = "";
+
+            data.columns.forEach((colName, index) => {
+                const colTasks = data.tasks.filter(t => t.column === colName);
+
+                // Get column background color, fallback to theme default
+                const colBg = data.columnColors[colName] || getComputedStyle(document.documentElement).getPropertyValue('--bg-col').trim() || '#31224A';
+                // Determine text color based on contrast
+                const textColor = isLightColor(colBg) ? '#111111' : '#F1E9FF';
+
+                const colEl = document.createElement("div");
+                colEl.className = "column";
+                colEl.draggable = true;
+                colEl.ondragstart = (e) => colDragStart(e, colName);
+                colEl.ondragover = (e) => allowDrop(e);
+                colEl.ondrop = (e) => colDrop(e, colName);
+
+                // Apply column background color (no !important override)
+                colEl.style.backgroundColor = colBg;
+
+                // Column header
+                const headerHtml = `
+                    <div class="col-header" style="background: rgba(0,0,0,0.2); display: flex; align-items: center;">
+                        <span id="col-title-${index}" contenteditable="true" onblur="updateColName(${index}, this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" style="flex-grow: 1; outline: none; cursor: text; color: ${textColor};">${escapeHtml(colName)}</span>
+                        <div class="col-btn-group">
+                            <div class="tiny-color-picker" title="Change Color">
+                                <input type="color" value="${data.columnColors[colName] || '#31224A'}" onchange="updateColColor(${index}, this.value)">
+                            </div>
+                            <button class="icon-btn add" title="Add Todo" onclick="quickAddTask(${index})">+</button>
+                            <button class="icon-btn del" title="Delete List" onclick="deleteCol(${index})">✕</button>
+                        </div>
+                        <span class="col-count">${colTasks.length}</span>
+                    </div>
+                    <div class="card-list" ondragover="allowDrop(event)" ondrop="drop(event, ${index})"></div>
+                `;
+                colEl.innerHTML = headerHtml;
+
+                // Render tasks
+                const listEl = colEl.querySelector(".card-list");
+                colTasks.forEach(task => {
+                    const card = document.createElement("div");
+                    card.className = "card";
+                    card.draggable = true;
+                    card.ondragstart = (e) => drag(e, task.id);
+                    card.ondragover = (e) => allowDrop(e);
+                    card.ondrop = (e) => cardDrop(e, task.id);
+
+                    // Card adopts column color, lightened via a white transparent overlay
+                    card.style.backgroundColor = colBg;
+                    card.style.backgroundImage = 'linear-gradient(rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.22))';
+
+                    // Priority color mapping
+                    if (task.priority === "High") card.style.borderLeftColor = "var(--pri-high)";
+                    if (task.priority === "Medium") card.style.borderLeftColor = "var(--pri-med)";
+                    if (task.priority === "Low") card.style.borderLeftColor = "var(--pri-low)";
+
+                    // --- 1. Calculate checklist progress first ---
+                    let done = 0;
+                    let total = 0;
+                    let pct = 0;
+
+                    if (task.checklist && task.checklist.length > 0) {
+                        total = task.checklist.length;
+                        done = task.checklist.filter(c => c.done).length;
+                        pct = (done / total) * 100;
+                    }
+
+                    // --- 2. Status badge logic (based on checklist, not column) ---
+                    let statusText = "Not started";
+                    let statusColor = "#E06C75";
+
+                    if (total > 0) {
+                        if (pct === 100) {
+                            statusText = "Done";
+                            statusColor = "#7FCB8E";
+                        } else if (pct > 0) {
+                            statusText = "In progress";
+                            statusColor = "#6FA8E5";
+                        }
+                    }
+
+                    // --- 3. Generate HTML ---
+                    let priColor = "var(--text-light)";
+                    if (task.priority === "High") priColor = "var(--pri-high)";
+                    if (task.priority === "Medium") priColor = "var(--pri-med)";
+                    if (task.priority === "Low") priColor = "var(--pri-low)";
+
+                    // Use computed text color for card content
+                    const cardTextColor = isLightColor(colBg) ? '#111111' : '#F1E9FF';
+
+                    let html = `
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <div style="font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px; background: rgba(0,0,0,0.3); color: ${statusColor};">
+                                ${statusText}
+                            </div>
+                            <select onchange="updatePriority('${task.id}', this.value)" onclick="event.stopPropagation()" style="font-size: 10px; font-weight: bold; padding: 2px 4px; border-radius: 4px; background: rgba(0,0,0,0.2); color: ${priColor}; border: none; outline: none; cursor: pointer; text-align: center; text-align-last: center;">
+                                <option value="High" style="background: var(--entry-bg); color: var(--pri-high); text-align: center;" ${task.priority === 'High' ? 'selected' : ''}>High Priority</option>
+                                <option value="Medium" style="background: var(--entry-bg); color: var(--pri-med); text-align: center;" ${task.priority === 'Medium' ? 'selected' : ''}>Med Priority</option>
+                                <option value="Low" style="background: var(--entry-bg); color: var(--pri-low); text-align: center;" ${task.priority === 'Low' || task.priority === 'None' ? 'selected' : ''}>Low Priority</option>
+                            </select>
+                        </div>
+                        <div class="card-header">
+                            <div id="card-title-${task.id}" class="card-title" contenteditable="true" onblur="updateCardName('${task.id}', this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="outline: none; cursor: text; min-height: 18px; flex-grow: 1; color: ${cardTextColor};">${escapeHtml(task.text)}</div>
+                            <button class="card-del-btn" title="Delete Card" onclick="event.stopPropagation(); quickDeleteTask('${task.id}')">✕</button>
+                        </div>
+                    `;
+
+                    // Generate individual checkboxes
+                    let chkHtml = task.checklist.map((c, i) => `
+                        <div style="font-size: 12px; margin-top: 4px; display: flex; align-items: center; gap: 6px;">
+                            <input type="checkbox" ${c.done ? 'checked' : ''} onclick="event.stopPropagation(); toggleCardCheck('${task.id}', ${i}, this.checked)">
+                            <span id="chk-title-${task.id}-${i}" contenteditable="true" onblur="updateChkName('${task.id}', ${i}, this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="flex-grow: 1; outline: none; cursor: text; color: ${cardTextColor}; ${c.done ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${escapeHtml(c.text)}</span>
+                            <button class="chk-icon-btn del" title="Delete Item" onclick="event.stopPropagation(); quickDelCheck('${task.id}', ${i})">✕</button>
+                        </div>
+                    `).join('');
+
+                    html += `
+                        <details ${task.checklistOpen ? 'open' : ''} onclick="event.stopPropagation()" ontoggle="toggleDetails('${task.id}', this.open)">
+                            <summary class="glow-hover" style="font-size: 12px; color: ${cardTextColor}; opacity: 0.85; cursor: pointer; outline: none; margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
+                                <span>Checklist (${done}/${total})</span>
+                                <button class="chk-icon-btn add" title="Add Item" onclick="event.stopPropagation(); event.preventDefault(); quickAddCheck('${task.id}')">+</button>
+                            </summary>
+                            <div style="margin-top: 6px; padding-left: 4px; margin-bottom: 8px;">
+                                ${chkHtml}
+                            </div>
+                        </details>
+                        <div class="progress-bg">
+                            <div class="progress-fill ${pct === 100 && total > 0 ? 'done' : ''}" style="width: ${pct}%"></div>
+                        </div>
+                    `;
+                    card.innerHTML = html;
+                    listEl.appendChild(card);
+                });
+
+                board.appendChild(colEl);
+            });
+
+            // Add List button
+            const addBtn = document.createElement("button");
+            addBtn.className = "add-list-btn";
+            addBtn.innerHTML = "+";
+            addBtn.title = "Add another list";
+            addBtn.onclick = () => {
+                let name = "New List";
+                let count = 1;
+                while (data.columns.includes(name)) { name = "New List " + count++; }
+                data.columns.push(name);
+                saveData();
+                setTimeout(() => {
+                    const el = document.getElementById(`col-title-${data.columns.length - 1}`);
+                    if (el) { el.focus(); document.execCommand('selectAll', false, null); }
+                }, 10);
+            };
+            board.appendChild(addBtn);
+        }
+
+        // --- Drag and drop ---
+        function drag(ev, id) {
+            ev.dataTransfer.setData("card-id", id);
+            ev.target.classList.add('dragging');
+            ev.stopPropagation();
+        }
+
+        function allowDrop(ev) { ev.preventDefault(); }
+
+        function drop(ev, idx) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            const id = ev.dataTransfer.getData("card-id");
+            if (!id) return;
+
+            const toCol = data.columns[idx];
+            const task = data.tasks.find(t => t.id === id);
+            if (task && task.column !== toCol) {
+                task.column = toCol;
+                saveData();
+            }
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('dragging'));
+        }
+
+        function cardDrop(ev, targetTaskId) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            const id = ev.dataTransfer.getData("card-id");
+            if (!id || id === targetTaskId) return;
+
+            const task = data.tasks.find(t => t.id === id);
+            const targetTask = data.tasks.find(t => t.id === targetTaskId);
+            if (!task || !targetTask) return;
+
+            task.column = targetTask.column;
+
+            const fromIdx = data.tasks.indexOf(task);
+            data.tasks.splice(fromIdx, 1);
+            const toIdx = data.tasks.indexOf(targetTask);
+            data.tasks.splice(toIdx, 0, task);
+
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('dragging'));
+            saveData();
+        }
+
+        function colDragStart(ev, name) {
+            ev.dataTransfer.setData("col-name", name);
+            ev.target.classList.add('col-dragging');
+        }
+
+        function colDrop(ev, targetColName) {
+            ev.preventDefault();
+            const draggedColName = ev.dataTransfer.getData("col-name");
+            if (!draggedColName || draggedColName === targetColName) return;
+
+            const fromIdx = data.columns.indexOf(draggedColName);
+            const toIdx = data.columns.indexOf(targetColName);
+
+            data.columns.splice(fromIdx, 1);
+            data.columns.splice(toIdx, 0, draggedColName);
+
+            document.querySelectorAll('.column').forEach(c => c.classList.remove('col-dragging'));
+            saveData();
+        }
+
+        function updateColColor(idx, color) {
+            const name = data.columns[idx];
+            data.columnColors[name] = color;
+            saveData();
+        }
+
+        function toggleCardCheck(taskId, chkIndex, isChecked) {
+            const task = data.tasks.find(t => t.id === taskId);
+            if (task) {
+                task.checklist[chkIndex].done = isChecked;
+                saveData();
+            }
+        }
+
+        function toggleDetails(taskId, isOpen) {
+            const task = data.tasks.find(t => t.id === taskId);
+            if (task && task.checklistOpen !== isOpen) {
+                task.checklistOpen = isOpen;
+                boards[activeBoardId] = data;
+                localStorage.setItem("todoBoardsStudio", JSON.stringify(boards));
+            }
+        }
+
+        // --- Column actions ---
+        function deleteCol(idx) {
+            if (data.columns.length <= 1) return alert("You need at least one list.");
+
+            const name = data.columns[idx];
+            const removedTasks = data.tasks.filter(t => t.column === name);
+            const color = data.columnColors[name];
+
+            data.columns.splice(idx, 1);
+            data.tasks = data.tasks.filter(t => t.column !== name);
+            delete data.columnColors[name];
+
+            showUndoToast(`Deleted list "${name}"`, () => {
+                data.columns.splice(idx, 0, name);
+                data.tasks.push(...removedTasks);
+                if (color) data.columnColors[name] = color;
+                saveData();
+            });
+            saveData();
+        }
+
+        function updateColName(idx, newName) {
+            const oldName = data.columns[idx];
+            newName = newName.trim();
+            if (!newName || newName === oldName || data.columns.includes(newName)) return renderBoard();
+
+            data.columns[idx] = newName;
+
+            data.tasks.forEach(t => { if (t.column === oldName) t.column = newName; });
+            if (data.columnColors[oldName]) {
+                data.columnColors[newName] = data.columnColors[oldName];
+                delete data.columnColors[oldName];
+            }
+            saveData();
+        }
+
+        // --- Task actions ---
+        function updateCardName(id, newText) {
+            const task = data.tasks.find(t => t.id === id);
+            if (task) {
+                task.text = newText.trim() || "Unnamed Card";
+                saveData();
+            }
+        }
+
+        function updatePriority(id, pri) {
+            const task = data.tasks.find(t => t.id === id);
+            if (task) {
+                task.priority = pri;
+                saveData();
+            }
+        }
+
+        function quickDeleteTask(id) {
+            const idx = data.tasks.findIndex(t => t.id === id);
+            if (idx === -1) return;
+            const [removed] = data.tasks.splice(idx, 1);
+            showUndoToast(`Deleted "${removed.text}"`, () => {
+                data.tasks.splice(idx, 0, removed);
+                saveData();
+            });
+            saveData();
+        }
+
+        // --- Checklist actions ---
+        function quickAddTask(idx) {
+            const col = data.columns[idx];
+            const id = Date.now().toString();
+            data.tasks.push({ id, text: "New Card", column: col, priority: "Low", desc: "", checklist: [], checklistOpen: true });
+            saveData();
+            setTimeout(() => {
+                const el = document.getElementById(`card-title-${id}`);
+                if (el) { el.focus(); document.execCommand('selectAll', false, null); }
+            }, 10);
+        }
+
+        function quickAddCheck(taskId) {
+            const task = data.tasks.find(t => t.id === taskId);
+            if (task) {
+                task.checklist.push({ text: "New Item", done: false });
+                task.checklistOpen = true;
+                saveData();
+            }
+        }
+
+        function updateChkName(taskId, idx, newText) {
+            const task = data.tasks.find(t => t.id === taskId);
+            if (task && task.checklist[idx]) {
+                task.checklist[idx].text = newText.trim() || "Unnamed Item";
+                saveData();
+            }
+        }
+
+        function quickDelCheck(taskId, chkIndex) {
+            const task = data.tasks.find(t => t.id === taskId);
+            if (task) {
+                task.checklist.splice(chkIndex, 1);
+                saveData();
+            }
+        }
+
+        function changeTheme(theme) {
+            data.theme = theme;
+            document.documentElement.setAttribute('data-theme', theme);
+            saveData();
+        }
+
+        function updateBoardTitle(newTitle) {
+            data.boardTitle = newTitle.trim() || "✦ Todo Board Studio";
+            document.getElementById('board-title').innerText = data.boardTitle;
+            saveData();
+        }
+
+        // --- Backup actions ---
+        function exportData() {
+            const dataStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "todo_board_backup.json";
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (importedData.columns && importedData.tasks) {
+                        data = importedData;
+                        saveData();
+                        document.getElementById('themeSelect').value = data.theme || 'purple';
+                        document.documentElement.setAttribute('data-theme', data.theme || 'purple');
+                        document.getElementById('board-title').innerText = data.boardTitle || '✦ Todo Board Studio';
+                    } else {
+                        alert("Invalid backup file format.");
+                    }
+                } catch (err) {
+                    alert("Error reading file. Make sure it is a valid JSON backup.");
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = "";
+        }
+
+        // Boot sequence
+        window.onload = () => {
+            document.getElementById('themeSelect').value = data.theme;
+            document.getElementById('board-title').innerText = data.boardTitle;
+            renderBoardSelector();
+        };
+
+        // Initialize
+        renderBoard();
+    </script>
+</body>
+</html>
