@@ -220,10 +220,10 @@
                 // Set custom background color if the user picked one
                 colEl.style.backgroundColor = data.columnColors[colName] || 'var(--bg-col)';
                 
-                // Column Header
+                // Column Header (Now editable!)
                 colEl.innerHTML = `
                     <div class="col-header" style="background: rgba(0,0,0,0.2); display: flex; align-items: center;">
-                        <span style="flex-grow: 1;">${colName}</span>
+                        <span id="col-title-${index}" contenteditable="true" onblur="updateColName('${colName}', this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" style="flex-grow: 1; outline: none; cursor: text;">${colName}</span>
                         <div class="col-btn-group">
                             <div class="tiny-color-picker" title="Change Color">
                                 <input type="color" value="${data.columnColors[colName] || '#31224A'}" onchange="updateColColor('${colName}', this.value)">
@@ -280,28 +280,26 @@
                         }
                     }
 
-                    // --- 3. GENERATE HTML ---
+                    // --- 3. GENERATE HTML (Titles and Checklists are now editable!) ---
                     let html = `
                         <div style="font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px; background: rgba(0,0,0,0.3); color: ${statusColor}; display: inline-block; margin-bottom: 6px;">
                             ${statusText}
                         </div>
                         <div class="card-header">
-                            <div class="card-title">${task.text}</div>
+                            <div id="card-title-${task.id}" class="card-title" contenteditable="true" onblur="updateCardName('${task.id}', this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="outline: none; cursor: text; min-height: 18px; flex-grow: 1;">${task.text}</div>
                             <button class="card-del-btn" title="Delete Card" onclick="event.stopPropagation(); quickDeleteTask('${task.id}')">✕</button>
                         </div>
                     `;
                     
                     if (total > 0) {
-                        // Generate the individual checkboxes + the new ✕ button
                         let chkHtml = task.checklist.map((c, i) => `
                             <div style="font-size: 12px; margin-top: 4px; display: flex; align-items: center; gap: 6px;">
                                 <input type="checkbox" ${c.done ? 'checked' : ''} onclick="event.stopPropagation(); toggleCardCheck('${task.id}', ${i}, this.checked)">
-                                <span style="flex-grow: 1; ${c.done ? 'text-decoration: line-through; color: var(--text-muted);' : ''}">${c.text}</span>
+                                <span id="chk-title-${task.id}-${i}" contenteditable="true" onblur="updateChkName('${task.id}', ${i}, this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="flex-grow: 1; outline: none; cursor: text; ${c.done ? 'text-decoration: line-through; color: var(--text-muted);' : ''}">${c.text}</span>
                                 <button class="chk-icon-btn del" title="Delete Item" onclick="event.stopPropagation(); quickDelCheck('${task.id}', ${i})">✕</button>
                             </div>
                         `).join('');
 
-                        // Added 'open' state memory, glow class, and the + button!
                         html += `
                             <details ${task.checklistOpen ? 'open' : ''} onclick="event.stopPropagation()" ontoggle="toggleDetails('${task.id}', this.open)">
                                 <summary class="glow-hover" style="font-size: 12px; color: var(--text-muted); cursor: pointer; outline: none; margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
@@ -329,11 +327,16 @@
             addBtn.className = "add-list-btn";
             addBtn.textContent = "+ Add another list";
             addBtn.onclick = () => {
-                const name = prompt("List name:");
-                if (name && !data.columns.includes(name)) {
-                    data.columns.push(name.trim());
-                    saveData();
-                }
+                let name = "New List";
+                let count = 1;
+                while (data.columns.includes(name)) { name = "New List " + count++; }
+                data.columns.push(name);
+                saveData();
+                // Instantly select the text of the new list so you can type immediately
+                setTimeout(() => {
+                    const el = document.getElementById(`col-title-${data.columns.length - 1}`);
+                    if(el) { el.focus(); document.execCommand('selectAll', false, null); }
+                }, 10);
             };
             board.appendChild(addBtn);
         }
