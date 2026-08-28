@@ -960,6 +960,7 @@
                 colEl.className = `column ${isCollapsed ? 'collapsed' : ''}`;
                 colEl.draggable = !isCollapsed;
                 colEl.ondragstart = (e) => colDragStart(e, colName);
+                colEl.ondragend = () => { document.querySelectorAll('.column').forEach(c => c.classList.remove('col-dragging')); };
                 colEl.ondragover = (e) => allowDrop(e);
                 colEl.ondrop = (e) => colDrop(e, colName);
                 colEl.style.backgroundColor = colBg;
@@ -995,6 +996,10 @@
                         card.className = "card";
                         card.draggable = true;
                         card.ondragstart = (e) => drag(e, task.id);
+                        card.ondragend = () => {
+                            document.querySelectorAll('.card').forEach(c => c.classList.remove('dragging'));
+                            document.querySelectorAll('.card-list').forEach(l => l.classList.remove('drag-over'));
+                        };
                         card.ondragover = (e) => allowDrop(e);
                         card.ondrop = (e) => cardDrop(e, task.id);
                         card.onclick = (e) => {
@@ -1222,6 +1227,9 @@
             if (data.columnColors[oldName]) {
                 data.columnColors[newName] = data.columnColors[oldName];
                 delete data.columnColors[oldName];
+            }
+            if (data.collapsedCols && data.collapsedCols.includes(oldName)) {
+                data.collapsedCols = data.collapsedCols.map(c => c === oldName ? newName : c);
             }
             saveData();
         }
