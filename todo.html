@@ -300,12 +300,12 @@
         }
 
         let data = boards[activeBoardId];
-        if (!data.theme) data.theme = "purple"; // Give old saves a default theme
+        if (!data.theme) data.theme = "purple";
         if (!data.boardTitle) data.boardTitle = "✦ Todo Board Studio";
         if (!data.columnColors) data.columnColors = {};
-        document.documentElement.setAttribute('data-theme', data.theme); // Apply it to the page
+        document.documentElement.setAttribute('data-theme', data.theme);
 
-        let pendingDelete = null; // holds a restore function while the undo toast is showing
+        let pendingDelete = null;
         let undoTimeoutId = null;
 
         function saveData() {
@@ -383,6 +383,19 @@
             restore();
         }
 
+        // --- Helper: determine if a color is light or dark ---
+        function isLightColor(hex) {
+            // Remove # if present
+            hex = hex.replace('#', '');
+            // Parse RGB
+            const r = parseInt(hex.substr(0, 2), 16);
+            const g = parseInt(hex.substr(2, 2), 16);
+            const b = parseInt(hex.substr(4, 2), 16);
+            // Calculate luminance using standard formula
+            const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+            return luminance > 0.5;
+        }
+
         // --- Rendering ---
         function renderBoard() {
             const board = document.getElementById("board");
@@ -391,9 +404,10 @@
             data.columns.forEach((colName, index) => {
                 const colTasks = data.tasks.filter(t => t.column === colName);
 
-                // Determine dynamic text color based on background contrast
-                let colBg = data.columnColors[colName] || '#31224A';
-                let dynText = '#111111'; // Hardcoded to deep dark gray/black
+                // Get column background color, fallback to theme default
+                const colBg = data.columnColors[colName] || getComputedStyle(document.documentElement).getPropertyValue('--bg-col').trim() || '#31224A';
+                // Determine text color based on contrast
+                const textColor = isLightColor(colBg) ? '#111111' : '#F1E9FF';
 
                 const colEl = document.createElement("div");
                 colEl.className = "column";
@@ -402,12 +416,13 @@
                 colEl.ondragover = (e) => allowDrop(e);
                 colEl.ondrop = (e) => colDrop(e, colName);
 
+                // Apply column background color (no !important override)
                 colEl.style.backgroundColor = colBg;
 
-                // Column header (title text is dynamically colored)
-                colEl.innerHTML = `
+                // Column header
+                const headerHtml = `
                     <div class="col-header" style="background: rgba(0,0,0,0.2); display: flex; align-items: center;">
-                        <span id="col-title-${index}" contenteditable="true" onblur="updateColName(${index}, this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" style="flex-grow: 1; outline: none; cursor: text; color: ${dynText};">${escapeHtml(colName)}</span>
+                        <span id="col-title-${index}" contenteditable="true" onblur="updateColName(${index}, this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" style="flex-grow: 1; outline: none; cursor: text; color: ${textColor};">${escapeHtml(colName)}</span>
                         <div class="col-btn-group">
                             <div class="tiny-color-picker" title="Change Color">
                                 <input type="color" value="${data.columnColors[colName] || '#31224A'}" onchange="updateColColor(${index}, this.value)">
@@ -419,6 +434,7 @@
                     </div>
                     <div class="card-list" ondragover="allowDrop(event)" ondrop="drop(event, ${index})"></div>
                 `;
+                colEl.innerHTML = headerHtml;
 
                 // Render tasks
                 const listEl = colEl.querySelector(".card-list");
@@ -431,7 +447,7 @@
                     card.ondrop = (e) => cardDrop(e, task.id);
 
                     // Card adopts column color, lightened via a white transparent overlay
-                    card.style.backgroundColor = data.columnColors[colName] || 'var(--bg-card)';
+                    card.style.backgroundColor = colBg;
                     card.style.backgroundImage = 'linear-gradient(rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.22))';
 
                     // Priority color mapping
@@ -452,23 +468,26 @@
 
                     // --- 2. Status badge logic (based on checklist, not column) ---
                     let statusText = "Not started";
-                    let statusColor = "#E06C75"; // Red (default / 0%)
+                    let statusColor = "#E06C75";
 
                     if (total > 0) {
                         if (pct === 100) {
                             statusText = "Done";
-                            statusColor = "#7FCB8E"; // Green
+                            statusColor = "#7FCB8E";
                         } else if (pct > 0) {
                             statusText = "In progress";
-                            statusColor = "#6FA8E5"; // Blue
+                            statusColor = "#6FA8E5";
                         }
                     }
 
-                    // --- 3. Generate HTML (priority dropdown + always-visible checklist) ---
+                    // --- 3. Generate HTML ---
                     let priColor = "var(--text-light)";
                     if (task.priority === "High") priColor = "var(--pri-high)";
                     if (task.priority === "Medium") priColor = "var(--pri-med)";
                     if (task.priority === "Low") priColor = "var(--pri-low)";
+
+                    // Use computed text color for card content
+                    const cardTextColor = isLightColor(colBg) ? '#111111' : '#F1E9FF';
 
                     let html = `
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
@@ -482,24 +501,23 @@
                             </select>
                         </div>
                         <div class="card-header">
-                            <div id="card-title-${task.id}" class="card-title" contenteditable="true" onblur="updateCardName('${task.id}', this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="outline: none; cursor: text; min-height: 18px; flex-grow: 1; color: ${dynText};">${escapeHtml(task.text)}</div>
+                            <div id="card-title-${task.id}" class="card-title" contenteditable="true" onblur="updateCardName('${task.id}', this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="outline: none; cursor: text; min-height: 18px; flex-grow: 1; color: ${cardTextColor};">${escapeHtml(task.text)}</div>
                             <button class="card-del-btn" title="Delete Card" onclick="event.stopPropagation(); quickDeleteTask('${task.id}')">✕</button>
                         </div>
                     `;
 
-                    // Generate individual checkboxes (done items fade out via opacity)
+                    // Generate individual checkboxes
                     let chkHtml = task.checklist.map((c, i) => `
                         <div style="font-size: 12px; margin-top: 4px; display: flex; align-items: center; gap: 6px;">
                             <input type="checkbox" ${c.done ? 'checked' : ''} onclick="event.stopPropagation(); toggleCardCheck('${task.id}', ${i}, this.checked)">
-                            <span id="chk-title-${task.id}-${i}" contenteditable="true" onblur="updateChkName('${task.id}', ${i}, this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="flex-grow: 1; outline: none; cursor: text; color: ${dynText}; ${c.done ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${escapeHtml(c.text)}</span>
+                            <span id="chk-title-${task.id}-${i}" contenteditable="true" onblur="updateChkName('${task.id}', ${i}, this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="flex-grow: 1; outline: none; cursor: text; color: ${cardTextColor}; ${c.done ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${escapeHtml(c.text)}</span>
                             <button class="chk-icon-btn del" title="Delete Item" onclick="event.stopPropagation(); quickDelCheck('${task.id}', ${i})">✕</button>
                         </div>
                     `).join('');
 
-                    // Wrap them in an HTML <details> dropdown
                     html += `
                         <details ${task.checklistOpen ? 'open' : ''} onclick="event.stopPropagation()" ontoggle="toggleDetails('${task.id}', this.open)">
-                            <summary class="glow-hover" style="font-size: 12px; color: ${dynText}; opacity: 0.85; cursor: pointer; outline: none; margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
+                            <summary class="glow-hover" style="font-size: 12px; color: ${cardTextColor}; opacity: 0.85; cursor: pointer; outline: none; margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
                                 <span>Checklist (${done}/${total})</span>
                                 <button class="chk-icon-btn add" title="Add Item" onclick="event.stopPropagation(); event.preventDefault(); quickAddCheck('${task.id}')">+</button>
                             </summary>
@@ -529,7 +547,6 @@
                 while (data.columns.includes(name)) { name = "New List " + count++; }
                 data.columns.push(name);
                 saveData();
-                // Instantly select the text of the new list so you can type immediately
                 setTimeout(() => {
                     const el = document.getElementById(`col-title-${data.columns.length - 1}`);
                     if (el) { el.focus(); document.execCommand('selectAll', false, null); }
@@ -617,7 +634,6 @@
             }
         }
 
-        // Silently saves the open/closed state of the dropdown without redrawing the whole board
         function toggleDetails(taskId, isOpen) {
             const task = data.tasks.find(t => t.id === taskId);
             if (task && task.checklistOpen !== isOpen) {
@@ -762,8 +778,6 @@
                     if (importedData.columns && importedData.tasks) {
                         data = importedData;
                         saveData();
-
-                        // Force refresh the title and theme dropdown to match the imported file
                         document.getElementById('themeSelect').value = data.theme || 'purple';
                         document.documentElement.setAttribute('data-theme', data.theme || 'purple');
                         document.getElementById('board-title').innerText = data.boardTitle || '✦ Todo Board Studio';
@@ -775,10 +789,10 @@
                 }
             };
             reader.readAsText(file);
-            event.target.value = ""; // Reset input so the same file can be re-uploaded if needed
+            event.target.value = "";
         }
 
-        // Boot sequence: set theme, board title, and populate the board switcher
+        // Boot sequence
         window.onload = () => {
             document.getElementById('themeSelect').value = data.theme;
             document.getElementById('board-title').innerText = data.boardTitle;
