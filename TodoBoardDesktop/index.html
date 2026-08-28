@@ -1032,10 +1032,10 @@
 
                         // Checkbox list
                         let chkHtml = (task.checklist || []).map((c, i) => `
-                            <div style="font-size: 12px; margin-top: 4px; display: flex; align-items: center; gap: 6px;">
-                                <input type="checkbox" ${c.done ? 'checked' : ''} onclick="event.stopPropagation(); toggleCardCheck('${task.id}', ${i}, this.checked)">
-                                <span id="chk-title-${task.id}-${i}" contenteditable="true" onblur="updateChkName('${task.id}', ${i}, this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="flex-grow: 1; outline: none; cursor: text; ${c.done ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${escapeHtml(c.text)}</span>
-                                <button class="icon-btn del" title="Delete Subtask" onclick="event.stopPropagation(); quickDelCheck('${task.id}', ${i})" style="font-size: 11px; padding: 0 4px;">✕</button>
+                            <div class="chk-row" onclick="event.stopPropagation()" style="font-size: 12px; margin-top: 5px; display: flex; align-items: center; gap: 6px;">
+                                <input type="checkbox" style="cursor: pointer; width: 14px; height: 14px; accent-color: var(--accent);" ${c.done ? 'checked' : ''} onclick="event.stopPropagation()" onchange="toggleCardCheck('${task.id}', ${i}, this.checked)">
+                                <span id="chk-title-${task.id}-${i}" contenteditable="true" onblur="updateChkName('${task.id}', ${i}, this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="flex-grow: 1; outline: none; cursor: text; ${c.done ? 'text-decoration: line-through; opacity: 0.55;' : ''}">${escapeHtml(c.text)}</span>
+                                <button class="icon-btn del" title="Delete Subtask" onclick="event.stopPropagation(); quickDelCheck('${task.id}', ${i})" style="font-size: 11px; padding: 0 4px; opacity: 0.7;">✕</button>
                             </div>
                         `).join('');
 
@@ -1061,16 +1061,17 @@
                             ${task.desc ? `<div class="card-desc-preview">${escapeHtml(task.desc)}</div>` : ''}
                             ${tagsHtml}
 
+                            <details ${task.checklistOpen ? 'open' : ''} onclick="event.stopPropagation()" ontoggle="toggleDetails('${task.id}', this.open)" style="margin-top: 8px;">
+                                <summary style="font-size: 11px; opacity: 0.85; cursor: pointer; outline: none; display: flex; justify-content: space-between; align-items: center; user-select: none;">
+                                    <span>Checklist (${done}/${total})</span>
+                                    <button class="icon-btn add" title="Add Subtask" onclick="event.stopPropagation(); event.preventDefault(); quickAddCheck('${task.id}')" style="font-size: 13px; padding: 0 4px;">+</button>
+                                </summary>
+                                <div style="margin-top: 4px; padding-left: 2px;">
+                                    ${chkHtml}
+                                </div>
+                            </details>
+                            
                             ${total > 0 ? `
-                                <details ${task.checklistOpen ? 'open' : ''} onclick="event.stopPropagation()" ontoggle="toggleDetails('${task.id}', this.open)">
-                                    <summary style="font-size: 11px; opacity: 0.85; cursor: pointer; outline: none; margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
-                                        <span>Checklist (${done}/${total})</span>
-                                        <button class="icon-btn add" title="Add Subtask" onclick="event.stopPropagation(); event.preventDefault(); quickAddCheck('${task.id}')" style="font-size: 13px;">+</button>
-                                    </summary>
-                                    <div style="margin-top: 4px; padding-left: 2px;">
-                                        ${chkHtml}
-                                    </div>
-                                </details>
                                 <div class="progress-bg">
                                     <div class="progress-fill ${pct === 100 ? 'done' : ''}" style="width: ${pct}%"></div>
                                 </div>
@@ -1255,9 +1256,14 @@
 
         function toggleDetails(taskId, isOpen) {
             const task = data.tasks.find(t => t.id === taskId);
-            if (task) {
+            if (task && task.checklistOpen !== isOpen) {
                 task.checklistOpen = isOpen;
-                saveData();
+                boards[activeBoardId] = data;
+                const jsonStr = JSON.stringify(boards);
+                if (window.electronAPI && window.electronAPI.saveData) {
+                    window.electronAPI.saveData(jsonStr);
+                }
+                localStorage.setItem("todoBoardsStudio", jsonStr);
             }
         }
 
@@ -1295,10 +1301,18 @@
             const task = data.tasks.find(t => t.id === taskId);
             if (task) {
                 if (!task.checklist) task.checklist = [];
+                const newIdx = task.checklist.length;
                 task.checklist.push({ text: "New Subtask", done: false });
                 task.checklistOpen = true;
                 task.updatedAt = Date.now();
                 saveData();
+                setTimeout(() => {
+                    const el = document.getElementById(`chk-title-${taskId}-${newIdx}`);
+                    if (el) {
+                        el.focus();
+                        document.execCommand('selectAll', false, null);
+                    }
+                }, 20);
             }
         }
 
@@ -1392,10 +1406,10 @@
             document.getElementById('modalChecklistStats').innerText = `${done} of ${total} completed`;
 
             cont.innerHTML = modalWorkingChecklist.map((c, i) => `
-                <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.2); padding: 4px 8px; border-radius: 6px;">
-                    <input type="checkbox" ${c.done ? 'checked' : ''} onchange="modalWorkingChecklist[${i}].done = this.checked; renderModalChecklist();">
-                    <input type="text" value="${escapeHtml(c.text)}" oninput="modalWorkingChecklist[${i}].text = this.value" style="flex-grow: 1; padding: 2px 6px; font-size: 12px; ${c.done ? 'text-decoration: line-through; opacity: 0.6;' : ''}">
-                    <button type="button" class="icon-btn del" onclick="modalWorkingChecklist.splice(${i}, 1); renderModalChecklist();">✕</button>
+                <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.2); padding: 5px 8px; border-radius: 6px;">
+                    <input type="checkbox" style="cursor: pointer; width: 14px; height: 14px; accent-color: var(--accent);" ${c.done ? 'checked' : ''} onchange="modalWorkingChecklist[${i}].done = this.checked; renderModalChecklist();">
+                    <input type="text" value="${escapeHtml(c.text)}" oninput="modalWorkingChecklist[${i}].text = this.value" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" style="flex-grow: 1; padding: 2px 6px; font-size: 12px; ${c.done ? 'text-decoration: line-through; opacity: 0.6;' : ''}">
+                    <button type="button" class="icon-btn del" onclick="modalWorkingChecklist.splice(${i}, 1); renderModalChecklist();" style="font-size: 12px;">✕</button>
                 </div>
             `).join('');
         }
@@ -1408,6 +1422,7 @@
                 renderModalChecklist();
             }
             inp.value = '';
+            inp.focus();
         }
 
         function saveTaskModal() {
