@@ -269,12 +269,8 @@
     <script>
         // --- State management ---
         const DEFAULT_DATA = {
-            columns: ["Not started", "In progress", "Done"],
-            tasks: [
-                { id: "1", text: "Unwrap archway UV using Active Quads", column: "Not started", priority: "High", desc: "Ensure islands are straightened.", checklist: [{ text: "Apply stone brick texture", done: false }] },
-                { id: "2", text: "Draw barrel plank edge highlights", column: "In progress", priority: "Medium", desc: "Use vector layers and bezier curves.", checklist: [{ text: "Base color", done: true }, { text: "Shadow lines", done: true }, { text: "Highlights", done: false }] },
-                { id: "3", text: "Bake mantaflow cache for candle fire", column: "Not started", priority: "Low", desc: "Fix physics viewport visibility.", checklist: [] }
-            ]
+            columns: [],
+            tasks: []
         };
 
         // --- Multi-board storage, migrating any pre-existing single-board save ---
@@ -334,7 +330,7 @@
         function addBoard() {
             const id = "board-" + Date.now();
             boards[id] = {
-                columns: ["Not started", "In progress", "Done"],
+                columns: [],
                 tasks: [],
                 boardTitle: "New Board",
                 theme: "purple",
