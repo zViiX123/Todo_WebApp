@@ -210,6 +210,10 @@
             data.columns.forEach((colName, index) => {
                 const colTasks = data.tasks.filter(t => t.column === colName);
                 
+                // Determine dynamic text color based on background contrast
+                let colBg = data.columnColors[colName] || '#31224A';
+                let dynText = getContrastYIQ(colBg);
+                
                 const colEl = document.createElement("div");
                 colEl.className = "column";
                 colEl.draggable = true;
@@ -217,13 +221,12 @@
                 colEl.ondragover = (e) => allowDrop(e);
                 colEl.ondrop = (e) => colDrop(e, colName);
                 
-                // Set custom background color if the user picked one
-                colEl.style.backgroundColor = data.columnColors[colName] || 'var(--bg-col)';
+                colEl.style.backgroundColor = colBg;
                 
-                // Column Header (Now editable!)
+                // Column Header (Title text is now dynamically colored)
                 colEl.innerHTML = `
                     <div class="col-header" style="background: rgba(0,0,0,0.2); display: flex; align-items: center;">
-                        <span id="col-title-${index}" contenteditable="true" onblur="updateColName('${colName}', this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" style="flex-grow: 1; outline: none; cursor: text;">${colName}</span>
+                        <span id="col-title-${index}" contenteditable="true" onblur="updateColName('${colName}', this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" style="flex-grow: 1; outline: none; cursor: text; color: ${dynText};">${colName}</span>
                         <div class="col-btn-group">
                             <div class="tiny-color-picker" title="Change Color">
                                 <input type="color" value="${data.columnColors[colName] || '#31224A'}" onchange="updateColColor('${colName}', this.value)">
@@ -299,37 +302,35 @@
                             </select>
                         </div>
                         <div class="card-header">
-                            <div id="card-title-${task.id}" class="card-title" contenteditable="true" onblur="updateCardName('${task.id}', this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="outline: none; cursor: text; min-height: 18px; flex-grow: 1;">${task.text}</div>
+                            <div id="card-title-${task.id}" class="card-title" contenteditable="true" onblur="updateCardName('${task.id}', this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="outline: none; cursor: text; min-height: 18px; flex-grow: 1; color: ${dynText};">${task.text}</div>
                             <button class="card-del-btn" title="Delete Card" onclick="event.stopPropagation(); quickDeleteTask('${task.id}')">✕</button>
                         </div>
                     `;
                     
-                    // Generate checkboxes (Now rendered even if empty)
-                    let chkHtml = '';
-                    if (task.checklist) {
-                        chkHtml = task.checklist.map((c, i) => `
+                    // Generate the individual checkboxes (Text uses dynText, Done items use opacity to fade out)
+                        let chkHtml = task.checklist.map((c, i) => `
                             <div style="font-size: 12px; margin-top: 4px; display: flex; align-items: center; gap: 6px;">
                                 <input type="checkbox" ${c.done ? 'checked' : ''} onclick="event.stopPropagation(); toggleCardCheck('${task.id}', ${i}, this.checked)">
-                                <span id="chk-title-${task.id}-${i}" contenteditable="true" onblur="updateChkName('${task.id}', ${i}, this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="flex-grow: 1; outline: none; cursor: text; ${c.done ? 'text-decoration: line-through; color: var(--text-muted);' : ''}">${c.text}</span>
+                                <span id="chk-title-${task.id}-${i}" contenteditable="true" onblur="updateChkName('${task.id}', ${i}, this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="flex-grow: 1; outline: none; cursor: text; color: ${dynText}; ${c.done ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${c.text}</span>
                                 <button class="chk-icon-btn del" title="Delete Item" onclick="event.stopPropagation(); quickDelCheck('${task.id}', ${i})">✕</button>
                             </div>
                         `).join('');
-                    }
 
-                    html += `
-                        <details ${task.checklistOpen ? 'open' : ''} onclick="event.stopPropagation()" ontoggle="toggleDetails('${task.id}', this.open)">
-                            <summary class="glow-hover" style="font-size: 12px; color: var(--text-muted); cursor: pointer; outline: none; margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
-                                <span>Checklist (${done}/${total})</span>
-                                <button class="chk-icon-btn add" title="Add Item" onclick="event.stopPropagation(); event.preventDefault(); quickAddCheck('${task.id}')">+</button>
-                            </summary>
-                            <div style="margin-top: 6px; padding-left: 4px; margin-bottom: 8px;">
-                                ${chkHtml}
+                        // Wrap them in an HTML <details> dropdown (Summary text uses dynText)
+                        html += `
+                            <details ${task.checklistOpen ? 'open' : ''} onclick="event.stopPropagation()" ontoggle="toggleDetails('${task.id}', this.open)">
+                                <summary class="glow-hover" style="font-size: 12px; color: ${dynText}; opacity: 0.85; cursor: pointer; outline: none; margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Checklist (${done}/${total})</span>
+                                    <button class="chk-icon-btn add" title="Add Item" onclick="event.stopPropagation(); event.preventDefault(); quickAddCheck('${task.id}')">+</button>
+                                </summary>
+                                <div style="margin-top: 6px; padding-left: 4px; margin-bottom: 8px;">
+                                    ${chkHtml}
+                                </div>
+                            </details>
+                            <div class="progress-bg">
+                                <div class="progress-fill ${pct === 100 && total > 0 ? 'done' : ''}" style="width: ${pct}%"></div>
                             </div>
-                        </details>
-                        <div class="progress-bg">
-                            <div class="progress-fill ${pct === 100 && total > 0 ? 'done' : ''}" style="width: ${pct}%"></div>
-                        </div>
-                    `;
+                        `;
                     card.innerHTML = html;
                     listEl.appendChild(card);
                 });
@@ -571,6 +572,18 @@
                 task.checklist.splice(chkIndex, 1);
                 saveData();
             }
+        }
+
+        // Calculates whether the text should be dark or light based on background hex
+        function getContrastYIQ(hexcolor){
+            if (!hexcolor || hexcolor.startsWith('var')) return 'var(--text-light)';
+            hexcolor = hexcolor.replace("#", "");
+            if(hexcolor.length === 3) hexcolor = hexcolor.split('').map(c => c+c).join('');
+            const r = parseInt(hexcolor.substr(0,2),16);
+            const g = parseInt(hexcolor.substr(2,2),16);
+            const b = parseInt(hexcolor.substr(4,2),16);
+            const yiq = ((r*299)+(g*587)+(b*114))/1000;
+            return (yiq >= 135) ? '#111111' : '#FFFFFF'; // Returns dark gray for light backgrounds, white for dark
         }
 
         // Initialize
