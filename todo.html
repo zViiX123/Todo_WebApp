@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo Board Studio</title>
+    <style>
+        :root {
+            --bg-main: #1D1E20; --bg-col: #28292C; --bg-col-head: #323336;
+            --bg-card: #3E3F43; --bg-card-hover: #4D4F54;
+            --text-light: #F0F0F0; --text-muted: #9BA0A5;
+            --btn-bg: #4A4D55; --btn-hover: #5C606A;
+            --danger: #C1667F; --entry-bg: #2E3035; --entry-fg: #F0F0F0;
+            --pri-high: #E06C75; --pri-med: #E5A66F; --pri-low: #6FA8E5; --pri-none: transparent;
+        }
+
+        body {
+            margin: 0; padding: 0; background: var(--bg-main); color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+        }
+
+        header {
+            background: var(--bg-col-head); padding: 16px 24px;
+            font-size: 20px; font-weight: bold; display: flex; justify-content: space-between;
+        }
+
+        #board {
+            display: flex; gap: 16px; padding: 20px; overflow-x: auto; flex-grow: 1; align-items: flex-start;
+        }
+
+        .column {
+            background: var(--bg-col); border-radius: 8px; width: 280px; min-width: 280px;
+            display: flex; flex-direction: column; max-height: 100%;
+        }
+
+        .col-header {
+            background: var(--bg-col-head); padding: 12px 16px; border-radius: 8px 8px 0 0;
+            display: flex; justify-content: space-between; align-items: center; font-weight: bold;
+        }
+
+        .col-count { background: var(--btn-bg); padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+        
+        .col-actions { cursor: pointer; color: var(--text-muted); border: none; background: none; font-size: 16px; position: relative;}
+        .col-menu { 
+            display: none; position: absolute; right: 0; top: 20px; background: var(--entry-bg); 
+            border: 1px solid var(--bg-col-head); border-radius: 4px; flex-direction: column; z-index: 10;
+        }
+        .col-actions:hover .col-menu { display: flex; }
+        .col-menu button { background: none; border: none; color: var(--text-light); padding: 8px 12px; text-align: left; cursor: pointer; white-space: nowrap;}
+        .col-menu button:hover { background: var(--bg-card-hover); }
+
+        .card-list {
+            padding: 8px; overflow-y: auto; flex-grow: 1; min-height: 50px;
+        }
+
+        .card {
+            background: var(--bg-card); border-radius: 6px; padding: 12px; margin-bottom: 8px;
+            cursor: pointer; border-left: 4px solid var(--pri-none);
+        }
+        .card:hover { background: var(--bg-card-hover); }
+        .card.dragging { opacity: 0.5; }
+        .card-title { font-size: 14px; font-weight: bold; margin-bottom: 8px; word-wrap: break-word;}
+        
+        .progress-bg { background: var(--entry-bg); height: 6px; border-radius: 3px; margin-top: 8px; overflow: hidden;}
+        .progress-fill { height: 100%; background: var(--pri-med); transition: width 0.3s; }
+        .progress-fill.done { background: #7FCB8E; }
+
+        .add-card-btn {
+            background: transparent; border: none; color: var(--text-muted); padding: 12px;
+            text-align: left; cursor: pointer; border-radius: 0 0 8px 8px;
+        }
+        .add-card-btn:hover { background: rgba(255,255,255,0.05); }
+
+        .add-list-btn {
+            background: var(--entry-bg); color: var(--text-light); border: none; padding: 12px 16px;
+            border-radius: 8px; width: 280px; min-width: 280px; text-align: left; cursor: pointer;
+        }
+
+        /* Modal Styles */
+        dialog {
+            background: var(--bg-main); color: var(--text-light); border: 1px solid var(--bg-col-head);
+            border-radius: 8px; padding: 24px; width: 450px; max-width: 90%;
+        }
+        dialog::backdrop { background: rgba(0, 0, 0, 0.6); }
+        .modal-group { margin-bottom: 16px; display: flex; flex-direction: column; gap: 4px; }
+        .modal-group label { color: var(--text-muted); font-size: 12px; font-weight: bold; }
+        input, select, textarea {
+            background: var(--entry-bg); color: var(--entry-fg); border: none; padding: 8px;
+            border-radius: 4px; font-family: inherit; font-size: 14px;
+        }
+        textarea { resize: vertical; min-height: 60px; }
+        button.primary { background: var(--btn-bg); color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
+        button.danger { background: var(--danger); color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
+        
+        .chk-item { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+        .chk-item input[type="checkbox"] { width: 16px; height: 16px; }
+        .chk-item button { background: transparent; border: none; color: var(--danger); cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <header>✦ Todo Board Studio</header>
+    <div id="board"></div>
+
+    <!-- Edit Task Modal -->
+    <dialog id="taskModal">
+        <input type="hidden" id="editId">
+        
+        <div class="modal-group">
+            <input type="text" id="editTitle" style="font-size: 18px; font-weight: bold; border-bottom: 2px solid var(--entry-bg); background: transparent; padding: 0 0 8px 0;">
+        </div>
+
+        <div style="display: flex; gap: 12px;">
+            <div class="modal-group" style="flex: 1;">
+                <label>List</label>
+                <select id="editCol"></select>
+            </div>
+            <div class="modal-group" style="flex: 1;">
+                <label>Priority</label>
+                <select id="editPri">
+                    <option value="None">None</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="modal-group">
+            <label>Description</label>
+            <textarea id="editDesc"></textarea>
+        </div>
+
+        <div class="modal-group">
+            <label>Checklist</label>
+            <div id="chkContainer"></div>
+            <div style="display: flex; gap: 8px; margin-top: 8px;">
+                <input type="text" id="newChkInput" placeholder="Add an item..." style="flex: 1;" onkeypress="if(event.key === 'Enter') addChecklistItem()">
+                <button class="primary" type="button" onclick="addChecklistItem()">Add</button>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; margin-top: 24px;">
+            <button class="danger" onclick="deleteTask()">Delete Card</button>
+            <div style="display: flex; gap: 8px;">
+                <button class="primary" style="background: transparent; color: var(--text-light);" onclick="document.getElementById('taskModal').close()">Cancel</button>
+                <button class="primary" onclick="saveTask()">Save & Close</button>
+            </div>
+        </div>
+    </dialog>
+
+    <script>
+        // --- State Management ---
+        const DEFAULT_DATA = {
+            columns: ["To Do", "Doing", "Done"],
+            tasks: [
+                { id: "1", text: "Unwrap archway UV using Active Quads", column: "To Do", priority: "High", desc: "Ensure islands are straightened.", checklist: [{text: "Apply stone brick texture", done: false}] },
+                { id: "2", text: "Draw barrel plank edge highlights", column: "Doing", priority: "Medium", desc: "Use vector layers and bezier curves.", checklist: [{text: "Base color", done: true}, {text: "Shadow lines", done: true}, {text: "Highlights", done: false}] },
+                { id: "3", text: "Bake mantaflow cache for candle fire", column: "To Do", priority: "Low", desc: "Fix physics viewport visibility.", checklist: [] }
+            ]
+        };
+
+        let data = JSON.parse(localStorage.getItem("todoDataStudio")) || DEFAULT_DATA;
+        let activeChecklist = [];
+
+        function saveData() {
+            localStorage.setItem("todoDataStudio", JSON.stringify(data));
+            renderBoard();
+        }
+
+        // --- Rendering ---
+        function renderBoard() {
+            const board = document.getElementById("board");
+            board.innerHTML = "";
+
+            data.columns.forEach((colName, index) => {
+                const colTasks = data.tasks.filter(t => t.column === colName);
+                
+                const colEl = document.createElement("div");
+                colEl.className = "column";
+                
+                // Column Header
+                colEl.innerHTML = `
+                    <div class="col-header">
+                        <span>${colName} <span class="col-count">${colTasks.length}</span></span>
+                        <div class="col-actions">⋮
+                            <div class="col-menu">
+                                ${index > 0 ? `<button onclick="moveCol('${colName}', -1)">Move Left</button>` : ''}
+                                ${index < data.columns.length - 1 ? `<button onclick="moveCol('${colName}', 1)">Move Right</button>` : ''}
+                                <button onclick="deleteCol('${colName}')" style="color: var(--danger);">Delete List</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-list" ondragover="allowDrop(event)" ondrop="drop(event, '${colName}')"></div>
+                    <button class="add-card-btn" onclick="quickAddTask('${colName}')">+ Add a card</button>
+                `;
+
+                // Render Tasks
+                const listEl = colEl.querySelector(".card-list");
+                colTasks.forEach(task => {
+                    const card = document.createElement("div");
+                    card.className = "card";
+                    card.draggable = true;
+                    card.ondragstart = (e) => drag(e, task.id);
+                    card.onclick = () => openTask(task.id);
+                    
+                    // Priority Color mapping
+                    if(task.priority === "High") card.style.borderLeftColor = "var(--pri-high)";
+                    if(task.priority === "Medium") card.style.borderLeftColor = "var(--pri-med)";
+                    if(task.priority === "Low") card.style.borderLeftColor = "var(--pri-low)";
+
+                    let html = `<div class="card-title">${task.text}</div>`;
+                    
+                    if (task.checklist && task.checklist.length > 0) {
+                        const done = task.checklist.filter(c => c.done).length;
+                        const pct = (done / task.checklist.length) * 100;
+                        html += `
+                            <div class="progress-bg">
+                                <div class="progress-fill ${pct === 100 ? 'done' : ''}" style="width: ${pct}%"></div>
+                            </div>
+                        `;
+                    }
+                    card.innerHTML = html;
+                    listEl.appendChild(card);
+                });
+
+                board.appendChild(colEl);
+            });
+
+            // Add List Button
+            const addBtn = document.createElement("button");
+            addBtn.className = "add-list-btn";
+            addBtn.textContent = "+ Add another list";
+            addBtn.onclick = () => {
+                const name = prompt("List name:");
+                if (name && !data.columns.includes(name)) {
+                    data.columns.push(name.trim());
+                    saveData();
+                }
+            };
+            board.appendChild(addBtn);
+        }
+
+        // --- Drag and Drop ---
+        function drag(ev, id) {
+            ev.dataTransfer.setData("text", id);
+            ev.target.classList.add('dragging');
+        }
+        function allowDrop(ev) { ev.preventDefault(); }
+        function drop(ev, toCol) {
+            ev.preventDefault();
+            const id = ev.dataTransfer.getData("text");
+            const task = data.tasks.find(t => t.id === id);
+            if (task && task.column !== toCol) {
+                task.column = toCol;
+                saveData();
+            }
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('dragging'));
+        }
+
+        // --- Column Actions ---
+        function moveCol(name, dir) {
+            const idx = data.columns.indexOf(name);
+            const newIdx = idx + dir;
+            if (newIdx >= 0 && newIdx < data.columns.length) {
+                [data.columns[idx], data.columns[newIdx]] = [data.columns[newIdx], data.columns[idx]];
+                saveData();
+            }
+        }
+        function deleteCol(name) {
+            if (data.columns.length <= 1) return alert("You need at least one list.");
+            if (confirm(`Delete '${name}' and all its cards?`)) {
+                data.tasks = data.tasks.filter(t => t.column !== name);
+                data.columns = data.columns.filter(c => c !== name);
+                saveData();
+            }
+        }
+
+        // --- Task Actions ---
+        function quickAddTask(col) {
+            const text = prompt("Card title:");
+            if (text && text.trim()) {
+                data.tasks.push({ id: Date.now().toString(), text: text.trim(), column: col, priority: "None", desc: "", checklist: [] });
+                saveData();
+            }
+        }
+
+        // --- Modal Logic ---
+        const modal = document.getElementById("taskModal");
+
+        function openTask(id) {
+            const task = data.tasks.find(t => t.id === id);
+            document.getElementById("editId").value = task.id;
+            document.getElementById("editTitle").value = task.text;
+            document.getElementById("editDesc").value = task.desc || "";
+            document.getElementById("editPri").value = task.priority || "None";
+            
+            const colSelect = document.getElementById("editCol");
+            colSelect.innerHTML = data.columns.map(c => `<option value="${c}">${c}</option>`).join('');
+            colSelect.value = task.column;
+
+            activeChecklist = JSON.parse(JSON.stringify(task.checklist || []));
+            renderChecklist();
+            modal.showModal();
+        }
+
+        function renderChecklist() {
+            const cont = document.getElementById("chkContainer");
+            cont.innerHTML = activeChecklist.map((item, i) => `
+                <div class="chk-item">
+                    <input type="checkbox" ${item.done ? "checked" : ""} onchange="activeChecklist[${i}].done = this.checked">
+                    <span style="flex:1; ${item.done ? 'text-decoration: line-through; color: var(--text-muted);' : ''}">${item.text}</span>
+                    <button type="button" onclick="activeChecklist.splice(${i}, 1); renderChecklist()">✕</button>
+                </div>
+            `).join("");
+        }
+
+        function addChecklistItem() {
+            const input = document.getElementById("newChkInput");
+            if (input.value.trim()) {
+                activeChecklist.push({ text: input.value.trim(), done: false });
+                input.value = "";
+                renderChecklist();
+            }
+        }
+
+        function saveTask() {
+            const id = document.getElementById("editId").value;
+            const task = data.tasks.find(t => t.id === id);
+            task.text = document.getElementById("editTitle").value;
+            task.column = document.getElementById("editCol").value;
+            task.priority = document.getElementById("editPri").value;
+            task.desc = document.getElementById("editDesc").value;
+            task.checklist = activeChecklist;
+            modal.close();
+            saveData();
+        }
+
+        function deleteTask() {
+            if (confirm("Permanently delete this card?")) {
+                const id = document.getElementById("editId").value;
+                data.tasks = data.tasks.filter(t => t.id !== id);
+                modal.close();
+                saveData();
+            }
+        }
+
+        // Initialize
+        renderBoard();
+    </script>
+</body>
+</html>
