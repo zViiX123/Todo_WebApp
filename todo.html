@@ -49,9 +49,9 @@
             cursor: pointer; padding: 0; display: inline-flex; align-items: center; justify-content: center;
             transition: text-shadow 0.2s, color 0.2s;
         }
-        .icon-btn.add { color: #51A15F; font-size: 16px; width: 20px; height: 20px; }
+        .icon-btn.add { color: #51A15F; font-size: 18px; width: 20px; height: 20px; }
         .icon-btn.add:hover { color: #6BE87F; text-shadow: 0 0 8px rgba(107, 232, 127, 0.8); }
-        .icon-btn.del { color: #A64D4D; font-size: 24px; width: 26px; height: 26px; } /* Noticeably larger X */
+        .icon-btn.del { color: #A64D4D; font-size: 18px; width: 20px; height: 20px; } 
         .icon-btn.del:hover { color: #E86B6B; text-shadow: 0 0 8px rgba(232, 107, 107, 0.8); }
 
         .tiny-color-picker {
@@ -231,9 +231,9 @@
                     card.ondragstart = (e) => drag(e, task.id);
                     card.onclick = () => openTask(task.id);
                     
-                    // CARD ADOPTS COLUMN COLOR (Lightened via a white transparent overlay)
+                    // CARD ADOPTS COLUMN COLOR (Lightened further via a stronger white transparent overlay)
                     card.style.backgroundColor = data.columnColors[colName] || 'var(--bg-card)';
-                    card.style.backgroundImage = 'linear-gradient(rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.12))';
+                    card.style.backgroundImage = 'linear-gradient(rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.22))';
                     
                     // Priority Color mapping
                     if(task.priority === "High") card.style.borderLeftColor = "var(--pri-high)";
