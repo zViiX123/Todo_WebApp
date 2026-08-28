@@ -6,11 +6,11 @@
     <title>Todo Board Studio</title>
     <style>
         :root {
-            --bg-main: #1D1E20; --bg-col: #28292C; --bg-col-head: #323336;
-            --bg-card: #3E3F43; --bg-card-hover: #4D4F54;
-            --text-light: #F0F0F0; --text-muted: #9BA0A5;
-            --btn-bg: #4A4D55; --btn-hover: #5C606A;
-            --danger: #C1667F; --entry-bg: #2E3035; --entry-fg: #F0F0F0;
+            --bg-main: #241735; --bg-col: #31224A; --bg-col-head: #3D2A5C;
+            --bg-card: #4A3570; --bg-card-hover: #5B4386;
+            --text-light: #F1E9FF; --text-muted: #B9A6DE;
+            --btn-bg: #5B4386; --btn-hover: #7657B8;
+            --danger: #C1667F; --entry-bg: #3D2A5C; --entry-fg: #F1E9FF;
             --pri-high: #E06C75; --pri-med: #E5A66F; --pri-low: #6FA8E5; --pri-none: transparent;
         }
 
@@ -163,6 +163,7 @@
         };
 
         let data = JSON.parse(localStorage.getItem("todoDataStudio")) || DEFAULT_DATA;
+        if (!data.columnColors) data.columnColors = {};
         let activeChecklist = [];
 
         function saveData() {
@@ -180,20 +181,25 @@
                 
                 const colEl = document.createElement("div");
                 colEl.className = "column";
-
                 colEl.draggable = true;
                 colEl.ondragstart = (e) => colDragStart(e, colName);
                 colEl.ondragover = (e) => allowDrop(e);
                 colEl.ondrop = (e) => colDrop(e, colName);
                 
-                // Column Header
+                // Set custom background color if the user picked one
+                colEl.style.backgroundColor = data.columnColors[colName] || 'var(--bg-col)';
+                
+                // Column Header (Uses a semi-transparent black overlay to naturally darken the chosen custom color)
                 colEl.innerHTML = `
-                    <div class="col-header">
+                    <div class="col-header" style="background: rgba(0,0,0,0.2);">
                         <span>${colName} <span class="col-count">${colTasks.length}</span></span>
                         <div class="col-actions">⋮
                             <div class="col-menu">
                                 ${index > 0 ? `<button onclick="moveCol('${colName}', -1)">Move Left</button>` : ''}
                                 ${index < data.columns.length - 1 ? `<button onclick="moveCol('${colName}', 1)">Move Right</button>` : ''}
+                                <label style="padding: 8px 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: var(--text-light); font-size: 13px;">
+                                    Color <input type="color" value="${data.columnColors[colName] || '#31224A'}" style="width: 24px; height: 24px; padding: 0; border: none; cursor: pointer; background: transparent;" onchange="updateColColor('${colName}', this.value)">
+                                </label>
                                 <button onclick="deleteCol('${colName}')" style="color: var(--danger);">Delete List</button>
                             </div>
                         </div>
