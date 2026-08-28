@@ -212,7 +212,7 @@
                 
                 // Determine dynamic text color based on background contrast
                 let colBg = data.columnColors[colName] || '#31224A';
-                let dynText = getContrastYIQ(colBg);
+                let dynText = '#111111'; // Hardcoded to deep dark gray/black
                 
                 const colEl = document.createElement("div");
                 colEl.className = "column";
@@ -572,18 +572,6 @@
                 task.checklist.splice(chkIndex, 1);
                 saveData();
             }
-        }
-
-        // Calculates whether the text should be dark or light based on background hex
-        function getContrastYIQ(hexcolor){
-            if (!hexcolor || hexcolor.startsWith('var')) return 'var(--text-light)';
-            hexcolor = hexcolor.replace("#", "");
-            if(hexcolor.length === 3) hexcolor = hexcolor.split('').map(c => c+c).join('');
-            const r = parseInt(hexcolor.substr(0,2),16);
-            const g = parseInt(hexcolor.substr(2,2),16);
-            const b = parseInt(hexcolor.substr(4,2),16);
-            const yiq = ((r*299)+(g*587)+(b*114))/1000;
-            return (yiq >= 135) ? '#111111' : '#FFFFFF'; // Returns dark gray for light backgrounds, white for dark
         }
 
         // Initialize
