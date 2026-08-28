@@ -402,6 +402,19 @@
                 saveData();
             }
         }
+        
+        function updateColColor(name, color) {
+            data.columnColors[name] = color;
+            saveData();
+        }
+
+        function toggleCardCheck(taskId, chkIndex, isChecked) {
+            const task = data.tasks.find(t => t.id === taskId);
+            if (task) {
+                task.checklist[chkIndex].done = isChecked;
+                saveData(); // This instantly updates the progress bar when you check a box!
+            }
+        }
 
         // Initialize
         renderBoard();
