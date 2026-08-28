@@ -10,239 +10,453 @@
             --bg-card: #4A3570; --bg-card-hover: #5B4386;
             --text-light: #F1E9FF; --text-muted: #B9A6DE;
             --btn-bg: #5B4386; --btn-hover: #7657B8;
-            --danger: #C1667F; --entry-bg: #3D2A5C; --entry-fg: #F1E9FF;
+            --danger: #C1667F; --danger-hover: #D84D72;
+            --entry-bg: #3D2A5C; --entry-fg: #F1E9FF;
             --pri-high: #E06C75; --pri-med: #E5A66F; --pri-low: #6FA8E5; --pri-none: transparent;
+            --accent: #8E5BE8; --accent-glow: rgba(142, 91, 232, 0.4);
+            --border-glass: rgba(255, 255, 255, 0.12);
+            --modal-bg: #2E1F45;
+            --tag-bg: rgba(255, 255, 255, 0.12);
         }
 
-        /* Semi-translucent glass effect for columns and cards */
-        .column {
-            background: color-mix(in srgb, var(--bg-col) 85%, transparent);
-            backdrop-filter: blur(8px);
-        }
-        header {
-            background: color-mix(in srgb, var(--bg-col-head) 85%, transparent) !important;
-            backdrop-filter: blur(8px);
-        }
-
-        /* New Themes! */
+        /* Themes */
         [data-theme="dark"] {
-            --bg-main: #1D1E20; --bg-col: #28292C; --bg-col-head: #323336;
-            --bg-card: #3E3F43; --bg-card-hover: #4D4F54;
-            --text-muted: #9BA0A5; --btn-bg: #4A4D55; --entry-bg: #2E3035;
+            --bg-main: #161719; --bg-col: #222326; --bg-col-head: #2C2D31;
+            --bg-card: #35363B; --bg-card-hover: #43444A;
+            --text-light: #ECEFF1; --text-muted: #9BA0A5;
+            --btn-bg: #3E4149; --btn-hover: #525660;
+            --entry-bg: #282A2E; --entry-fg: #ECEFF1;
+            --modal-bg: #1F2024; --border-glass: rgba(255, 255, 255, 0.08);
         }
         
         [data-theme="blue"] {
-            --bg-main: #0F172A; --bg-col: #1E293B; --bg-col-head: #334155;
-            --bg-card: #475569; --bg-card-hover: #64748B;
-            --text-muted: #94A3B8; --btn-bg: #475569; --entry-bg: #1E293B;
+            --bg-main: #0B1325; --bg-col: #152238; --bg-col-head: #1E2F4D;
+            --bg-card: #273E63; --bg-card-hover: #344F7C;
+            --text-light: #E2E8F0; --text-muted: #94A3B8;
+            --btn-bg: #334E7B; --btn-hover: #4569A5;
+            --entry-bg: #1A2942; --entry-fg: #E2E8F0;
+            --modal-bg: #131E33; --border-glass: rgba(255, 255, 255, 0.1);
         }
 
-        /* 10 New Themes! */
         [data-theme="forest"] {
-            --bg-main: #141C14; --bg-col: #1B291B; --bg-col-head: #283D28;
-            --bg-card: #354F35; --bg-card-hover: #466646;
-            --text-muted: #95B095; --btn-bg: #354F35; --entry-bg: #1B291B;
+            --bg-main: #0F170F; --bg-col: #172417; --bg-col-head: #213321;
+            --bg-card: #2C422C; --bg-card-hover: #3A573A;
+            --text-light: #E8F5E9; --text-muted: #95B095;
+            --btn-bg: #2F4D2F; --btn-hover: #406840;
+            --entry-bg: #1B291B; --entry-fg: #E8F5E9;
+            --modal-bg: #152015; --border-glass: rgba(255, 255, 255, 0.1);
         }
         
         [data-theme="crimson"] {
-            --bg-main: #201111; --bg-col: #2D1818; --bg-col-head: #422323;
-            --bg-card: #572F2F; --bg-card-hover: #703D3D;
-            --text-muted: #B89292; --btn-bg: #572F2F; --entry-bg: #2D1818;
+            --bg-main: #1D0D0D; --bg-col: #2A1313; --bg-col-head: #3A1B1B;
+            --bg-card: #4E2525; --bg-card-hover: #633030;
+            --text-light: #FDE8E8; --text-muted: #B89292;
+            --btn-bg: #522727; --btn-hover: #6E3434;
+            --entry-bg: #2D1818; --entry-fg: #FDE8E8;
+            --modal-bg: #220F0F; --border-glass: rgba(255, 255, 255, 0.1);
         }
 
         [data-theme="mocha"] {
-            --bg-main: #231B15; --bg-col: #33261C; --bg-col-head: #453427;
-            --bg-card: #574333; --bg-card-hover: #6E5642;
-            --text-muted: #B09C8B; --btn-bg: #574333; --entry-bg: #33261C;
+            --bg-main: #1D1510; --bg-col: #2B1F17; --bg-col-head: #3A2A20;
+            --bg-card: #4D392C; --bg-card-hover: #614838;
+            --text-light: #F5EBE1; --text-muted: #B09C8B;
+            --btn-bg: #523D2F; --btn-hover: #6B513F;
+            --entry-bg: #33261C; --entry-fg: #F5EBE1;
+            --modal-bg: #241A13; --border-glass: rgba(255, 255, 255, 0.1);
         }
 
         [data-theme="teal"] {
-            --bg-main: #0F1E1E; --bg-col: #162E2E; --bg-col-head: #204242;
-            --bg-card: #2B5757; --bg-card-hover: #3B7575;
-            --text-muted: #8BB3B3; --btn-bg: #2B5757; --entry-bg: #162E2E;
+            --bg-main: #0B1717; --bg-col: #122424; --bg-col-head: #1B3333;
+            --bg-card: #254747; --bg-card-hover: #325D5D;
+            --text-light: #E0F2F1; --text-muted: #8BB3B3;
+            --btn-bg: #274C4C; --btn-hover: #366767;
+            --entry-bg: #162E2E; --entry-fg: #E0F2F1;
+            --modal-bg: #0F1F1F; --border-glass: rgba(255, 255, 255, 0.1);
         }
 
         [data-theme="sunset"] {
-            --bg-main: #24130F; --bg-col: #361D16; --bg-col-head: #4A281E;
-            --bg-card: #613528; --bg-card-hover: #7D4434;
-            --text-muted: #B88A7D; --btn-bg: #613528; --entry-bg: #361D16;
+            --bg-main: #1E0E0B; --bg-col: #2D1611; --bg-col-head: #3E1F18;
+            --bg-card: #522B22; --bg-card-hover: #69372B;
+            --text-light: #FBE9E7; --text-muted: #B88A7D;
+            --btn-bg: #5A3026; --btn-hover: #753F32;
+            --entry-bg: #361D16; --entry-fg: #FBE9E7;
+            --modal-bg: #26120E; --border-glass: rgba(255, 255, 255, 0.1);
         }
 
         [data-theme="nord"] {
-            --bg-main: #2E3440; --bg-col: #3B4252; --bg-col-head: #434C5E;
-            --bg-card: #4C566A; --bg-card-hover: #5E6A80;
-            --text-muted: #D8DEE9; --btn-bg: #4C566A; --entry-bg: #3B4252;
+            --bg-main: #242933; --bg-col: #2E3440; --bg-col-head: #3B4252;
+            --bg-card: #434C5E; --bg-card-hover: #4C566A;
+            --text-light: #ECEFF4; --text-muted: #D8DEE9;
+            --btn-bg: #4C566A; --btn-hover: #5E6A80;
+            --entry-bg: #3B4252; --entry-fg: #ECEFF4;
+            --modal-bg: #282E3A; --border-glass: rgba(255, 255, 255, 0.1);
         }
 
         [data-theme="dracula"] {
-            --bg-main: #282A36; --bg-col: #44475A; --bg-col-head: #50536B;
-            --bg-card: #6272A4; --bg-card-hover: #7988B5;
-            --text-muted: #F8F8F2; --btn-bg: #6272A4; --entry-bg: #44475A;
+            --bg-main: #1E1F29; --bg-col: #282A36; --bg-col-head: #343746;
+            --bg-card: #44475A; --bg-card-hover: #565A70;
+            --text-light: #F8F8F2; --text-muted: #BFBFD4;
+            --btn-bg: #6272A4; --btn-hover: #7988B5;
+            --entry-bg: #383A4A; --entry-fg: #F8F8F2;
+            --modal-bg: #22232E; --border-glass: rgba(255, 255, 255, 0.12);
         }
 
         [data-theme="retro"] {
-            --bg-main: #000000; --bg-col: #080D1A; --bg-col-head: #101A33;
-            --bg-card: #1A2A4D; --bg-card-hover: #243B6B;
-            --text-muted: #8099CC; --btn-bg: #1A2A4D; --entry-bg: #080D1A;
+            --bg-main: #00040A; --bg-col: #070D1A; --bg-col-head: #0E1A33;
+            --bg-card: #15264B; --bg-card-hover: #1E376B;
+            --text-light: #E0EAFF; --text-muted: #8099CC;
+            --btn-bg: #1A3161; --btn-hover: #26468A;
+            --entry-bg: #0B152B; --entry-fg: #E0EAFF;
+            --modal-bg: #050B16; --border-glass: rgba(255, 255, 255, 0.15);
         }
 
         [data-theme="viewport"] {
-            --bg-main: #1D1D1D; --bg-col: #282828; --bg-col-head: #303030;
-            --bg-card: #3A3A3A; --bg-card-hover: #474747;
-            --text-muted: #9E9E9E; --btn-bg: #3A3A3A; --entry-bg: #282828;
+            --bg-main: #141414; --bg-col: #1F1F1F; --bg-col-head: #282828;
+            --bg-card: #333333; --bg-card-hover: #404040;
+            --text-light: #E5E5E5; --text-muted: #9E9E9E;
+            --btn-bg: #383838; --btn-hover: #4A4A4A;
+            --entry-bg: #242424; --entry-fg: #E5E5E5;
+            --modal-bg: #1A1A1A; --border-glass: rgba(255, 255, 255, 0.08);
         }
 
         [data-theme="engine"] {
-            --bg-main: #222222; --bg-col: #2A2A2A; --bg-col-head: #333333;
-            --bg-card: #404040; --bg-card-hover: #555555;
-            --text-muted: #AAAAAA; --btn-bg: #404040; --entry-bg: #2A2A2A;
+            --bg-main: #181818; --bg-col: #222222; --bg-col-head: #2C2C2C;
+            --bg-card: #383838; --bg-card-hover: #484848;
+            --text-light: #EDEDED; --text-muted: #A8A8A8;
+            --btn-bg: #3E3E3E; --btn-hover: #505050;
+            --entry-bg: #262626; --entry-fg: #EDEDED;
+            --modal-bg: #1C1C1C; --border-glass: rgba(255, 255, 255, 0.08);
         }
+
+        * { box-sizing: border-box; }
 
         body {
             margin: 0; padding: 0; background: var(--bg-main); color: var(--text-light);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+            user-select: none;
         }
 
+        /* Top Header */
         header {
-            background: var(--bg-col-head); padding: 16px 24px;
-            display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+            background: color-mix(in srgb, var(--bg-col-head) 85%, transparent);
+            backdrop-filter: blur(12px);
+            padding: 10px 18px;
+            display: flex; justify-content: space-between; align-items: center; gap: 12px;
+            border-bottom: 1px solid var(--border-glass);
+            z-index: 100;
         }
 
+        .header-left, .header-right {
+            display: flex; align-items: center; gap: 8px; flex-wrap: nowrap;
+        }
+
+        .header-center {
+            display: flex; align-items: center; gap: 10px; justify-content: center; flex-grow: 1;
+        }
+
+        /* Filter & Search Bar */
+        #toolbar {
+            background: color-mix(in srgb, var(--bg-col) 75%, transparent);
+            backdrop-filter: blur(10px);
+            padding: 8px 18px;
+            display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+            border-bottom: 1px solid var(--border-glass);
+            font-size: 13px;
+        }
+
+        .search-box {
+            position: relative; display: flex; align-items: center;
+        }
+
+        .search-box input {
+            padding-left: 28px; padding-right: 24px; width: 180px; transition: width 0.25s ease;
+            height: 30px; font-size: 13px;
+        }
+        .search-box input:focus { width: 260px; outline: 1px solid var(--accent); }
+        .search-box .search-icon {
+            position: absolute; left: 8px; pointer-events: none; opacity: 0.6; font-size: 12px;
+        }
+        .search-box .clear-btn {
+            position: absolute; right: 6px; cursor: pointer; opacity: 0.5; border: none; background: transparent; color: var(--text-light); font-size: 12px; padding: 2px;
+        }
+        .search-box .clear-btn:hover { opacity: 1; }
+
+        .filter-pill-group {
+            display: flex; align-items: center; gap: 4px;
+        }
+
+        .filter-pill {
+            background: var(--entry-bg); color: var(--text-muted); border: 1px solid var(--border-glass);
+            padding: 4px 10px; border-radius: 14px; cursor: pointer; font-size: 12px; font-weight: 500;
+            transition: all 0.15s ease;
+        }
+        .filter-pill:hover { color: var(--text-light); border-color: rgba(255,255,255,0.3); }
+        .filter-pill.active {
+            background: var(--accent); color: #FFF; border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        /* Board Area */
         #board {
-            display: flex; gap: 16px; padding: 20px; flex-grow: 1;
+            display: flex; gap: 16px; padding: 18px; flex-grow: 1;
             align-items: flex-start; align-content: flex-start;
-            flex-wrap: wrap; /* Forces columns to a new row when they don't fit */
-            overflow-y: auto; /* Enables vertical scrolling for the whole board */
-            overflow-x: hidden; /* Kills horizontal scrolling entirely */
+            flex-wrap: wrap;
+            overflow-y: auto; overflow-x: hidden;
+            transition: all 0.2s;
         }
 
+        /* Column */
         .column {
-            background: var(--bg-col); border-radius: 8px; width: 280px; min-width: 280px;
-            display: flex; flex-direction: column; 
-            height: 65vh; /* Locks all columns to exactly 65% of screen height */
+            background: color-mix(in srgb, var(--bg-col) 85%, transparent);
+            backdrop-filter: blur(10px);
+            border-radius: 10px; width: 300px; min-width: 300px;
+            display: flex; flex-direction: column;
+            height: calc(100vh - 128px); max-height: calc(100vh - 128px);
+            border: 1px solid var(--border-glass);
+            transition: width 0.2s ease, min-width 0.2s ease, opacity 0.2s;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.18);
         }
         .column.col-dragging { opacity: 0.4; border: 2px dashed var(--text-muted); }
-
-        .col-header {
-            background: var(--bg-col-head); padding: 12px 16px; border-radius: 8px 8px 0 0;
-            display: flex; justify-content: space-between; align-items: center; font-weight: bold;
+        .column.collapsed {
+            width: 48px; min-width: 48px; cursor: pointer;
+        }
+        .column.collapsed .col-header {
+            writing-mode: vertical-rl; transform: rotate(180deg);
+            padding: 16px 8px; height: 100%; border-radius: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .column.collapsed .col-btn-group,
+        .column.collapsed .card-list,
+        .column.collapsed .col-quick-add {
+            display: none !important;
         }
 
-        .col-count { background: var(--btn-bg); padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+        .col-header {
+            background: rgba(0, 0, 0, 0.22); padding: 10px 14px; border-radius: 10px 10px 0 0;
+            display: flex; justify-content: space-between; align-items: center; font-weight: 600;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .col-count {
+            background: rgba(255,255,255,0.12); padding: 2px 7px; border-radius: 12px;
+            font-size: 11px; font-weight: 700; margin-left: 6px;
+        }
         
-        .col-btn-group { display: flex; gap: 12px; align-items: center; margin-right: 12px; }
+        .col-btn-group { display: flex; gap: 8px; align-items: center; }
         
         .icon-btn {
             background: transparent; border: none; font-weight: bold;
-            cursor: pointer; padding: 0; display: inline-flex; align-items: center; justify-content: center;
-            transition: text-shadow 0.2s, color 0.2s;
+            cursor: pointer; padding: 4px; display: inline-flex; align-items: center; justify-content: center;
+            border-radius: 4px; transition: background 0.15s, color 0.15s;
+            color: var(--text-muted); font-size: 13px;
         }
-        .icon-btn.add { color: #51A15F; font-size: 18px; width: 20px; height: 20px; }
-        .icon-btn.add:hover { color: #6BE87F; text-shadow: 0 0 8px rgba(107, 232, 127, 0.8); }
-        .icon-btn.del { color: #A64D4D; font-size: 14px; width: 20px; height: 20px; } 
-        .icon-btn.del:hover { color: #E86B6B; text-shadow: 0 0 8px rgba(232, 107, 107, 0.8); }
+        .icon-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-light); }
+        .icon-btn.add { color: #51A15F; font-size: 16px; }
+        .icon-btn.add:hover { color: #73E285; text-shadow: 0 0 8px rgba(115,226,133,0.6); }
+        .icon-btn.del:hover { color: #E86B6B; }
 
         .tiny-color-picker {
-            width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.2);
+            width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.25);
             overflow: hidden; cursor: pointer; display: inline-block; position: relative;
         }
-        .tiny-color-picker:hover { border-color: rgba(255,255,255,0.6); }
         .tiny-color-picker input[type="color"] {
             position: absolute; top: -5px; left: -5px; width: 24px; height: 24px; cursor: pointer; border: none;
         }
         
-        .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
-        .card-title { font-size: 14px; font-weight: bold; word-wrap: break-word; margin: 0; }
-        
-        .card-del-btn {
-            background: transparent; border: none; color: #A64D4D; font-size: 14px; font-weight: bold;
-            cursor: pointer; padding: 0; opacity: 0; transition: opacity 0.2s;
-        }
-        .card:hover .card-del-btn { opacity: 1; } 
-        
         .card-list {
-            padding: 8px; overflow-y: auto; flex-grow: 1; min-height: 50px;
+            padding: 10px; overflow-y: auto; flex-grow: 1; min-height: 50px;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .card-list.drag-over {
+            background: rgba(255,255,255,0.05); border-radius: 6px;
         }
 
+        /* Task Cards */
         .card {
-            background: var(--bg-card); border-radius: 6px; padding: 12px; margin-bottom: 8px;
-            cursor: pointer; 
-            border: 1px solid #000000;
+            background: var(--bg-card); border-radius: 8px; padding: 12px;
+            cursor: grab; border: 1px solid rgba(0,0,0,0.3);
             border-left: 4px solid var(--pri-none);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+            position: relative;
         }
-        .card:hover { filter: brightness(1.2); }
-        .card.dragging { opacity: 0.5; }
+        .card:hover {
+            filter: brightness(1.15); transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+        }
+        .card:active { cursor: grabbing; }
+        .card.dragging { opacity: 0.35; transform: scale(0.98); }
         
-        .progress-bg { background: var(--entry-bg); height: 6px; border-radius: 3px; margin-top: 8px; overflow: hidden;}
-        .progress-fill { height: 100%; background: var(--pri-med); transition: width 0.3s; }
+        .card-top-row {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;
+        }
+        .card-title {
+            font-size: 14px; font-weight: 600; word-break: break-word; margin: 0; line-height: 1.35;
+        }
+        .card-desc-preview {
+            font-size: 12px; color: var(--text-muted); margin-top: 5px; line-height: 1.3;
+            max-height: 36px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box;
+            -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+        }
+        
+        .card-tags {
+            display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px;
+        }
+        .tag-chip {
+            background: var(--tag-bg); padding: 2px 6px; border-radius: 4px;
+            font-size: 10px; font-weight: 600; letter-spacing: 0.2px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .card-meta-row {
+            display: flex; align-items: center; justify-content: space-between; gap: 6px;
+            margin-top: 8px; font-size: 11px; color: var(--text-muted);
+        }
+        
+        .due-badge {
+            display: inline-flex; align-items: center; gap: 3px; padding: 2px 6px;
+            border-radius: 4px; font-weight: 600; font-size: 10px;
+        }
+        .due-badge.overdue { background: rgba(224, 108, 117, 0.25); color: #E06C75; border: 1px solid #E06C75; }
+        .due-badge.today { background: rgba(229, 166, 111, 0.25); color: #E5A66F; border: 1px solid #E5A66F; }
+        .due-badge.future { background: rgba(255,255,255,0.1); color: var(--text-muted); }
+
+        .progress-bg { background: rgba(0,0,0,0.3); height: 5px; border-radius: 3px; margin-top: 8px; overflow: hidden;}
+        .progress-fill { height: 100%; background: var(--pri-med); transition: width 0.3s ease; }
         .progress-fill.done { background: #7FCB8E; }
 
         .add-list-btn {
             background: rgba(0, 0, 0, 0.15); color: var(--text-muted); border: 2px dashed rgba(255, 255, 255, 0.15); 
-            border-radius: 8px; width: 280px; min-width: 280px; height: 65vh; 
-            display: flex; align-items: center; justify-content: center; font-size: 64px; font-weight: 300;
-            cursor: pointer; transition: background 0.2s, border-color 0.2s, color 0.2s;
+            border-radius: 10px; width: 300px; min-width: 300px; height: calc(100vh - 128px);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 40px; font-weight: 300;
+            cursor: pointer; transition: all 0.2s ease; gap: 8px;
         }
+        .add-list-btn span { font-size: 14px; font-weight: 500; }
         .add-list-btn:hover { 
-            background: rgba(0, 0, 0, 0.3); border-color: rgba(255, 255, 255, 0.3); color: var(--text-light); 
+            background: rgba(0, 0, 0, 0.3); border-color: var(--accent); color: var(--text-light); 
         }
 
-        /* Glowing checklist dropdown text on hover */
-        .glow-hover { transition: text-shadow 0.2s, color 0.2s; }
-        .glow-hover:hover { text-shadow: 0 0 8px rgba(255, 255, 255, 0.6); color: #FFF; }
+        /* Form Inputs */
+        input, select, textarea {
+            background: var(--entry-bg); color: var(--entry-fg); border: 1px solid var(--border-glass);
+            padding: 6px 10px; border-radius: 6px; font-family: inherit; font-size: 13px;
+            outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--accent); box-shadow: 0 0 6px var(--accent-glow);
+        }
         
-        /* Mini buttons for the checklist items */
-        .chk-icon-btn {
-            background: transparent; border: none; font-weight: bold; cursor: pointer;
-            padding: 0 4px; font-size: 14px; transition: text-shadow 0.2s, color 0.2s;
+        button {
+            font-family: inherit; cursor: pointer; transition: all 0.15s ease;
         }
-        .chk-icon-btn.add { color: #51A15F; font-size: 16px; }
-        .chk-icon-btn.add:hover { color: #6BE87F; text-shadow: 0 0 8px rgba(107, 232, 127, 0.8); }
-        .chk-icon-btn.del { color: #A64D4D; }
-        .chk-icon-btn.del:hover { color: #E86B6B; text-shadow: 0 0 8px rgba(232, 107, 107, 0.8); }
-
-        input, select {
-            background: var(--entry-bg); color: var(--entry-fg); border: none; padding: 8px;
-            border-radius: 4px; font-family: inherit; font-size: 14px;
+        button.btn {
+            background: var(--btn-bg); color: #FFF; border: 1px solid var(--border-glass);
+            padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 500;
+            display: inline-flex; align-items: center; gap: 6px;
         }
-        button.primary { background: var(--btn-bg); color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
-        button.danger { background: var(--danger); color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
+        button.btn:hover { background: var(--btn-hover); }
+        button.btn.danger { background: var(--danger); }
+        button.btn.danger:hover { background: var(--danger-hover); }
 
-        /* Undo toast for soft-deleted cards and lists */
+        /* Modal dialog overlay */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(6px);
+            display: none; align-items: center; justify-content: center; z-index: 1000;
+        }
+        .modal-overlay.active { display: flex; animation: fadeIn 0.2s ease; }
+
+        .modal-card {
+            background: var(--modal-bg); border: 1px solid var(--border-glass);
+            border-radius: 12px; width: 560px; max-width: 90vw; max-height: 88vh;
+            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 12px 36px rgba(0,0,0,0.5);
+            animation: slideUp 0.2s ease;
+        }
+
+        .modal-header {
+            padding: 16px 20px; border-bottom: 1px solid var(--border-glass);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .modal-body {
+            padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px;
+        }
+        .modal-footer {
+            padding: 14px 20px; border-top: 1px solid var(--border-glass);
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(0,0,0,0.15);
+        }
+
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+        /* Toast */
         #undoToast {
             position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-            background: var(--bg-col-head); color: var(--text-light); padding: 10px 16px;
-            border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+            background: var(--bg-col-head); color: var(--text-light); padding: 10px 18px;
+            border-radius: 8px; box-shadow: 0 6px 24px rgba(0,0,0,0.45);
+            border: 1px solid var(--border-glass);
             align-items: center; gap: 12px; z-index: 999; display: none;
         }
-        #undoToast.show { display: flex; }
+        #undoToast.show { display: flex; animation: slideUp 0.2s ease; }
+
+        /* Shortcuts Table */
+        .shortcuts-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13px;
+        }
+        .shortcut-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 6px 10px; background: rgba(0,0,0,0.2); border-radius: 6px;
+        }
+        .shortcut-key {
+            background: var(--entry-bg); padding: 2px 8px; border-radius: 4px;
+            font-family: monospace; font-size: 11px; border: 1px solid var(--border-glass); font-weight: bold;
+        }
+
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
         /* Custom themed scrollbars */
-        ::-webkit-scrollbar { height: 12px; width: 12px; }
-        ::-webkit-scrollbar-track { background: var(--bg-main); }
-        ::-webkit-scrollbar-thumb { background: var(--btn-bg); border-radius: 6px; border: 3px solid var(--bg-main); }
-        ::-webkit-scrollbar-thumb:hover { background: var(--btn-hover); }
+        ::-webkit-scrollbar { height: 8px; width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
     </style>
 </head>
 <body>
 
+    <!-- Header -->
     <header>
-        <div style="display: flex; gap: 8px; align-items: center;">
-            <select id="boardSelect" onchange="switchBoard(this.value)" title="Switch board" style="background: var(--entry-bg); color: var(--text-light); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 4px 8px; font-weight: bold; font-size: 14px; outline: none; cursor: pointer; max-width: 160px;"></select>
-            <button onclick="addBoard()" title="New board" style="background: var(--entry-bg); color: var(--text-light); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 4px 8px; font-weight: bold; font-size: 14px; cursor: pointer; outline: none;">＋</button>
-            <button onclick="deleteBoard()" title="Delete this board" style="background: var(--entry-bg); color: var(--danger); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 4px 8px; font-weight: bold; font-size: 14px; cursor: pointer; outline: none;">🗑</button>
+        <div class="header-left">
+            <select id="boardSelect" onchange="switchBoard(this.value)" title="Switch board"></select>
+            <button class="btn" onclick="addBoard()" title="New board (Ctrl+B)">＋</button>
+            <button class="btn danger" onclick="deleteBoard()" title="Delete board">🗑</button>
         </div>
-        <span id="board-title" contenteditable="true" onblur="updateBoardTitle(this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" style="font-size: 20px; font-weight: bold; outline: none; cursor: text; text-align: center;">✦ Todo Board Studio</span>
 
-        <div style="justify-self: end; display: flex; gap: 8px; align-items: center;">
-            <button onclick="exportData()" title="Save backup to PC" style="background: var(--entry-bg); color: var(--text-light); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 4px 8px; font-weight: bold; font-size: 14px; cursor: pointer; outline: none;">💾 Export</button>
-            <label title="Load backup from PC" style="background: var(--entry-bg); color: var(--text-light); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 4px 8px; font-weight: bold; font-size: 14px; cursor: pointer; outline: none;">
-                📂 Import
-                <input type="file" accept=".json" onchange="importData(event)" style="display: none;">
-            </label>
+        <div class="header-center">
+            <span id="board-title" contenteditable="true" onblur="updateBoardTitle(this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" title="Click to rename board" style="font-size: 18px; font-weight: 700; outline: none; cursor: text;">✦ Todo Board Studio</span>
+        </div>
 
-            <select id="themeSelect" onchange="changeTheme(this.value)" style="background: var(--entry-bg); color: var(--text-light); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 4px 8px; font-weight: bold; font-size: 14px; outline: none; cursor: pointer;">
+        <div class="header-right">
+            <!-- Export dropdown -->
+            <select id="exportAction" onchange="handleExportAction(this.value)" title="Export options">
+                <option value="" disabled selected>💾 Export / Backup</option>
+                <option value="json">Export JSON Backup</option>
+                <option value="csv">Export CSV Tasks</option>
+            </select>
+
+            <!-- Import -->
+            <button class="btn" onclick="triggerImport()" title="Import board data">📂 Import</button>
+
+            <!-- Shortcuts Help -->
+            <button class="btn" onclick="openShortcutsModal()" title="Keyboard Shortcuts (?)">⌨️</button>
+
+            <!-- Theme selector -->
+            <select id="themeSelect" onchange="changeTheme(this.value)" title="Switch Color Theme">
                 <option value="purple">Midnight Purple</option>
                 <option value="dark">Classic Dark</option>
                 <option value="blue">Slate Blue</option>
@@ -259,22 +473,195 @@
             </select>
         </div>
     </header>
+
+    <!-- Toolbar: Search, Filters, Sort -->
+    <div id="toolbar">
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="Search tasks... (Ctrl+F)" oninput="handleSearch(this.value)">
+            <button class="clear-btn" id="searchClearBtn" onclick="clearSearch()" style="display: none;">✕</button>
+        </div>
+
+        <div style="height: 18px; width: 1px; background: var(--border-glass); margin: 0 4px;"></div>
+
+        <!-- Priority Filters -->
+        <div class="filter-pill-group">
+            <span style="color: var(--text-muted); font-size: 11px; font-weight: 600; margin-right: 4px;">PRIORITY:</span>
+            <div class="filter-pill active" data-filter-type="priority" data-value="all" onclick="setPriorityFilter('all')">All</div>
+            <div class="filter-pill" data-filter-type="priority" data-value="High" onclick="setPriorityFilter('High')">🔴 High</div>
+            <div class="filter-pill" data-filter-type="priority" data-value="Medium" onclick="setPriorityFilter('Medium')">🟡 Med</div>
+            <div class="filter-pill" data-filter-type="priority" data-value="Low" onclick="setPriorityFilter('Low')">🔵 Low</div>
+        </div>
+
+        <div style="height: 18px; width: 1px; background: var(--border-glass); margin: 0 4px;"></div>
+
+        <!-- Status Filters -->
+        <div class="filter-pill-group">
+            <span style="color: var(--text-muted); font-size: 11px; font-weight: 600; margin-right: 4px;">STATUS:</span>
+            <div class="filter-pill active" data-filter-type="status" data-value="all" onclick="setStatusFilter('all')">All</div>
+            <div class="filter-pill" data-filter-type="status" data-value="in-progress" onclick="setStatusFilter('in-progress')">⚡ In Progress</div>
+            <div class="filter-pill" data-filter-type="status" data-value="done" onclick="setStatusFilter('done')">✓ Done</div>
+            <div class="filter-pill" data-filter-type="status" data-value="overdue" onclick="setStatusFilter('overdue')">⚠️ Overdue</div>
+        </div>
+
+        <div style="height: 18px; width: 1px; background: var(--border-glass); margin: 0 4px;"></div>
+
+        <!-- Sort dropdown -->
+        <div style="display: flex; align-items: center; gap: 6px; margin-left: auto;">
+            <span style="color: var(--text-muted); font-size: 11px; font-weight: 600;">SORT:</span>
+            <select id="sortSelect" onchange="changeSort(this.value)" style="padding: 4px 8px; font-size: 12px;">
+                <option value="manual">Manual Order</option>
+                <option value="dueDate">Due Date (Earliest)</option>
+                <option value="priority">Priority (High → Low)</option>
+                <option value="title">Title (A-Z)</option>
+                <option value="progress">Checklist % Done</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Kanban Board -->
     <div id="board"></div>
 
+    <!-- Undo Toast Notification -->
     <div id="undoToast">
         <span id="undoToastMsg"></span>
-        <button class="primary" onclick="undoDelete()">Undo</button>
+        <button class="btn" onclick="undoDelete()">Undo</button>
+    </div>
+
+    <!-- Task Detail & Edit Modal -->
+    <div class="modal-overlay" id="taskModal" onclick="if(event.target===this) closeTaskModal()">
+        <div class="modal-card">
+            <div class="modal-header">
+                <span style="font-weight: 700; font-size: 16px;">Task Details</span>
+                <button class="icon-btn" onclick="closeTaskModal()" style="font-size: 16px;">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="modalTaskTitle">TITLE</label>
+                    <input type="text" id="modalTaskTitle" placeholder="Task title..." style="font-size: 15px; font-weight: 600;">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="modalTaskColumn">COLUMN</label>
+                        <select id="modalTaskColumn"></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="modalTaskPriority">PRIORITY</label>
+                        <select id="modalTaskPriority">
+                            <option value="High">🔴 High Priority</option>
+                            <option value="Medium">🟡 Medium Priority</option>
+                            <option value="Low">🔵 Low Priority</option>
+                            <option value="None">⚪ None</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="modalTaskDueDate">DUE DATE</label>
+                        <input type="date" id="modalTaskDueDate">
+                    </div>
+                    <div class="form-group">
+                        <label>QUICK DATE</label>
+                        <div style="display: flex; gap: 6px;">
+                            <button type="button" class="btn" style="padding: 5px 8px; font-size: 11px;" onclick="setModalQuickDate(0)">Today</button>
+                            <button type="button" class="btn" style="padding: 5px 8px; font-size: 11px;" onclick="setModalQuickDate(1)">Tomorrow</button>
+                            <button type="button" class="btn" style="padding: 5px 8px; font-size: 11px;" onclick="setModalQuickDate(7)">+1 Week</button>
+                            <button type="button" class="btn danger" style="padding: 5px 8px; font-size: 11px;" onclick="clearModalDueDate()">✕</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tags -->
+                <div class="form-group">
+                    <label>TAGS / CATEGORIES</label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <input type="text" id="modalTagInput" placeholder="Add tag (Press Enter)..." onkeydown="if(event.key==='Enter'){addModalTag(); event.preventDefault();}" style="flex-grow: 1;">
+                        <button type="button" class="btn" onclick="addModalTag()">Add Tag</button>
+                    </div>
+                    <div id="modalTagsContainer" class="card-tags" style="margin-top: 6px;"></div>
+                </div>
+
+                <!-- Description / Notes -->
+                <div class="form-group">
+                    <label for="modalTaskDesc">DESCRIPTION / NOTES</label>
+                    <textarea id="modalTaskDesc" rows="3" placeholder="Add detailed notes or requirements..."></textarea>
+                </div>
+
+                <!-- Subtasks / Checklist -->
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label>SUBTASKS & CHECKLIST</label>
+                        <span id="modalChecklistStats" style="font-size: 11px; color: var(--text-muted);"></span>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
+                        <input type="text" id="modalChecklistInput" placeholder="Add subtask (Press Enter)..." onkeydown="if(event.key==='Enter'){addModalChecklistItem(); event.preventDefault();}" style="flex-grow: 1;">
+                        <button type="button" class="btn" onclick="addModalChecklistItem()">Add Subtask</button>
+                    </div>
+                    <div id="modalChecklistContainer" style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px; max-height: 180px; overflow-y: auto;"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn danger" onclick="deleteTaskFromModal()">Delete Task</button>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn" onclick="closeTaskModal()">Cancel</button>
+                    <button class="btn" style="background: var(--accent);" onclick="saveTaskModal()">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Keyboard Shortcuts Modal -->
+    <div class="modal-overlay" id="shortcutsModal" onclick="if(event.target===this) closeShortcutsModal()">
+        <div class="modal-card" style="width: 480px;">
+            <div class="modal-header">
+                <span style="font-weight: 700; font-size: 16px;">⌨️ Keyboard Shortcuts</span>
+                <button class="icon-btn" onclick="closeShortcutsModal()" style="font-size: 16px;">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="shortcuts-grid">
+                    <div class="shortcut-item"><span>New Task</span><span class="shortcut-key">Ctrl + N</span></div>
+                    <div class="shortcut-item"><span>Search Tasks</span><span class="shortcut-key">Ctrl + F</span></div>
+                    <div class="shortcut-item"><span>New Board</span><span class="shortcut-key">Ctrl + B</span></div>
+                    <div class="shortcut-item"><span>Undo Delete</span><span class="shortcut-key">Ctrl + Z</span></div>
+                    <div class="shortcut-item"><span>Close Modal</span><span class="shortcut-key">Escape</span></div>
+                    <div class="shortcut-item"><span>Shortcuts Help</span><span class="shortcut-key">?</span></div>
+                </div>
+            </div>
+            <div class="modal-footer" style="justify-content: flex-end;">
+                <button class="btn" onclick="closeShortcutsModal()">Got It</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        // --- State management ---
+        // --- State Management ---
         const DEFAULT_DATA = {
-            columns: [],
-            tasks: []
+            columns: ["To Do", "In Progress", "Done"],
+            tasks: [],
+            theme: "purple",
+            boardTitle: "✦ Todo Board Studio",
+            columnColors: {},
+            collapsedCols: []
         };
 
-        // Escapes user-typed text before it's inserted via innerHTML, so a card title,
-        // checklist item, column name, or board name can never be parsed as markup/script.
+        let boards = {};
+        let activeBoardId = null;
+        let data = DEFAULT_DATA;
+
+        let activePriorityFilter = 'all';
+        let activeStatusFilter = 'all';
+        let searchQuery = '';
+        let currentSort = 'manual';
+        let editingTaskId = null;
+        let modalWorkingTags = [];
+        let modalWorkingChecklist = [];
+
+        let pendingDelete = null;
+        let undoTimeoutId = null;
+
+        // Escape HTML for safety
         function escapeHtml(str) {
             if (str == null) return '';
             return String(str)
@@ -285,18 +672,42 @@
                 .replace(/'/g, '&#39;');
         }
 
-        // --- Multi-board storage, migrating any pre-existing single-board save ---
-        let boards = {};
-        let activeBoardId = null;
+        // --- Data Migration & Helper ---
+        function sanitizeTask(t) {
+            return {
+                id: t.id || Date.now().toString() + Math.random().toString(36).substr(2, 5),
+                text: t.text || "Untitled Task",
+                column: t.column || (data.columns[0] || "To Do"),
+                priority: t.priority || "Low",
+                desc: t.desc || "",
+                tags: Array.isArray(t.tags) ? t.tags : [],
+                dueDate: t.dueDate || null,
+                checklist: Array.isArray(t.checklist) ? t.checklist : [],
+                checklistOpen: t.checklistOpen !== false,
+                createdAt: t.createdAt || Date.now(),
+                updatedAt: t.updatedAt || Date.now()
+            };
+        }
 
-        // Async IIFE to load data before rendering
+        // --- Initialization ---
         (async () => {
-            const savedJson = await window.electronAPI.loadData();
-            if (savedJson) {
-            boards = JSON.parse(savedJson);
-                activeBoardId = Object.keys(boards)[0];
+            let savedJson = null;
+            if (window.electronAPI && window.electronAPI.loadData) {
+                savedJson = await window.electronAPI.loadData();
             } else {
-                // First time boot setup
+                savedJson = localStorage.getItem("todoBoardsStudio");
+            }
+
+            if (savedJson) {
+                try {
+                    boards = JSON.parse(savedJson);
+                    activeBoardId = Object.keys(boards)[0];
+                } catch (e) {
+                    console.error("Data parse error:", e);
+                }
+            }
+
+            if (!boards || Object.keys(boards).length === 0) {
                 const id = "board-" + Date.now();
                 boards = { [id]: DEFAULT_DATA };
                 activeBoardId = id;
@@ -306,27 +717,41 @@
             if (!data.theme) data.theme = "purple";
             if (!data.boardTitle) data.boardTitle = "✦ Todo Board Studio";
             if (!data.columnColors) data.columnColors = {};
-    
+            if (!data.collapsedCols) data.collapsedCols = [];
+            if (!data.tasks) data.tasks = [];
+            if (!data.columns) data.columns = ["To Do", "In Progress", "Done"];
+
+            data.tasks = data.tasks.map(sanitizeTask);
+
             document.documentElement.setAttribute('data-theme', data.theme);
-            renderBoard();
-    
             document.getElementById('themeSelect').value = data.theme;
             document.getElementById('board-title').innerText = data.boardTitle;
+
             renderBoardSelector();
-            })();
+            renderBoard();
+            checkUpcomingDueDates();
 
-        let pendingDelete = null;
-        let undoTimeoutId = null;
+            // Tray IPC Listener for Quick Task
+            if (window.electronAPI && window.electronAPI.onQuickTask) {
+                window.electronAPI.onQuickTask(() => {
+                    if (data.columns.length > 0) quickAddTask(0);
+                });
+            }
+        })();
 
+        // --- Persistence ---
         function saveData() {
             boards[activeBoardId] = data;
-            // Save to native hard drive instead of browser cache!
-            window.electronAPI.saveData(JSON.stringify(boards));
+            const jsonStr = JSON.stringify(boards);
+            if (window.electronAPI && window.electronAPI.saveData) {
+                window.electronAPI.saveData(jsonStr);
+            }
+            localStorage.setItem("todoBoardsStudio", jsonStr);
             renderBoardSelector();
             renderBoard();
         }
 
-        // --- Board switching ---
+        // --- Board Operations ---
         function renderBoardSelector() {
             const sel = document.getElementById("boardSelect");
             sel.innerHTML = Object.keys(boards).map(id =>
@@ -341,7 +766,12 @@
             if (!data.theme) data.theme = "purple";
             if (!data.boardTitle) data.boardTitle = "✦ Todo Board Studio";
             if (!data.columnColors) data.columnColors = {};
-            localStorage.setItem("todoActiveBoardId", activeBoardId);
+            if (!data.collapsedCols) data.collapsedCols = [];
+            if (!data.tasks) data.tasks = [];
+            if (!data.columns) data.columns = ["To Do", "In Progress", "Done"];
+
+            data.tasks = data.tasks.map(sanitizeTask);
+
             document.documentElement.setAttribute('data-theme', data.theme);
             document.getElementById('themeSelect').value = data.theme;
             document.getElementById('board-title').innerText = data.boardTitle;
@@ -352,14 +782,19 @@
         function addBoard() {
             const id = "board-" + Date.now();
             boards[id] = {
-                columns: [],
+                columns: ["To Do", "In Progress", "Done"],
                 tasks: [],
-                boardTitle: "New Board",
-                theme: "purple",
-                columnColors: {}
+                boardTitle: "New Project Board",
+                theme: data.theme || "purple",
+                columnColors: {},
+                collapsedCols: []
             };
-            localStorage.setItem("todoBoardsStudio", JSON.stringify(boards));
             switchBoard(id);
+            saveData();
+            setTimeout(() => {
+                const el = document.getElementById('board-title');
+                if (el) { el.focus(); document.execCommand('selectAll', false, null); }
+            }, 50);
         }
 
         function deleteBoard() {
@@ -367,43 +802,102 @@
             if (ids.length <= 1) return alert("You need at least one board.");
             if (!confirm(`Delete the board "${data.boardTitle}"? This cannot be undone.`)) return;
             delete boards[activeBoardId];
-            localStorage.setItem("todoBoardsStudio", JSON.stringify(boards));
             switchBoard(Object.keys(boards)[0]);
+            saveData();
         }
 
-        // --- Undo toast ---
-        function showUndoToast(message, restoreFn) {
-            pendingDelete = restoreFn;
-            clearTimeout(undoTimeoutId);
-            const toast = document.getElementById("undoToast");
-            document.getElementById("undoToastMsg").innerText = message;
-            toast.classList.add("show");
-            undoTimeoutId = setTimeout(() => {
-                toast.classList.remove("show");
-                pendingDelete = null;
-            }, 5000);
+        function updateBoardTitle(newTitle) {
+            data.boardTitle = newTitle.trim() || "✦ Todo Board Studio";
+            document.getElementById('board-title').innerText = data.boardTitle;
+            saveData();
         }
 
-        function undoDelete() {
-            if (!pendingDelete) return;
-            clearTimeout(undoTimeoutId);
-            document.getElementById("undoToast").classList.remove("show");
-            const restore = pendingDelete;
-            pendingDelete = null;
-            restore();
+        function changeTheme(theme) {
+            data.theme = theme;
+            document.documentElement.setAttribute('data-theme', theme);
+            saveData();
         }
 
-        // --- Helper: determine if a color is light or dark ---
+        // --- Search & Filters ---
+        function handleSearch(val) {
+            searchQuery = val.trim().toLowerCase();
+            document.getElementById('searchClearBtn').style.display = searchQuery ? 'block' : 'none';
+            renderBoard();
+        }
+
+        function clearSearch() {
+            searchQuery = '';
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchClearBtn').style.display = 'none';
+            renderBoard();
+        }
+
+        function setPriorityFilter(pri) {
+            activePriorityFilter = pri;
+            document.querySelectorAll('[data-filter-type="priority"]').forEach(el => {
+                el.classList.toggle('active', el.getAttribute('data-value') === pri);
+            });
+            renderBoard();
+        }
+
+        function setStatusFilter(status) {
+            activeStatusFilter = status;
+            document.querySelectorAll('[data-filter-type="status"]').forEach(el => {
+                el.classList.toggle('active', el.getAttribute('data-value') === status);
+            });
+            renderBoard();
+        }
+
+        function changeSort(mode) {
+            currentSort = mode;
+            renderBoard();
+        }
+
+        // --- Helper: Date & Due calculations ---
+        function getDueDateStatus(dueDateStr) {
+            if (!dueDateStr) return null;
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            const due = new Date(dueDateStr);
+            due.setHours(0, 0, 0, 0);
+
+            const diffTime = due.getTime() - now.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays < 0) {
+                return { type: 'overdue', label: `${Math.abs(diffDays)}d Overdue` };
+            } else if (diffDays === 0) {
+                return { type: 'today', label: 'Due Today' };
+            } else if (diffDays === 1) {
+                return { type: 'future', label: 'Due Tomorrow' };
+            } else {
+                return { type: 'future', label: `Due in ${diffDays}d` };
+            }
+        }
+
+        function checkUpcomingDueDates() {
+            if (!window.electronAPI || !window.electronAPI.showNotification) return;
+            const todayOrOverdue = data.tasks.filter(t => {
+                const status = getDueDateStatus(t.dueDate);
+                return status && (status.type === 'today' || status.type === 'overdue');
+            });
+
+            if (todayOrOverdue.length > 0) {
+                window.electronAPI.showNotification({
+                    title: `Todo Board: ${todayOrOverdue.length} Tasks Need Attention`,
+                    body: `You have ${todayOrOverdue.length} tasks due today or overdue.`
+                });
+            }
+        }
+
         function isLightColor(hex) {
-            // Remove # if present
+            if (!hex) return false;
             hex = hex.replace('#', '');
-            // Parse RGB
-            const r = parseInt(hex.substr(0, 2), 16);
-            const g = parseInt(hex.substr(2, 2), 16);
-            const b = parseInt(hex.substr(4, 2), 16);
-            // Calculate luminance using standard formula
-            const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-            return luminance > 0.5;
+            if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+            const r = parseInt(hex.substr(0, 2), 16) || 0;
+            const g = parseInt(hex.substr(2, 2), 16) || 0;
+            const b = parseInt(hex.substr(4, 2), 16) || 0;
+            return ((0.299 * r + 0.587 * g + 0.114 * b) / 255) > 0.5;
         }
 
         // --- Rendering ---
@@ -411,150 +905,193 @@
             const board = document.getElementById("board");
             board.innerHTML = "";
 
-            data.columns.forEach((colName, index) => {
-                const colTasks = data.tasks.filter(t => t.column === colName);
+            data.columns.forEach((colName, colIdx) => {
+                let colTasks = data.tasks.filter(t => t.column === colName);
 
-                // Get column background color, fallback to theme default
+                // Apply Search Filter
+                if (searchQuery) {
+                    colTasks = colTasks.filter(t => {
+                        const inTitle = t.text.toLowerCase().includes(searchQuery);
+                        const inDesc = (t.desc || '').toLowerCase().includes(searchQuery);
+                        const inTags = (t.tags || []).some(tag => tag.toLowerCase().includes(searchQuery));
+                        const inChecklist = (t.checklist || []).some(c => c.text.toLowerCase().includes(searchQuery));
+                        return inTitle || inDesc || inTags || inChecklist;
+                    });
+                }
+
+                // Apply Priority Filter
+                if (activePriorityFilter !== 'all') {
+                    colTasks = colTasks.filter(t => t.priority === activePriorityFilter);
+                }
+
+                // Apply Status Filter
+                if (activeStatusFilter !== 'all') {
+                    colTasks = colTasks.filter(t => {
+                        const total = t.checklist ? t.checklist.length : 0;
+                        const done = total ? t.checklist.filter(c => c.done).length : 0;
+                        const pct = total ? (done / total) * 100 : 0;
+                        const dueStatus = getDueDateStatus(t.dueDate);
+
+                        if (activeStatusFilter === 'overdue') return dueStatus && dueStatus.type === 'overdue';
+                        if (activeStatusFilter === 'done') return pct === 100 && total > 0;
+                        if (activeStatusFilter === 'in-progress') return pct > 0 && pct < 100;
+                        return true;
+                    });
+                }
+
+                // Apply Sorting
+                if (currentSort === 'dueDate') {
+                    colTasks.sort((a, b) => (a.dueDate || '9999') > (b.dueDate || '9999') ? 1 : -1);
+                } else if (currentSort === 'priority') {
+                    const weight = { 'High': 3, 'Medium': 2, 'Low': 1, 'None': 0 };
+                    colTasks.sort((a, b) => (weight[b.priority] || 0) - (weight[a.priority] || 0));
+                } else if (currentSort === 'title') {
+                    colTasks.sort((a, b) => a.text.localeCompare(b.text));
+                } else if (currentSort === 'progress') {
+                    const getProgress = t => t.checklist && t.checklist.length ? (t.checklist.filter(c => c.done).length / t.checklist.length) : 0;
+                    colTasks.sort((a, b) => getProgress(b) - getProgress(a));
+                }
+
                 const colBg = data.columnColors[colName] || getComputedStyle(document.documentElement).getPropertyValue('--bg-col').trim() || '#31224A';
-                // Determine text color based on contrast
                 const textColor = isLightColor(colBg) ? '#111111' : '#F1E9FF';
+                const isCollapsed = data.collapsedCols.includes(colName);
 
                 const colEl = document.createElement("div");
-                colEl.className = "column";
-                colEl.draggable = true;
+                colEl.className = `column ${isCollapsed ? 'collapsed' : ''}`;
+                colEl.draggable = !isCollapsed;
                 colEl.ondragstart = (e) => colDragStart(e, colName);
                 colEl.ondragover = (e) => allowDrop(e);
                 colEl.ondrop = (e) => colDrop(e, colName);
-
-                // Apply column background color (no !important override)
                 colEl.style.backgroundColor = colBg;
 
-                // Column header
-                const headerHtml = `
-                    <div class="col-header" style="background: rgba(0,0,0,0.2); display: flex; align-items: center;">
-                        <span id="col-title-${index}" contenteditable="true" onblur="updateColName(${index}, this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" style="flex-grow: 1; outline: none; cursor: text; color: ${textColor};">${escapeHtml(colName)}</span>
-                        <div class="col-btn-group">
-                            <div class="tiny-color-picker" title="Change Color">
-                                <input type="color" value="${data.columnColors[colName] || '#31224A'}" onchange="updateColColor(${index}, this.value)">
-                            </div>
-                            <button class="icon-btn add" title="Add Todo" onclick="quickAddTask(${index})">+</button>
-                            <button class="icon-btn del" title="Delete List" onclick="deleteCol(${index})">✕</button>
+                if (isCollapsed) {
+                    colEl.innerHTML = `
+                        <div class="col-header" onclick="toggleCollapseCol('${escapeHtml(colName)}')">
+                            <span style="font-weight: 700; color: ${textColor};">${escapeHtml(colName)}</span>
+                            <span class="col-count">${colTasks.length}</span>
                         </div>
-                        <span class="col-count">${colTasks.length}</span>
-                    </div>
-                    <div class="card-list" ondragover="allowDrop(event)" ondrop="drop(event, ${index})"></div>
-                `;
-                colEl.innerHTML = headerHtml;
+                    `;
+                } else {
+                    colEl.innerHTML = `
+                        <div class="col-header">
+                            <span id="col-title-${colIdx}" contenteditable="true" onblur="updateColName(${colIdx}, this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" style="flex-grow: 1; outline: none; cursor: text; color: ${textColor};">${escapeHtml(colName)}</span>
+                            <div class="col-btn-group">
+                                <div class="tiny-color-picker" title="Change Color">
+                                    <input type="color" value="${data.columnColors[colName] || '#31224A'}" onchange="updateColColor(${colIdx}, this.value)">
+                                </div>
+                                <button class="icon-btn" title="Sort Column" onclick="sortSingleColumn('${escapeHtml(colName)}')">⇅</button>
+                                <button class="icon-btn" title="Fold / Collapse Column" onclick="toggleCollapseCol('${escapeHtml(colName)}')">◀</button>
+                                <button class="icon-btn add" title="Quick Add Task" onclick="quickAddTask(${colIdx})">+</button>
+                                <button class="icon-btn del" title="Delete Column" onclick="deleteCol(${colIdx})">✕</button>
+                            </div>
+                            <span class="col-count">${colTasks.length}</span>
+                        </div>
+                        <div class="card-list" ondragover="allowDrop(event); this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="drop(event, ${colIdx}); this.classList.remove('drag-over')"></div>
+                    `;
 
-                // Render tasks
-                const listEl = colEl.querySelector(".card-list");
-                colTasks.forEach(task => {
-                    const card = document.createElement("div");
-                    card.className = "card";
-                    card.draggable = true;
-                    card.ondragstart = (e) => drag(e, task.id);
-                    card.ondragover = (e) => allowDrop(e);
-                    card.ondrop = (e) => cardDrop(e, task.id);
+                    const listEl = colEl.querySelector(".card-list");
+                    colTasks.forEach(task => {
+                        const card = document.createElement("div");
+                        card.className = "card";
+                        card.draggable = true;
+                        card.ondragstart = (e) => drag(e, task.id);
+                        card.ondragover = (e) => allowDrop(e);
+                        card.ondrop = (e) => cardDrop(e, task.id);
+                        card.onclick = (e) => {
+                            if (!e.target.closest('button') && !e.target.closest('input') && !e.target.closest('select') && !e.target.isContentEditable) {
+                                openTaskModal(task.id);
+                            }
+                        };
 
-                    // Card adopts column color, lightened via a white transparent overlay
-                    card.style.backgroundColor = colBg;
-                    card.style.backgroundImage = 'linear-gradient(rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.22))';
+                        card.style.backgroundColor = colBg;
+                        card.style.backgroundImage = 'linear-gradient(rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.16))';
 
-                    // Priority color mapping
-                    if (task.priority === "High") card.style.borderLeftColor = "var(--pri-high)";
-                    if (task.priority === "Medium") card.style.borderLeftColor = "var(--pri-med)";
-                    if (task.priority === "Low") card.style.borderLeftColor = "var(--pri-low)";
+                        // Priority color
+                        if (task.priority === "High") card.style.borderLeftColor = "var(--pri-high)";
+                        else if (task.priority === "Medium") card.style.borderLeftColor = "var(--pri-med)";
+                        else if (task.priority === "Low") card.style.borderLeftColor = "var(--pri-low)";
+                        else card.style.borderLeftColor = "transparent";
 
-                    // --- 1. Calculate checklist progress first ---
-                    let done = 0;
-                    let total = 0;
-                    let pct = 0;
+                        // Checklist calculations
+                        const total = task.checklist ? task.checklist.length : 0;
+                        const done = total ? task.checklist.filter(c => c.done).length : 0;
+                        const pct = total ? (done / total) * 100 : 0;
 
-                    if (task.checklist && task.checklist.length > 0) {
-                        total = task.checklist.length;
-                        done = task.checklist.filter(c => c.done).length;
-                        pct = (done / total) * 100;
-                    }
-
-                    // --- 2. Status badge logic (based on checklist, not column) ---
-                    let statusText = "Not started";
-                    let statusColor = "#E06C75";
-
-                    if (total > 0) {
-                        if (pct === 100) {
-                            statusText = "Done";
-                            statusColor = "#7FCB8E";
-                        } else if (pct > 0) {
-                            statusText = "In progress";
-                            statusColor = "#6FA8E5";
+                        // Due date badge
+                        const dueStatus = getDueDateStatus(task.dueDate);
+                        let dueHtml = '';
+                        if (dueStatus) {
+                            dueHtml = `<span class="due-badge ${dueStatus.type}">📅 ${dueStatus.label}</span>`;
                         }
-                    }
 
-                    // --- 3. Generate HTML ---
-                    let priColor = "var(--text-light)";
-                    if (task.priority === "High") priColor = "var(--pri-high)";
-                    if (task.priority === "Medium") priColor = "var(--pri-med)";
-                    if (task.priority === "Low") priColor = "var(--pri-low)";
+                        // Tags HTML
+                        let tagsHtml = '';
+                        if (task.tags && task.tags.length > 0) {
+                            tagsHtml = `<div class="card-tags">${task.tags.map(tag => `<span class="tag-chip">${escapeHtml(tag)}</span>`).join('')}</div>`;
+                        }
 
-                    // Use computed text color for card content
-                    const cardTextColor = isLightColor(colBg) ? '#111111' : '#F1E9FF';
-
-                    let html = `
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                            <div style="font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px; background: rgba(0,0,0,0.3); color: ${statusColor};">
-                                ${statusText}
+                        // Checkbox list
+                        let chkHtml = (task.checklist || []).map((c, i) => `
+                            <div style="font-size: 12px; margin-top: 4px; display: flex; align-items: center; gap: 6px;">
+                                <input type="checkbox" ${c.done ? 'checked' : ''} onclick="event.stopPropagation(); toggleCardCheck('${task.id}', ${i}, this.checked)">
+                                <span id="chk-title-${task.id}-${i}" contenteditable="true" onblur="updateChkName('${task.id}', ${i}, this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="flex-grow: 1; outline: none; cursor: text; ${c.done ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${escapeHtml(c.text)}</span>
+                                <button class="icon-btn del" title="Delete Subtask" onclick="event.stopPropagation(); quickDelCheck('${task.id}', ${i})" style="font-size: 11px; padding: 0 4px;">✕</button>
                             </div>
-                            <select onchange="updatePriority('${task.id}', this.value)" onclick="event.stopPropagation()" style="font-size: 10px; font-weight: bold; padding: 2px 4px; border-radius: 4px; background: rgba(0,0,0,0.2); color: ${priColor}; border: none; outline: none; cursor: pointer; text-align: center; text-align-last: center;">
-                                <option value="High" style="background: var(--entry-bg); color: var(--pri-high); text-align: center;" ${task.priority === 'High' ? 'selected' : ''}>High Priority</option>
-                                <option value="Medium" style="background: var(--entry-bg); color: var(--pri-med); text-align: center;" ${task.priority === 'Medium' ? 'selected' : ''}>Med Priority</option>
-                                <option value="Low" style="background: var(--entry-bg); color: var(--pri-low); text-align: center;" ${task.priority === 'Low' || task.priority === 'None' ? 'selected' : ''}>Low Priority</option>
-                            </select>
-                        </div>
-                        <div class="card-header">
-                            <div id="card-title-${task.id}" class="card-title" contenteditable="true" onblur="updateCardName('${task.id}', this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="outline: none; cursor: text; min-height: 18px; flex-grow: 1; color: ${cardTextColor};">${escapeHtml(task.text)}</div>
-                            <button class="card-del-btn" title="Delete Card" onclick="event.stopPropagation(); quickDeleteTask('${task.id}')">✕</button>
-                        </div>
-                    `;
+                        `).join('');
 
-                    // Generate individual checkboxes
-                    let chkHtml = task.checklist.map((c, i) => `
-                        <div style="font-size: 12px; margin-top: 4px; display: flex; align-items: center; gap: 6px;">
-                            <input type="checkbox" ${c.done ? 'checked' : ''} onclick="event.stopPropagation(); toggleCardCheck('${task.id}', ${i}, this.checked)">
-                            <span id="chk-title-${task.id}-${i}" contenteditable="true" onblur="updateChkName('${task.id}', ${i}, this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="flex-grow: 1; outline: none; cursor: text; color: ${cardTextColor}; ${c.done ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${escapeHtml(c.text)}</span>
-                            <button class="chk-icon-btn del" title="Delete Item" onclick="event.stopPropagation(); quickDelCheck('${task.id}', ${i})">✕</button>
-                        </div>
-                    `).join('');
-
-                    html += `
-                        <details ${task.checklistOpen ? 'open' : ''} onclick="event.stopPropagation()" ontoggle="toggleDetails('${task.id}', this.open)">
-                            <summary class="glow-hover" style="font-size: 12px; color: ${cardTextColor}; opacity: 0.85; cursor: pointer; outline: none; margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
-                                <span>Checklist (${done}/${total})</span>
-                                <button class="chk-icon-btn add" title="Add Item" onclick="event.stopPropagation(); event.preventDefault(); quickAddCheck('${task.id}')">+</button>
-                            </summary>
-                            <div style="margin-top: 6px; padding-left: 4px; margin-bottom: 8px;">
-                                ${chkHtml}
+                        card.innerHTML = `
+                            <div class="card-top-row">
+                                <div style="display: flex; gap: 6px; align-items: center;">
+                                    <select onchange="updatePriority('${task.id}', this.value)" onclick="event.stopPropagation()" style="font-size: 10px; font-weight: bold; padding: 2px 4px; border-radius: 4px; background: rgba(0,0,0,0.25); color: inherit; border: none; outline: none; cursor: pointer;">
+                                        <option value="High" ${task.priority === 'High' ? 'selected' : ''}>🔴 High</option>
+                                        <option value="Medium" ${task.priority === 'Medium' ? 'selected' : ''}>🟡 Med</option>
+                                        <option value="Low" ${task.priority === 'Low' || task.priority === 'None' ? 'selected' : ''}>🔵 Low</option>
+                                        <option value="None" ${task.priority === 'None' ? 'selected' : ''}>⚪ None</option>
+                                    </select>
+                                    ${dueHtml}
+                                </div>
+                                <div style="display: flex; gap: 4px;">
+                                    <button class="icon-btn" title="Open Full Details" onclick="event.stopPropagation(); openTaskModal('${task.id}')" style="font-size: 12px; padding: 2px 4px;">✏️</button>
+                                    <button class="icon-btn del" title="Delete Card" onclick="event.stopPropagation(); quickDeleteTask('${task.id}')" style="font-size: 12px; padding: 2px 4px;">✕</button>
+                                </div>
                             </div>
-                        </details>
-                        <div class="progress-bg">
-                            <div class="progress-fill ${pct === 100 && total > 0 ? 'done' : ''}" style="width: ${pct}%"></div>
-                        </div>
-                    `;
-                    card.innerHTML = html;
-                    listEl.appendChild(card);
-                });
+                            
+                            <div id="card-title-${task.id}" class="card-title" contenteditable="true" onblur="updateCardName('${task.id}', this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="outline: none; cursor: text; min-height: 18px;">${escapeHtml(task.text)}</div>
+                            
+                            ${task.desc ? `<div class="card-desc-preview">${escapeHtml(task.desc)}</div>` : ''}
+                            ${tagsHtml}
+
+                            ${total > 0 ? `
+                                <details ${task.checklistOpen ? 'open' : ''} onclick="event.stopPropagation()" ontoggle="toggleDetails('${task.id}', this.open)">
+                                    <summary style="font-size: 11px; opacity: 0.85; cursor: pointer; outline: none; margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
+                                        <span>Checklist (${done}/${total})</span>
+                                        <button class="icon-btn add" title="Add Subtask" onclick="event.stopPropagation(); event.preventDefault(); quickAddCheck('${task.id}')" style="font-size: 13px;">+</button>
+                                    </summary>
+                                    <div style="margin-top: 4px; padding-left: 2px;">
+                                        ${chkHtml}
+                                    </div>
+                                </details>
+                                <div class="progress-bg">
+                                    <div class="progress-fill ${pct === 100 ? 'done' : ''}" style="width: ${pct}%"></div>
+                                </div>
+                            ` : ''}
+                        `;
+                        listEl.appendChild(card);
+                    });
+                }
 
                 board.appendChild(colEl);
             });
 
-            // Add List button
-            const addBtn = document.createElement("button");
-            addBtn.className = "add-list-btn";
-            addBtn.innerHTML = "+";
-            addBtn.title = "Add another list";
-            addBtn.onclick = () => {
-                let name = "New List";
+            // Add Column Button
+            const addColBtn = document.createElement("button");
+            addColBtn.className = "add-list-btn";
+            addColBtn.innerHTML = "+<span>Add Column</span>";
+            addColBtn.title = "Add another column";
+            addColBtn.onclick = () => {
+                let name = "New Column";
                 let count = 1;
-                while (data.columns.includes(name)) { name = "New List " + count++; }
+                while (data.columns.includes(name)) { name = "New Column " + count++; }
                 data.columns.push(name);
                 saveData();
                 setTimeout(() => {
@@ -562,7 +1099,7 @@
                     if (el) { el.focus(); document.execCommand('selectAll', false, null); }
                 }, 10);
             };
-            board.appendChild(addBtn);
+            board.appendChild(addColBtn);
         }
 
         // --- Drag and drop ---
@@ -584,6 +1121,7 @@
             const task = data.tasks.find(t => t.id === id);
             if (task && task.column !== toCol) {
                 task.column = toCol;
+                task.updatedAt = Date.now();
                 saveData();
             }
             document.querySelectorAll('.card').forEach(c => c.classList.remove('dragging'));
@@ -600,6 +1138,7 @@
             if (!task || !targetTask) return;
 
             task.column = targetTask.column;
+            task.updatedAt = Date.now();
 
             const fromIdx = data.tasks.indexOf(task);
             data.tasks.splice(fromIdx, 1);
@@ -630,33 +1169,31 @@
             saveData();
         }
 
+        function toggleCollapseCol(colName) {
+            const idx = data.collapsedCols.indexOf(colName);
+            if (idx > -1) {
+                data.collapsedCols.splice(idx, 1);
+            } else {
+                data.collapsedCols.push(colName);
+            }
+            saveData();
+        }
+
+        function sortSingleColumn(colName) {
+            const colTasks = data.tasks.filter(t => t.column === colName);
+            colTasks.sort((a, b) => a.text.localeCompare(b.text));
+            data.tasks = data.tasks.filter(t => t.column !== colName).concat(colTasks);
+            saveData();
+        }
+
         function updateColColor(idx, color) {
             const name = data.columns[idx];
             data.columnColors[name] = color;
             saveData();
         }
 
-        function toggleCardCheck(taskId, chkIndex, isChecked) {
-            const task = data.tasks.find(t => t.id === taskId);
-            if (task) {
-                task.checklist[chkIndex].done = isChecked;
-                saveData();
-            }
-        }
-
-        function toggleDetails(taskId, isOpen) {
-            const task = data.tasks.find(t => t.id === taskId);
-            if (task && task.checklistOpen !== isOpen) {
-                task.checklistOpen = isOpen;
-                boards[activeBoardId] = data;
-                localStorage.setItem("todoBoardsStudio", JSON.stringify(boards));
-            }
-        }
-
-        // --- Column actions ---
         function deleteCol(idx) {
-            if (data.columns.length <= 1) return alert("You need at least one list.");
-
+            if (data.columns.length <= 1) return alert("You need at least one column.");
             const name = data.columns[idx];
             const removedTasks = data.tasks.filter(t => t.column === name);
             const color = data.columnColors[name];
@@ -665,7 +1202,7 @@
             data.tasks = data.tasks.filter(t => t.column !== name);
             delete data.columnColors[name];
 
-            showUndoToast(`Deleted list "${name}"`, () => {
+            showUndoToast(`Deleted column "${name}"`, () => {
                 data.columns.splice(idx, 0, name);
                 data.tasks.push(...removedTasks);
                 if (color) data.columnColors[name] = color;
@@ -680,7 +1217,6 @@
             if (!newName || newName === oldName || data.columns.includes(newName)) return renderBoard();
 
             data.columns[idx] = newName;
-
             data.tasks.forEach(t => { if (t.column === oldName) t.column = newName; });
             if (data.columnColors[oldName]) {
                 data.columnColors[newName] = data.columnColors[oldName];
@@ -689,11 +1225,12 @@
             saveData();
         }
 
-        // --- Task actions ---
+        // --- Task Inline Operations ---
         function updateCardName(id, newText) {
             const task = data.tasks.find(t => t.id === id);
             if (task) {
-                task.text = newText.trim() || "Unnamed Card";
+                task.text = newText.trim() || "Untitled Task";
+                task.updatedAt = Date.now();
                 saveData();
             }
         }
@@ -702,8 +1239,45 @@
             const task = data.tasks.find(t => t.id === id);
             if (task) {
                 task.priority = pri;
+                task.updatedAt = Date.now();
                 saveData();
             }
+        }
+
+        function toggleCardCheck(taskId, chkIndex, isChecked) {
+            const task = data.tasks.find(t => t.id === taskId);
+            if (task && task.checklist && task.checklist[chkIndex]) {
+                task.checklist[chkIndex].done = isChecked;
+                task.updatedAt = Date.now();
+                saveData();
+            }
+        }
+
+        function toggleDetails(taskId, isOpen) {
+            const task = data.tasks.find(t => t.id === taskId);
+            if (task) {
+                task.checklistOpen = isOpen;
+                saveData();
+            }
+        }
+
+        function quickAddTask(colIdx) {
+            const col = data.columns[colIdx] || data.columns[0];
+            const id = Date.now().toString();
+            const newTask = sanitizeTask({
+                id,
+                text: "New Task",
+                column: col,
+                priority: "Low",
+                checklist: [],
+                checklistOpen: true
+            });
+            data.tasks.push(newTask);
+            saveData();
+            setTimeout(() => {
+                const el = document.getElementById(`card-title-${id}`);
+                if (el) { el.focus(); document.execCommand('selectAll', false, null); }
+            }, 10);
         }
 
         function quickDeleteTask(id) {
@@ -717,100 +1291,346 @@
             saveData();
         }
 
-        // --- Checklist actions ---
-        function quickAddTask(idx) {
-            const col = data.columns[idx];
-            const id = Date.now().toString();
-            data.tasks.push({ id, text: "New Card", column: col, priority: "Low", desc: "", checklist: [], checklistOpen: true });
-            saveData();
-            setTimeout(() => {
-                const el = document.getElementById(`card-title-${id}`);
-                if (el) { el.focus(); document.execCommand('selectAll', false, null); }
-            }, 10);
-        }
-
         function quickAddCheck(taskId) {
             const task = data.tasks.find(t => t.id === taskId);
             if (task) {
-                task.checklist.push({ text: "New Item", done: false });
+                if (!task.checklist) task.checklist = [];
+                task.checklist.push({ text: "New Subtask", done: false });
                 task.checklistOpen = true;
+                task.updatedAt = Date.now();
                 saveData();
             }
         }
 
         function updateChkName(taskId, idx, newText) {
             const task = data.tasks.find(t => t.id === taskId);
-            if (task && task.checklist[idx]) {
-                task.checklist[idx].text = newText.trim() || "Unnamed Item";
+            if (task && task.checklist && task.checklist[idx]) {
+                task.checklist[idx].text = newText.trim() || "Untitled Subtask";
+                task.updatedAt = Date.now();
                 saveData();
             }
         }
 
         function quickDelCheck(taskId, chkIndex) {
             const task = data.tasks.find(t => t.id === taskId);
-            if (task) {
+            if (task && task.checklist) {
                 task.checklist.splice(chkIndex, 1);
+                task.updatedAt = Date.now();
                 saveData();
             }
         }
 
-        function changeTheme(theme) {
-            data.theme = theme;
-            document.documentElement.setAttribute('data-theme', theme);
+        // --- Task Modal ---
+        function openTaskModal(id) {
+            const task = data.tasks.find(t => t.id === id);
+            if (!task) return;
+            editingTaskId = id;
+
+            document.getElementById('modalTaskTitle').value = task.text || '';
+            document.getElementById('modalTaskDesc').value = task.desc || '';
+            document.getElementById('modalTaskPriority').value = task.priority || 'Low';
+            document.getElementById('modalTaskDueDate').value = task.dueDate || '';
+
+            // Column options
+            const colSelect = document.getElementById('modalTaskColumn');
+            colSelect.innerHTML = data.columns.map(c => `<option value="${c}" ${c === task.column ? 'selected' : ''}>${escapeHtml(c)}</option>`).join('');
+
+            modalWorkingTags = [...(task.tags || [])];
+            modalWorkingChecklist = (task.checklist || []).map(c => ({ ...c }));
+
+            renderModalTags();
+            renderModalChecklist();
+
+            document.getElementById('taskModal').classList.add('active');
+        }
+
+        function closeTaskModal() {
+            document.getElementById('taskModal').classList.remove('active');
+            editingTaskId = null;
+        }
+
+        function setModalQuickDate(daysToAdd) {
+            const d = new Date();
+            d.setDate(d.getDate() + daysToAdd);
+            const iso = d.toISOString().split('T')[0];
+            document.getElementById('modalTaskDueDate').value = iso;
+        }
+
+        function clearModalDueDate() {
+            document.getElementById('modalTaskDueDate').value = '';
+        }
+
+        function renderModalTags() {
+            const cont = document.getElementById('modalTagsContainer');
+            cont.innerHTML = modalWorkingTags.map((tag, i) => `
+                <span class="tag-chip" style="display: inline-flex; align-items: center; gap: 4px;">
+                    ${escapeHtml(tag)}
+                    <button type="button" class="icon-btn del" onclick="removeModalTag(${i})" style="font-size: 10px; padding: 0;">✕</button>
+                </span>
+            `).join('');
+        }
+
+        function addModalTag() {
+            const inp = document.getElementById('modalTagInput');
+            const val = inp.value.trim();
+            if (val && !modalWorkingTags.includes(val)) {
+                modalWorkingTags.push(val);
+                renderModalTags();
+            }
+            inp.value = '';
+        }
+
+        function removeModalTag(idx) {
+            modalWorkingTags.splice(idx, 1);
+            renderModalTags();
+        }
+
+        function renderModalChecklist() {
+            const cont = document.getElementById('modalChecklistContainer');
+            const done = modalWorkingChecklist.filter(c => c.done).length;
+            const total = modalWorkingChecklist.length;
+            document.getElementById('modalChecklistStats').innerText = `${done} of ${total} completed`;
+
+            cont.innerHTML = modalWorkingChecklist.map((c, i) => `
+                <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.2); padding: 4px 8px; border-radius: 6px;">
+                    <input type="checkbox" ${c.done ? 'checked' : ''} onchange="modalWorkingChecklist[${i}].done = this.checked; renderModalChecklist();">
+                    <input type="text" value="${escapeHtml(c.text)}" oninput="modalWorkingChecklist[${i}].text = this.value" style="flex-grow: 1; padding: 2px 6px; font-size: 12px; ${c.done ? 'text-decoration: line-through; opacity: 0.6;' : ''}">
+                    <button type="button" class="icon-btn del" onclick="modalWorkingChecklist.splice(${i}, 1); renderModalChecklist();">✕</button>
+                </div>
+            `).join('');
+        }
+
+        function addModalChecklistItem() {
+            const inp = document.getElementById('modalChecklistInput');
+            const val = inp.value.trim();
+            if (val) {
+                modalWorkingChecklist.push({ text: val, done: false });
+                renderModalChecklist();
+            }
+            inp.value = '';
+        }
+
+        function saveTaskModal() {
+            if (!editingTaskId) return;
+            const task = data.tasks.find(t => t.id === editingTaskId);
+            if (!task) return;
+
+            task.text = document.getElementById('modalTaskTitle').value.trim() || "Untitled Task";
+            task.column = document.getElementById('modalTaskColumn').value;
+            task.priority = document.getElementById('modalTaskPriority').value;
+            task.dueDate = document.getElementById('modalTaskDueDate').value || null;
+            task.desc = document.getElementById('modalTaskDesc').value.trim();
+            task.tags = [...modalWorkingTags];
+            task.checklist = [...modalWorkingChecklist];
+            task.updatedAt = Date.now();
+
+            closeTaskModal();
             saveData();
         }
 
-        function updateBoardTitle(newTitle) {
-            data.boardTitle = newTitle.trim() || "✦ Todo Board Studio";
-            document.getElementById('board-title').innerText = data.boardTitle;
-            saveData();
+        function deleteTaskFromModal() {
+            if (!editingTaskId) return;
+            const id = editingTaskId;
+            closeTaskModal();
+            quickDeleteTask(id);
         }
 
-        // --- Backup actions ---
-        function exportData() {
-            const dataStr = JSON.stringify(data, null, 2);
-            const blob = new Blob([dataStr], { type: "application/json" });
+        // --- Undo System ---
+        function showUndoToast(message, restoreFn) {
+            pendingDelete = restoreFn;
+            clearTimeout(undoTimeoutId);
+            const toast = document.getElementById("undoToast");
+            document.getElementById("undoToastMsg").innerText = message;
+            toast.classList.add("show");
+            undoTimeoutId = setTimeout(() => {
+                toast.classList.remove("show");
+                pendingDelete = null;
+            }, 5000);
+        }
+
+        function undoDelete() {
+            if (!pendingDelete) return;
+            clearTimeout(undoTimeoutId);
+            document.getElementById("undoToast").classList.remove("show");
+            const restore = pendingDelete;
+            pendingDelete = null;
+            restore();
+        }
+
+        // --- Export & Import Actions ---
+        async function handleExportAction(type) {
+            document.getElementById('exportAction').value = '';
+            if (type === 'json') {
+                exportJsonBackup();
+            } else if (type === 'csv') {
+                exportCsvTasks();
+            }
+        }
+
+        async function exportJsonBackup() {
+            const content = JSON.stringify(boards, null, 2);
+            const defaultName = `todoboard_backup_${new Date().toISOString().split('T')[0]}.json`;
+
+            if (window.electronAPI && window.electronAPI.exportFileDialog) {
+                const res = await window.electronAPI.exportFileDialog({
+                    defaultName,
+                    content,
+                    filters: [{ name: 'JSON Backup', extensions: ['json'] }]
+                });
+                if (res && res.success) {
+                    showUndoToast(`Saved backup to ${res.filePath}`);
+                    return;
+                }
+            }
+
+            // Browser Fallback
+            const blob = new Blob([content], { type: "application/json" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = "todo_board_backup.json";
+            a.download = defaultName;
             a.click();
             URL.revokeObjectURL(url);
         }
 
-        function importData(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const importedData = JSON.parse(e.target.result);
-                    if (importedData.columns && importedData.tasks) {
-                        data = importedData;
-                        saveData();
-                        document.getElementById('themeSelect').value = data.theme || 'purple';
-                        document.documentElement.setAttribute('data-theme', data.theme || 'purple');
-                        document.getElementById('board-title').innerText = data.boardTitle || '✦ Todo Board Studio';
-                    } else {
-                        alert("Invalid backup file format.");
-                    }
-                } catch (err) {
-                    alert("Error reading file. Make sure it is a valid JSON backup.");
+        async function exportCsvTasks() {
+            const headers = ["Board", "Column", "Task Title", "Priority", "Status", "Due Date", "Tags", "Checklist Done", "Checklist Total", "Description"];
+            const rows = [headers];
+
+            Object.keys(boards).forEach(bId => {
+                const b = boards[bId];
+                (b.tasks || []).forEach(t => {
+                    const total = t.checklist ? t.checklist.length : 0;
+                    const done = total ? t.checklist.filter(c => c.done).length : 0;
+                    const status = total > 0 ? (done === total ? "Done" : "In Progress") : "Not Started";
+                    rows.push([
+                        `"${(b.boardTitle || 'Untitled').replace(/"/g, '""')}"`,
+                        `"${(t.column || '').replace(/"/g, '""')}"`,
+                        `"${(t.text || '').replace(/"/g, '""')}"`,
+                        `"${(t.priority || '').replace(/"/g, '""')}"`,
+                        `"${status}"`,
+                        `"${t.dueDate || ''}"`,
+                        `"${(t.tags || []).join(', ').replace(/"/g, '""')}"`,
+                        done,
+                        total,
+                        `"${(t.desc || '').replace(/"/g, '""')}"`
+                    ]);
+                });
+            });
+
+            const csvContent = rows.map(r => r.join(',')).join('\n');
+            const defaultName = `todoboard_tasks_${new Date().toISOString().split('T')[0]}.csv`;
+
+            if (window.electronAPI && window.electronAPI.exportFileDialog) {
+                const res = await window.electronAPI.exportFileDialog({
+                    defaultName,
+                    content: csvContent,
+                    filters: [{ name: 'CSV Spreadsheets', extensions: ['csv'] }]
+                });
+                if (res && res.success) {
+                    showUndoToast(`Exported CSV to ${res.filePath}`);
+                    return;
                 }
-            };
-            reader.readAsText(file);
-            event.target.value = "";
+            }
+
+            // Browser Fallback
+            const blob = new Blob([csvContent], { type: "text/csv" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = defaultName;
+            a.click();
+            URL.revokeObjectURL(url);
         }
 
-        // Boot sequence
-        window.onload = () => {
-            document.getElementById('themeSelect').value = data.theme;
-            document.getElementById('board-title').innerText = data.boardTitle;
-            renderBoardSelector();
-        };
+        async function triggerImport() {
+            if (window.electronAPI && window.electronAPI.importFileDialog) {
+                const res = await window.electronAPI.importFileDialog({
+                    filters: [{ name: 'JSON Backup', extensions: ['json'] }]
+                });
+                if (res && res.success && res.content) {
+                    applyImportedJson(res.content);
+                    return;
+                }
+            }
 
-        // Initialize
-        renderBoard();
+            // Browser fallback file input
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = ".json";
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (evt) => applyImportedJson(evt.target.result);
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        function applyImportedJson(rawJson) {
+            try {
+                const parsed = JSON.parse(rawJson);
+                if (parsed.columns && parsed.tasks) {
+                    // Single board format
+                    const id = "board-" + Date.now();
+                    boards[id] = parsed;
+                    activeBoardId = id;
+                } else if (typeof parsed === 'object' && Object.keys(parsed).length > 0) {
+                    // Multi-board format
+                    boards = parsed;
+                    activeBoardId = Object.keys(boards)[0];
+                } else {
+                    return alert("Invalid JSON format.");
+                }
+
+                saveData();
+                switchBoard(activeBoardId);
+                showUndoToast("Board data imported successfully!");
+            } catch (err) {
+                alert("Error importing file: " + err.message);
+            }
+        }
+
+        // --- Shortcuts Modal ---
+        function openShortcutsModal() {
+            document.getElementById('shortcutsModal').classList.add('active');
+        }
+        function closeShortcutsModal() {
+            document.getElementById('shortcutsModal').classList.remove('active');
+        }
+
+        // Global Keyboard Shortcuts
+        window.addEventListener('keydown', (e) => {
+            // Check if user is typing in an input
+            const isTyping = ['INPUT', 'TEXTAREA'].includes(e.target.tagName) || e.target.isContentEditable;
+
+            if (e.key === 'Escape') {
+                closeTaskModal();
+                closeShortcutsModal();
+                if (searchQuery) clearSearch();
+                return;
+            }
+
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+                e.preventDefault();
+                document.getElementById('searchInput').focus();
+            } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'n') {
+                e.preventDefault();
+                if (data.columns.length > 0) quickAddTask(0);
+            } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+                e.preventDefault();
+                addBoard();
+            } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+                if (!isTyping) {
+                    e.preventDefault();
+                    undoDelete();
+                }
+            } else if (e.key === '?' && !isTyping) {
+                e.preventDefault();
+                openShortcutsModal();
+            }
+        });
     </script>
 </body>
-</html>
+</html>
