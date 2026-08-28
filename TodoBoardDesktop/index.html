@@ -563,7 +563,7 @@
                         <input type="date" id="modalTaskDueDate">
                     </div>
                     <div class="form-group">
-                        <label>QUICK DATE</label>
+                        <label>QUICK DUE DATE</label>
                         <div style="display: flex; gap: 6px;">
                             <button type="button" class="btn" style="padding: 5px 8px; font-size: 11px;" onclick="setModalQuickDate(0)">Today</button>
                             <button type="button" class="btn" style="padding: 5px 8px; font-size: 11px;" onclick="setModalQuickDate(1)">Tomorrow</button>
@@ -572,6 +572,28 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Start & End Date / Time Tracking -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <label for="modalTaskStartDate">START DATE & TIME</label>
+                            <button type="button" class="btn" style="padding: 2px 6px; font-size: 10px;" onclick="setModalStartNow()">Now</button>
+                        </div>
+                        <input type="datetime-local" id="modalTaskStartDate" onchange="updateModalDurationInfo()">
+                    </div>
+                    <div class="form-group">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <label for="modalTaskCompletedDate">END DATE & TIME</label>
+                            <div style="display: flex; gap: 4px;">
+                                <button type="button" class="btn" style="padding: 2px 6px; font-size: 10px;" onclick="setModalEndNow()">Now</button>
+                                <button type="button" class="btn danger" style="padding: 2px 6px; font-size: 10px;" onclick="clearModalEndDate()">✕</button>
+                            </div>
+                        </div>
+                        <input type="datetime-local" id="modalTaskCompletedDate" onchange="updateModalDurationInfo()">
+                    </div>
+                </div>
+                <div id="modalTaskDurationInfo" style="font-size: 12px; color: var(--text-muted); margin-top: -6px; margin-bottom: 2px; font-weight: 500;"></div>
 
                 <!-- Tags -->
                 <div class="form-group">
@@ -682,6 +704,8 @@
                 desc: t.desc || "",
                 tags: Array.isArray(t.tags) ? t.tags : [],
                 dueDate: t.dueDate || null,
+                startDate: t.startDate || (t.createdAt ? getLocalDateTimeString(new Date(t.createdAt)) : getLocalDateTimeString()),
+                completedDate: t.completedDate || null,
                 checklist: Array.isArray(t.checklist) ? t.checklist : [],
                 checklistOpen: t.checklistOpen !== false,
                 createdAt: t.createdAt || Date.now(),
@@ -853,7 +877,85 @@
             renderBoard();
         }
 
-        // --- Helper: Date & Due calculations ---
+        // --- Helper: Date & Time calculations ---
+        function getLocalDateTimeString(date = new Date()) {
+            const pad = (n) => String(n).padStart(2, '0');
+            const y = date.getFullYear();
+            const m = pad(date.getMonth() + 1);
+            const d = pad(date.getDate());
+            const h = pad(date.getHours());
+            const min = pad(date.getMinutes());
+            return `${y}-${m}-${d}T${h}:${min}`;
+        }
+
+        function formatDateTimeDisplay(dtStr) {
+            if (!dtStr) return '';
+            const date = new Date(dtStr);
+            if (isNaN(date.getTime())) return dtStr;
+            return date.toLocaleString(undefined, {
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit'
+            });
+        }
+
+        function calculateDuration(startStr, endStr) {
+            if (!startStr) return null;
+            const start = new Date(startStr);
+            const end = endStr ? new Date(endStr) : new Date();
+            if (isNaN(start.getTime()) || isNaN(end.getTime())) return null;
+
+            const diffMs = end.getTime() - start.getTime();
+            if (diffMs < 0) return null;
+
+            const mins = Math.floor(diffMs / (1000 * 60));
+            const hours = Math.floor(mins / 60);
+            const days = Math.floor(hours / 24);
+
+            if (days > 0) {
+                const remHours = hours % 24;
+                return `${days}d ${remHours}h`;
+            } else if (hours > 0) {
+                const remMins = mins % 60;
+                return `${hours}h ${remMins}m`;
+            } else {
+                return `${mins}m`;
+            }
+        }
+
+        function setModalStartNow() {
+            document.getElementById('modalTaskStartDate').value = getLocalDateTimeString();
+            updateModalDurationInfo();
+        }
+
+        function setModalEndNow() {
+            document.getElementById('modalTaskCompletedDate').value = getLocalDateTimeString();
+            updateModalDurationInfo();
+        }
+
+        function clearModalEndDate() {
+            document.getElementById('modalTaskCompletedDate').value = '';
+            updateModalDurationInfo();
+        }
+
+        function updateModalDurationInfo() {
+            const startVal = document.getElementById('modalTaskStartDate').value;
+            const endVal = document.getElementById('modalTaskCompletedDate').value;
+            const durEl = document.getElementById('modalTaskDurationInfo');
+            if (!durEl) return;
+
+            if (startVal && endVal) {
+                const dur = calculateDuration(startVal, endVal);
+                durEl.innerHTML = dur ? `⏱️ <strong>Completed Duration:</strong> ${dur}` : '';
+            } else if (startVal) {
+                const dur = calculateDuration(startVal, null);
+                durEl.innerHTML = dur ? `⏱️ <strong>In Progress:</strong> ${dur} elapsed` : '';
+            } else {
+                durEl.innerHTML = '';
+            }
+        }
+
         function getDueDateStatus(dueDateStr) {
             if (!dueDateStr) return null;
             const now = new Date();
@@ -1029,6 +1131,19 @@
                             dueHtml = `<span class="due-badge ${dueStatus.type}">📅 ${dueStatus.label}</span>`;
                         }
 
+                        // Time tracking badges
+                        let timeHtml = '';
+                        if (task.completedDate) {
+                            const dur = calculateDuration(task.startDate, task.completedDate);
+                            timeHtml += `<span class="due-badge" style="background: rgba(127, 203, 142, 0.2); color: #7FCB8E; border: 1px solid rgba(127, 203, 142, 0.5);" title="Completed ${formatDateTimeDisplay(task.completedDate)}">🏁 ${formatDateTimeDisplay(task.completedDate)}</span>`;
+                            if (dur) {
+                                timeHtml += `<span class="due-badge" style="background: rgba(255,255,255,0.08); color: var(--text-muted);" title="Duration taken: ${dur}">⏱️ ${dur}</span>`;
+                            }
+                        } else if (task.startDate) {
+                            const dur = calculateDuration(task.startDate, null);
+                            timeHtml += `<span class="due-badge" style="background: rgba(111, 168, 229, 0.15); color: #6FA8E5; border: 1px solid rgba(111, 168, 229, 0.4);" title="Started ${formatDateTimeDisplay(task.startDate)}">⏱️ ${dur || 'Started'}</span>`;
+                        }
+
                         // Tags HTML
                         let tagsHtml = '';
                         if (task.tags && task.tags.length > 0) {
@@ -1046,7 +1161,7 @@
 
                         card.innerHTML = `
                             <div class="card-top-row">
-                                <div style="display: flex; gap: 6px; align-items: center;">
+                                <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
                                     <select onchange="updatePriority('${task.id}', this.value)" onclick="event.stopPropagation()" style="font-size: 10px; font-weight: bold; padding: 2px 4px; border-radius: 4px; background: rgba(0,0,0,0.25); color: inherit; border: none; outline: none; cursor: pointer;">
                                         <option value="High" ${task.priority === 'High' ? 'selected' : ''}>🔴 High</option>
                                         <option value="Medium" ${task.priority === 'Medium' ? 'selected' : ''}>🟡 Med</option>
@@ -1054,6 +1169,7 @@
                                         <option value="None" ${task.priority === 'None' ? 'selected' : ''}>⚪ None</option>
                                     </select>
                                     ${dueHtml}
+                                    ${timeHtml}
                                 </div>
                                 <div style="display: flex; gap: 4px;">
                                     <button class="icon-btn" title="Open Full Details" onclick="event.stopPropagation(); openTaskModal('${task.id}')" style="font-size: 12px; padding: 2px 4px;">✏️</button>
@@ -1127,6 +1243,9 @@
             const task = data.tasks.find(t => t.id === id);
             if (task && task.column !== toCol) {
                 task.column = toCol;
+                if (toCol.toLowerCase().includes('done') || toCol.toLowerCase().includes('complete')) {
+                    if (!task.completedDate) task.completedDate = getLocalDateTimeString();
+                }
                 task.updatedAt = Date.now();
                 saveData();
             }
@@ -1144,6 +1263,9 @@
             if (!task || !targetTask) return;
 
             task.column = targetTask.column;
+            if (task.column.toLowerCase().includes('done') || task.column.toLowerCase().includes('complete')) {
+                if (!task.completedDate) task.completedDate = getLocalDateTimeString();
+            }
             task.updatedAt = Date.now();
 
             const fromIdx = data.tasks.indexOf(task);
@@ -1352,6 +1474,9 @@
             document.getElementById('modalTaskDesc').value = task.desc || '';
             document.getElementById('modalTaskPriority').value = task.priority || 'Low';
             document.getElementById('modalTaskDueDate').value = task.dueDate || '';
+            document.getElementById('modalTaskStartDate').value = task.startDate || '';
+            document.getElementById('modalTaskCompletedDate').value = task.completedDate || '';
+            updateModalDurationInfo();
 
             // Column options
             const colSelect = document.getElementById('modalTaskColumn');
@@ -1442,6 +1567,8 @@
             task.column = document.getElementById('modalTaskColumn').value;
             task.priority = document.getElementById('modalTaskPriority').value;
             task.dueDate = document.getElementById('modalTaskDueDate').value || null;
+            task.startDate = document.getElementById('modalTaskStartDate').value || null;
+            task.completedDate = document.getElementById('modalTaskCompletedDate').value || null;
             task.desc = document.getElementById('modalTaskDesc').value.trim();
             task.tags = [...modalWorkingTags];
             task.checklist = [...modalWorkingChecklist];
@@ -1517,7 +1644,7 @@
         }
 
         async function exportCsvTasks() {
-            const headers = ["Board", "Column", "Task Title", "Priority", "Status", "Due Date", "Tags", "Checklist Done", "Checklist Total", "Description"];
+            const headers = ["Board", "Column", "Task Title", "Priority", "Status", "Start Date/Time", "End Date/Time", "Duration", "Due Date", "Tags", "Checklist Done", "Checklist Total", "Description"];
             const rows = [headers];
 
             Object.keys(boards).forEach(bId => {
@@ -1525,13 +1652,17 @@
                 (b.tasks || []).forEach(t => {
                     const total = t.checklist ? t.checklist.length : 0;
                     const done = total ? t.checklist.filter(c => c.done).length : 0;
-                    const status = total > 0 ? (done === total ? "Done" : "In Progress") : "Not Started";
+                    const status = total > 0 ? (done === total ? "Done" : "In Progress") : (t.completedDate ? "Done" : "Not Started");
+                    const dur = calculateDuration(t.startDate, t.completedDate) || '';
                     rows.push([
                         `"${(b.boardTitle || 'Untitled').replace(/"/g, '""')}"`,
                         `"${(t.column || '').replace(/"/g, '""')}"`,
                         `"${(t.text || '').replace(/"/g, '""')}"`,
                         `"${(t.priority || '').replace(/"/g, '""')}"`,
                         `"${status}"`,
+                        `"${t.startDate || ''}"`,
+                        `"${t.completedDate || ''}"`,
+                        `"${dur}"`,
                         `"${t.dueDate || ''}"`,
                         `"${(t.tags || []).join(', ').replace(/"/g, '""')}"`,
                         done,
