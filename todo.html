@@ -385,23 +385,7 @@
         }
 
         // --- Column Actions ---
-        function deleteCol(name) {
-            if (data.columns.length <= 1) return alert("You need at least one list.");
-            if (confirm(`Delete '${name}' and all its cards?`)) {
-                data.tasks = data.tasks.filter(t => t.column !== name);
-                data.columns = data.columns.filter(c => c !== name);
-                saveData();
-            }
-        }
-
-        // --- Task Actions ---
-        function quickAddTask(col) {
-            const text = prompt("Card title:");
-            if (text && text.trim()) {
-                data.tasks.push({ id: Date.now().toString(), text: text.trim(), column: col, priority: "None", desc: "", checklist: [] });
-                saveData();
-            }
-        }
+        
 
         // --- Modal Logic ---
         const modal = document.getElementById("taskModal");
@@ -476,12 +460,7 @@
             }
         }
 
-        function quickDeleteTask(id) {
-            if (confirm("Delete this card?")) {
-                data.tasks = data.tasks.filter(t => t.id !== id);
-                saveData();
-            }
-        }
+
         // Silently saves the open/closed state of the dropdown without redrawing the whole board
         function toggleDetails(taskId, isOpen) {
             const task = data.tasks.find(t => t.id === taskId);
@@ -492,26 +471,82 @@
         }
 
         // Adds an item directly from the card face
-        function quickAddCheck(taskId) {
-            const text = prompt("New checklist item:");
-            if (text && text.trim()) {
-                const task = data.tasks.find(t => t.id === taskId);
-                if (task) {
-                    task.checklist.push({ text: text.trim(), done: false });
-                    task.checklistOpen = true; // Auto-open the dropdown to show the new item
-                    saveData();
-                }
+
+
+        // --- Column Actions ---
+        function deleteCol(name) {
+            if (data.columns.length <= 1) return alert("You need at least one list.");
+            data.tasks = data.tasks.filter(t => t.column !== name);
+            data.columns = data.columns.filter(c => c !== name);
+            saveData();
+        }
+
+        function updateColName(oldName, newName) {
+            newName = newName.trim();
+            if (!newName || newName === oldName || data.columns.includes(newName)) return renderBoard();
+            
+            const idx = data.columns.indexOf(oldName);
+            if(idx > -1) data.columns[idx] = newName;
+            
+            data.tasks.forEach(t => { if(t.column === oldName) t.column = newName; });
+            if (data.columnColors[oldName]) {
+                data.columnColors[newName] = data.columnColors[oldName];
+                delete data.columnColors[oldName];
+            }
+            saveData();
+        }
+
+        // --- Task Actions ---
+        function quickAddTask(col) {
+            const id = Date.now().toString();
+            data.tasks.push({ id, text: "New Card", column: col, priority: "None", desc: "", checklist: [] });
+            saveData();
+            setTimeout(() => {
+                const el = document.getElementById(`card-title-${id}`);
+                if(el) { el.focus(); document.execCommand('selectAll', false, null); }
+            }, 10);
+        }
+
+        function updateCardName(id, newText) {
+            const task = data.tasks.find(t => t.id === id);
+            if (task) {
+                task.text = newText.trim() || "Unnamed Card";
+                saveData();
             }
         }
 
-        // Deletes an item directly from the card face
+        function quickDeleteTask(id) {
+            data.tasks = data.tasks.filter(t => t.id !== id);
+            saveData();
+        }
+
+        // --- Checklist Actions ---
+        function quickAddCheck(taskId) {
+            const task = data.tasks.find(t => t.id === taskId);
+            if (task) {
+                task.checklist.push({ text: "New Item", done: false });
+                task.checklistOpen = true; 
+                saveData();
+                setTimeout(() => {
+                    const el = document.getElementById(`chk-title-${taskId}-${task.checklist.length - 1}`);
+                    if(el) { el.focus(); document.execCommand('selectAll', false, null); }
+                }, 10);
+            }
+        }
+
+        function updateChkName(taskId, idx, newText) {
+            const task = data.tasks.find(t => t.id === taskId);
+            if (task && task.checklist[idx]) {
+                task.checklist[idx].text = newText.trim() || "Unnamed Item";
+                saveData();
+            }
+        }
+
         function quickDelCheck(taskId, chkIndex) {
-            if (confirm("Delete this item?")) {
-                const task = data.tasks.find(t => t.id === taskId);
-                if (task) {
-                    task.checklist.splice(chkIndex, 1);
-                    saveData();
-                }
+            const task = data.tasks.find(t => t.id === taskId);
+            if (task) {
+                task.checklist.splice(chkIndex, 1);
+                saveData();
             }
         }
 
