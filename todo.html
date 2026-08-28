@@ -42,14 +42,24 @@
 
         .col-count { background: var(--btn-bg); padding: 2px 8px; border-radius: 4px; font-size: 12px; }
         
-        .col-actions { cursor: pointer; color: var(--text-muted); border: none; background: none; font-size: 16px; position: relative;}
-        .col-menu { 
-            display: none; position: absolute; right: 0; top: 20px; background: var(--entry-bg); 
-            border: 1px solid var(--bg-col-head); border-radius: 4px; flex-direction: column; z-index: 10;
+        .col-btn-group { display: flex; gap: 4px; align-items: center; }
+        
+        .col-btn {
+            background: rgba(255, 255, 255, 0.1); border: none; color: var(--text-muted);
+            border-radius: 4px; cursor: pointer; padding: 4px 8px; font-size: 10px;
+            display: flex; align-items: center; justify-content: center; height: 24px;
         }
-        .col-actions:hover .col-menu { display: flex; }
-        .col-menu button { background: none; border: none; color: var(--text-light); padding: 8px 12px; text-align: left; cursor: pointer; white-space: nowrap;}
-        .col-menu button:hover { background: var(--bg-card-hover); }
+        .col-btn:hover { background: rgba(255, 255, 255, 0.2); color: var(--text-light); }
+        .col-btn.danger:hover { background: var(--danger); color: white; }
+        
+        .color-picker-wrapper {
+            width: 24px; height: 24px; border-radius: 4px; overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer; position: relative;
+        }
+        .color-picker-wrapper:hover { border-color: rgba(255, 255, 255, 0.3); }
+        .color-picker-wrapper input[type="color"] {
+            position: absolute; top: -10px; left: -10px; width: 44px; height: 44px; cursor: pointer;
+        }
 
         .card-list {
             padding: 8px; overflow-y: auto; flex-grow: 1; min-height: 50px;
@@ -193,15 +203,13 @@
                 colEl.innerHTML = `
                     <div class="col-header" style="background: rgba(0,0,0,0.2);">
                         <span>${colName} <span class="col-count">${colTasks.length}</span></span>
-                        <div class="col-actions">⋮
-                            <div class="col-menu">
-                                ${index > 0 ? `<button onclick="moveCol('${colName}', -1)">Move Left</button>` : ''}
-                                ${index < data.columns.length - 1 ? `<button onclick="moveCol('${colName}', 1)">Move Right</button>` : ''}
-                                <label style="padding: 8px 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: var(--text-light); font-size: 13px;">
-                                    Color <input type="color" value="${data.columnColors[colName] || '#31224A'}" style="width: 24px; height: 24px; padding: 0; border: none; cursor: pointer; background: transparent;" onchange="updateColColor('${colName}', this.value)">
-                                </label>
-                                <button onclick="deleteCol('${colName}')" style="color: var(--danger);">Delete List</button>
+                        <div class="col-btn-group">
+                            ${index > 0 ? `<button class="col-btn" title="Move Left" onclick="moveCol('${colName}', -1)">◀</button>` : ''}
+                            ${index < data.columns.length - 1 ? `<button class="col-btn" title="Move Right" onclick="moveCol('${colName}', 1)">▶</button>` : ''}
+                            <div class="color-picker-wrapper" title="Change Color">
+                                <input type="color" value="${data.columnColors[colName] || '#31224A'}" onchange="updateColColor('${colName}', this.value)">
                             </div>
+                            <button class="col-btn danger" title="Delete List" onclick="deleteCol('${colName}')">✕</button>
                         </div>
                     </div>
                     <div class="card-list" ondragover="allowDrop(event)" ondrop="drop(event, '${colName}')"></div>
@@ -402,7 +410,7 @@
                 saveData();
             }
         }
-        
+
         function updateColColor(name, color) {
             data.columnColors[name] = color;
             saveData();
