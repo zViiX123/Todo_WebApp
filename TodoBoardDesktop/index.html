@@ -695,6 +695,16 @@
         }
 
         // --- Data Migration & Helper ---
+        function ensureFinishedAtBottom(checklist) {
+            if (!Array.isArray(checklist) || checklist.length <= 1) return checklist;
+            const finIdx = checklist.findIndex(c => c.text && c.text.trim().toLowerCase() === 'finished');
+            if (finIdx !== -1 && finIdx !== checklist.length - 1) {
+                const [finItem] = checklist.splice(finIdx, 1);
+                checklist.push(finItem);
+            }
+            return checklist;
+        }
+
         function syncTaskChecklistTimers(task) {
             if (!task) return;
             const total = task.checklist ? task.checklist.length : 0;
@@ -724,6 +734,16 @@
         }
 
         function sanitizeTask(t) {
+            let checklist = Array.isArray(t.checklist) ? t.checklist : [];
+            if (checklist.length === 0) {
+                checklist = [
+                    { text: "Started", done: false },
+                    { text: "Finished", done: false }
+                ];
+            } else {
+                ensureFinishedAtBottom(checklist);
+            }
+
             const task = {
                 id: t.id || Date.now().toString() + Math.random().toString(36).substr(2, 5),
                 text: t.text || "Untitled Task",
@@ -734,7 +754,7 @@
                 dueDate: t.dueDate || null,
                 startDate: t.startDate || null,
                 completedDate: t.completedDate || null,
-                checklist: Array.isArray(t.checklist) ? t.checklist : [],
+                checklist: checklist,
                 checklistOpen: t.checklistOpen !== false,
                 createdAt: t.createdAt || Date.now(),
                 updatedAt: t.updatedAt || Date.now()
@@ -1478,15 +1498,32 @@
         function quickAddCheck(taskId) {
             const task = data.tasks.find(t => t.id === taskId);
             if (task) {
-                if (!task.checklist) task.checklist = [];
-                const newIdx = task.checklist.length;
-                task.checklist.push({ text: "New Subtask", done: false });
+                if (!task.checklist || task.checklist.length === 0) {
+                    task.checklist = [
+                        { text: "Started", done: false },
+                        { text: "Finished", done: false }
+                    ];
+                }
+                const lastIdx = task.checklist.length - 1;
+                const lastItem = task.checklist[lastIdx];
+                let insertIdx = task.checklist.length;
+
+                // Always insert new items above the "Finished" item so Finished stays at the bottom
+                if (lastItem && lastItem.text && lastItem.text.trim().toLowerCase() === 'finished') {
+                    insertIdx = lastIdx;
+                    task.checklist.splice(insertIdx, 0, { text: "New Subtask", done: false });
+                } else {
+                    task.checklist.push({ text: "New Subtask", done: false });
+                    ensureFinishedAtBottom(task.checklist);
+                    insertIdx = task.checklist.length - 2 >= 0 ? task.checklist.length - 2 : 0;
+                }
+
                 task.checklistOpen = true;
                 syncTaskChecklistTimers(task);
                 task.updatedAt = Date.now();
                 saveData();
                 setTimeout(() => {
-                    const el = document.getElementById(`chk-title-${taskId}-${newIdx}`);
+                    const el = document.getElementById(`chk-title-${taskId}-${insertIdx}`);
                     if (el) {
                         el.focus();
                         document.execCommand('selectAll', false, null);
@@ -1534,6 +1571,7 @@
 
             modalWorkingTags = [...(task.tags || [])];
             modalWorkingChecklist = (task.checklist || []).map(c => ({ ...c }));
+            ensureFinishedAtBottom(modalWorkingChecklist);
 
             renderModalTags();
             renderModalChecklist();
@@ -1634,7 +1672,14 @@
             const inp = document.getElementById('modalChecklistInput');
             const val = inp.value.trim();
             if (val) {
-                modalWorkingChecklist.push({ text: val, done: false });
+                const lastIdx = modalWorkingChecklist.length - 1;
+                const lastItem = modalWorkingChecklist[lastIdx];
+                if (lastItem && lastItem.text && lastItem.text.trim().toLowerCase() === 'finished') {
+                    modalWorkingChecklist.splice(lastIdx, 0, { text: val, done: false });
+                } else {
+                    modalWorkingChecklist.push({ text: val, done: false });
+                    ensureFinishedAtBottom(modalWorkingChecklist);
+                }
                 syncModalInputsFromChecklist();
                 renderModalChecklist();
             }
@@ -1656,6 +1701,7 @@
             task.desc = document.getElementById('modalTaskDesc').value.trim();
             task.tags = [...modalWorkingTags];
             task.checklist = [...modalWorkingChecklist];
+            ensureFinishedAtBottom(task.checklist);
             syncTaskChecklistTimers(task);
             task.updatedAt = Date.now();
 
