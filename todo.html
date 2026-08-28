@@ -289,6 +289,7 @@
 
         let data = JSON.parse(localStorage.getItem("todoDataStudio")) || DEFAULT_DATA;
         if (!data.theme) data.theme = "purple"; // Give old saves a default theme
+        if (!data.boardTitle) data.boardTitle = "✦ Todo Board Studio";
         document.documentElement.setAttribute('data-theme', data.theme); // Apply it to the page
         if (!data.columnColors) data.columnColors = {};
         let activeChecklist = [];
@@ -673,8 +674,17 @@
             saveData();
         }
 
-        // Set the header dropdown to match your saved theme when the app boots up
-        window.onload = () => { document.getElementById('themeSelect').value = data.theme; };
+        function updateBoardTitle(newTitle) {
+            data.boardTitle = newTitle.trim() || "✦ Todo Board Studio";
+            document.getElementById('board-title').innerText = data.boardTitle;
+            saveData();
+        }
+
+        // Boot sequence: set theme and custom board title
+        window.onload = () => { 
+            document.getElementById('themeSelect').value = data.theme; 
+            document.getElementById('board-title').innerText = data.boardTitle;
+        };
 
         // Initialize
         renderBoard();
