@@ -70,17 +70,8 @@
             background: transparent; border: none; color: #A64D4D; font-size: 14px; font-weight: bold;
             cursor: pointer; padding: 0; opacity: 0; transition: opacity 0.2s;
         }
-        .card:hover .card-del-btn { opacity: 1; } /* Only shows X when you hover the card */
+        .card:hover .card-del-btn { opacity: 1; } 
         
-        .color-picker-wrapper {
-            width: 24px; height: 24px; border-radius: 4px; overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer; position: relative;
-        }
-        .color-picker-wrapper:hover { border-color: rgba(255, 255, 255, 0.3); }
-        .color-picker-wrapper input[type="color"] {
-            position: absolute; top: -10px; left: -10px; width: 44px; height: 44px; cursor: pointer;
-        }
-
         .card-list {
             padding: 8px; overflow-y: auto; flex-grow: 1; min-height: 50px;
         }
@@ -89,24 +80,18 @@
             background: var(--bg-card); border-radius: 6px; padding: 12px; margin-bottom: 8px;
             cursor: pointer; border-left: 4px solid var(--pri-none);
         }
-        .card:hover { background: var(--bg-card-hover); }
+        .card:hover { filter: brightness(1.2); }
         .card.dragging { opacity: 0.5; }
-        .card-title { font-size: 14px; font-weight: bold; margin-bottom: 8px; word-wrap: break-word;}
         
         .progress-bg { background: var(--entry-bg); height: 6px; border-radius: 3px; margin-top: 8px; overflow: hidden;}
         .progress-fill { height: 100%; background: var(--pri-med); transition: width 0.3s; }
         .progress-fill.done { background: #7FCB8E; }
 
-        .add-card-btn {
-            background: transparent; border: none; color: var(--text-muted); padding: 12px;
-            text-align: left; cursor: pointer; border-radius: 0 0 8px 8px;
-        }
-        .add-card-btn:hover { background: rgba(255,255,255,0.05); }
-
         .add-list-btn {
             background: var(--entry-bg); color: var(--text-light); border: none; padding: 12px 16px;
             border-radius: 8px; width: 280px; min-width: 280px; text-align: left; cursor: pointer;
         }
+        .add-list-btn:hover { filter: brightness(1.2); }
 
         /* Modal Styles */
         dialog {
@@ -184,11 +169,11 @@
     <script>
         // --- State Management ---
         const DEFAULT_DATA = {
-            columns: ["To Do", "Doing", "Done"],
+            columns: ["Not started", "In progress", "Done"],
             tasks: [
-                { id: "1", text: "Unwrap archway UV using Active Quads", column: "To Do", priority: "High", desc: "Ensure islands are straightened.", checklist: [{text: "Apply stone brick texture", done: false}] },
-                { id: "2", text: "Draw barrel plank edge highlights", column: "Doing", priority: "Medium", desc: "Use vector layers and bezier curves.", checklist: [{text: "Base color", done: true}, {text: "Shadow lines", done: true}, {text: "Highlights", done: false}] },
-                { id: "3", text: "Bake mantaflow cache for candle fire", column: "To Do", priority: "Low", desc: "Fix physics viewport visibility.", checklist: [] }
+                { id: "1", text: "Unwrap archway UV using Active Quads", column: "Not started", priority: "High", desc: "Ensure islands are straightened.", checklist: [{text: "Apply stone brick texture", done: false}] },
+                { id: "2", text: "Draw barrel plank edge highlights", column: "In progress", priority: "Medium", desc: "Use vector layers and bezier curves.", checklist: [{text: "Base color", done: true}, {text: "Shadow lines", done: true}, {text: "Highlights", done: false}] },
+                { id: "3", text: "Bake mantaflow cache for candle fire", column: "Not started", priority: "Low", desc: "Fix physics viewport visibility.", checklist: [] }
             ]
         };
 
@@ -219,8 +204,6 @@
                 // Set custom background color if the user picked one
                 colEl.style.backgroundColor = data.columnColors[colName] || 'var(--bg-col)';
                 
-                // Column Header (Uses a semi-transparent black overlay to naturally darken the chosen custom color)
-                // Column Header (Matches image layout: Title -> [+] [✕] -> Count)
                 // Column Header
                 colEl.innerHTML = `
                     <div class="col-header" style="background: rgba(0,0,0,0.2); display: flex; align-items: center;">
@@ -236,7 +219,6 @@
                     </div>
                     <div class="card-list" ondragover="allowDrop(event)" ondrop="drop(event, '${colName}')"></div>
                 `;
-                // Notice the bottom "+ Add a card" button has been completely removed!
 
                 // Render Tasks
                 const listEl = colEl.querySelector(".card-list");
@@ -247,12 +229,24 @@
                     card.ondragstart = (e) => drag(e, task.id);
                     card.onclick = () => openTask(task.id);
                     
+                    // CARD ADOPTS COLUMN COLOR
+                    card.style.backgroundColor = data.columnColors[colName] || 'var(--bg-card)';
+                    
                     // Priority Color mapping
                     if(task.priority === "High") card.style.borderLeftColor = "var(--pri-high)";
                     if(task.priority === "Medium") card.style.borderLeftColor = "var(--pri-med)";
                     if(task.priority === "Low") card.style.borderLeftColor = "var(--pri-low)";
 
+                    // STATUS BADGE COLOR LOGIC
+                    let statusColor = "var(--text-light)"; 
+                    if (task.column === "Not started") statusColor = "#E06C75"; 
+                    else if (task.column === "In progress") statusColor = "#6FA8E5"; 
+                    else if (task.column === "Done") statusColor = "#7FCB8E"; 
+
                     let html = `
+                        <div style="font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px; background: rgba(0,0,0,0.3); color: ${statusColor}; display: inline-block; margin-bottom: 6px;">
+                            ${task.column}
+                        </div>
                         <div class="card-header">
                             <div class="card-title">${task.text}</div>
                             <button class="card-del-btn" title="Delete Card" onclick="event.stopPropagation(); quickDeleteTask('${task.id}')">✕</button>
@@ -285,7 +279,6 @@
                         `;
                     }
                     card.innerHTML = html;
-                    card.innerHTML = html;
                     listEl.appendChild(card);
                 });
 
@@ -310,7 +303,7 @@
         function drag(ev, id) {
             ev.dataTransfer.setData("card-id", id);
             ev.target.classList.add('dragging');
-            ev.stopPropagation(); // Prevents picking up the column when you grab a card
+            ev.stopPropagation(); 
         }
         
         function allowDrop(ev) { ev.preventDefault(); }
@@ -319,7 +312,7 @@
             ev.preventDefault();
             ev.stopPropagation();
             const id = ev.dataTransfer.getData("card-id");
-            if (!id) return; // Ignore if a column was dropped here by accident
+            if (!id) return; 
             
             const task = data.tasks.find(t => t.id === id);
             if (task && task.column !== toCol) {
@@ -329,7 +322,6 @@
             document.querySelectorAll('.card').forEach(c => c.classList.remove('dragging'));
         }
 
-        // New logic for dragging whole columns
         function colDragStart(ev, name) {
             ev.dataTransfer.setData("col-name", name);
             ev.target.classList.add('col-dragging');
@@ -343,7 +335,6 @@
             const fromIdx = data.columns.indexOf(draggedColName);
             const toIdx = data.columns.indexOf(targetColName);
 
-            // Swap the columns in the array and save
             data.columns.splice(fromIdx, 1);
             data.columns.splice(toIdx, 0, draggedColName);
 
@@ -352,14 +343,6 @@
         }
 
         // --- Column Actions ---
-        function moveCol(name, dir) {
-            const idx = data.columns.indexOf(name);
-            const newIdx = idx + dir;
-            if (newIdx >= 0 && newIdx < data.columns.length) {
-                [data.columns[idx], data.columns[newIdx]] = [data.columns[newIdx], data.columns[idx]];
-                saveData();
-            }
-        }
         function deleteCol(name) {
             if (data.columns.length <= 1) return alert("You need at least one list.");
             if (confirm(`Delete '${name}' and all its cards?`)) {
@@ -447,7 +430,7 @@
             const task = data.tasks.find(t => t.id === taskId);
             if (task) {
                 task.checklist[chkIndex].done = isChecked;
-                saveData(); // This instantly updates the progress bar when you check a box!
+                saveData(); 
             }
         }
 
