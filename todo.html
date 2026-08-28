@@ -295,10 +295,9 @@
                                 ${statusText}
                             </div>
                             <select onchange="updatePriority('${task.id}', this.value)" onclick="event.stopPropagation()" style="font-size: 10px; font-weight: bold; padding: 2px 4px; border-radius: 4px; background: rgba(0,0,0,0.2); color: ${priColor}; border: none; outline: none; cursor: pointer; text-align: right;">
-                                <option value="None" style="background: var(--entry-bg); color: var(--text-light);" ${task.priority === 'None' ? 'selected' : ''}>No Priority</option>
                                 <option value="High" style="background: var(--entry-bg); color: var(--pri-high);" ${task.priority === 'High' ? 'selected' : ''}>High Priority</option>
                                 <option value="Medium" style="background: var(--entry-bg); color: var(--pri-med);" ${task.priority === 'Medium' ? 'selected' : ''}>Med Priority</option>
-                                <option value="Low" style="background: var(--entry-bg); color: var(--pri-low);" ${task.priority === 'Low' ? 'selected' : ''}>Low Priority</option>
+                                <option value="Low" style="background: var(--entry-bg); color: var(--pri-low);" ${task.priority === 'Low' || task.priority === 'None' ? 'selected' : ''}>Low Priority</option>
                             </select>
                         </div>
                         <div class="card-header">
@@ -545,17 +544,15 @@
         }
 
         // --- Checklist Actions ---
-        function quickAddCheck(taskId) {
-            const task = data.tasks.find(t => t.id === taskId);
-            if (task) {
-                task.checklist.push({ text: "New Item", done: false });
-                task.checklistOpen = true; 
-                saveData();
-                setTimeout(() => {
-                    const el = document.getElementById(`chk-title-${taskId}-${task.checklist.length - 1}`);
-                    if(el) { el.focus(); document.execCommand('selectAll', false, null); }
-                }, 10);
-            }
+        function quickAddTask(col) {
+            const id = Date.now().toString();
+            // priority is now set to "Low" instead of "None"
+            data.tasks.push({ id, text: "New Card", column: col, priority: "Low", desc: "", checklist: [], checklistOpen: true });
+            saveData();
+            setTimeout(() => {
+                const el = document.getElementById(`card-title-${id}`);
+                if(el) { el.focus(); document.execCommand('selectAll', false, null); }
+            }, 10);
         }
 
         function updateChkName(taskId, idx, newText) {
