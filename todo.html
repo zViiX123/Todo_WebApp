@@ -19,7 +19,7 @@
             background: color-mix(in srgb, var(--bg-col) 85%, transparent) !important;
             backdrop-filter: blur(8px);
         }
-        header, dialog {
+        header {
             background: color-mix(in srgb, var(--bg-col-head) 85%, transparent) !important;
             backdrop-filter: blur(8px);
         }
@@ -202,25 +202,21 @@
         .chk-icon-btn.del { color: #A64D4D; }
         .chk-icon-btn.del:hover { color: #E86B6B; text-shadow: 0 0 8px rgba(232, 107, 107, 0.8); }
 
-        /* Modal styles */
-        dialog {
-            background: var(--bg-main); color: var(--text-light); border: 1px solid var(--bg-col-head);
-            border-radius: 8px; padding: 24px; width: 450px; max-width: 90%;
-        }
-        dialog::backdrop { background: rgba(0, 0, 0, 0.6); }
-        .modal-group { margin-bottom: 16px; display: flex; flex-direction: column; gap: 4px; }
-        .modal-group label { color: var(--text-muted); font-size: 12px; font-weight: bold; }
-        input, select, textarea {
+        input, select {
             background: var(--entry-bg); color: var(--entry-fg); border: none; padding: 8px;
             border-radius: 4px; font-family: inherit; font-size: 14px;
         }
-        textarea { resize: vertical; min-height: 60px; }
         button.primary { background: var(--btn-bg); color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
         button.danger { background: var(--danger); color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
-        
-        .chk-item { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-        .chk-item input[type="checkbox"] { width: 16px; height: 16px; }
-        .chk-item button { background: transparent; border: none; color: var(--danger); cursor: pointer; }
+
+        /* Undo toast for soft-deleted cards and lists */
+        #undoToast {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            background: var(--bg-col-head); color: var(--text-light); padding: 10px 16px;
+            border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+            align-items: center; gap: 12px; z-index: 999; display: none;
+        }
+        #undoToast.show { display: flex; }
 
         /* Custom themed scrollbars */
         ::-webkit-scrollbar { height: 12px; width: 12px; }
@@ -232,7 +228,11 @@
 <body>
 
     <header>
-        <div></div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <select id="boardSelect" onchange="switchBoard(this.value)" title="Switch board" style="background: var(--entry-bg); color: var(--text-light); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 4px 8px; font-weight: bold; font-size: 14px; outline: none; cursor: pointer; max-width: 160px;"></select>
+            <button onclick="addBoard()" title="New board" style="background: var(--entry-bg); color: var(--text-light); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 4px 8px; font-weight: bold; font-size: 14px; cursor: pointer; outline: none;">＋</button>
+            <button onclick="deleteBoard()" title="Delete this board" style="background: var(--entry-bg); color: var(--danger); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 4px 8px; font-weight: bold; font-size: 14px; cursor: pointer; outline: none;">🗑</button>
+        </div>
         <span id="board-title" contenteditable="true" onblur="updateBoardTitle(this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" style="font-size: 20px; font-weight: bold; outline: none; cursor: text; text-align: center;">✦ Todo Board Studio</span>
 
         <div style="justify-self: end; display: flex; gap: 8px; align-items: center;">
@@ -261,52 +261,10 @@
     </header>
     <div id="board"></div>
 
-    <!-- Edit Task Modal -->
-    <dialog id="taskModal">
-        <input type="hidden" id="editId">
-
-        <div class="modal-group">
-            <input type="text" id="editTitle" style="font-size: 18px; font-weight: bold; border-bottom: 2px solid var(--entry-bg); background: transparent; padding: 0 0 8px 0;">
-        </div>
-
-        <div style="display: flex; gap: 12px;">
-            <div class="modal-group" style="flex: 1;">
-                <label>List</label>
-                <select id="editCol"></select>
-            </div>
-            <div class="modal-group" style="flex: 1;">
-                <label>Priority</label>
-                <select id="editPri">
-                    <option value="None">None</option>
-                    <option value="High">High</option>
-                    <option value="Medium">Medium</option>
-                    <option value="Low">Low</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="modal-group">
-            <label>Description</label>
-            <textarea id="editDesc"></textarea>
-        </div>
-
-        <div class="modal-group">
-            <label>Checklist</label>
-            <div id="chkContainer"></div>
-            <div style="display: flex; gap: 8px; margin-top: 8px;">
-                <input type="text" id="newChkInput" placeholder="Add an item..." style="flex: 1;" onkeypress="if(event.key === 'Enter') addChecklistItem()">
-                <button class="primary" type="button" onclick="addChecklistItem()">Add</button>
-            </div>
-        </div>
-
-        <div style="display: flex; justify-content: space-between; margin-top: 24px;">
-            <button class="danger" onclick="deleteTask()">Delete Card</button>
-            <div style="display: flex; gap: 8px;">
-                <button class="primary" style="background: transparent; color: var(--text-light);" onclick="document.getElementById('taskModal').close()">Cancel</button>
-                <button class="primary" onclick="saveTask()">Save & Close</button>
-            </div>
-        </div>
-    </dialog>
+    <div id="undoToast">
+        <span id="undoToastMsg"></span>
+        <button class="primary" onclick="undoDelete()">Undo</button>
+    </div>
 
     <script>
         // --- State management ---
@@ -319,16 +277,102 @@
             ]
         };
 
-        let data = JSON.parse(localStorage.getItem("todoDataStudio")) || DEFAULT_DATA;
+        // --- Multi-board storage, migrating any pre-existing single-board save ---
+        let boards = JSON.parse(localStorage.getItem("todoBoardsStudio"));
+        let activeBoardId = localStorage.getItem("todoActiveBoardId");
+
+        if (!boards) {
+            const legacy = JSON.parse(localStorage.getItem("todoDataStudio"));
+            const id = "board-" + Date.now();
+            boards = { [id]: legacy || DEFAULT_DATA };
+            activeBoardId = id;
+        }
+        if (!activeBoardId || !boards[activeBoardId]) {
+            activeBoardId = Object.keys(boards)[0];
+        }
+
+        let data = boards[activeBoardId];
         if (!data.theme) data.theme = "purple"; // Give old saves a default theme
         if (!data.boardTitle) data.boardTitle = "✦ Todo Board Studio";
-        document.documentElement.setAttribute('data-theme', data.theme); // Apply it to the page
         if (!data.columnColors) data.columnColors = {};
-        let activeChecklist = [];
+        document.documentElement.setAttribute('data-theme', data.theme); // Apply it to the page
+
+        let pendingDelete = null; // holds a restore function while the undo toast is showing
+        let undoTimeoutId = null;
 
         function saveData() {
-            localStorage.setItem("todoDataStudio", JSON.stringify(data));
+            boards[activeBoardId] = data;
+            localStorage.setItem("todoBoardsStudio", JSON.stringify(boards));
+            localStorage.setItem("todoActiveBoardId", activeBoardId);
+            renderBoardSelector();
             renderBoard();
+        }
+
+        // --- Board switching ---
+        function renderBoardSelector() {
+            const sel = document.getElementById("boardSelect");
+            sel.innerHTML = Object.keys(boards).map(id =>
+                `<option value="${id}" ${id === activeBoardId ? 'selected' : ''}>${boards[id].boardTitle || 'Untitled Board'}</option>`
+            ).join('');
+        }
+
+        function switchBoard(id) {
+            if (!boards[id]) return;
+            activeBoardId = id;
+            data = boards[activeBoardId];
+            if (!data.theme) data.theme = "purple";
+            if (!data.boardTitle) data.boardTitle = "✦ Todo Board Studio";
+            if (!data.columnColors) data.columnColors = {};
+            localStorage.setItem("todoActiveBoardId", activeBoardId);
+            document.documentElement.setAttribute('data-theme', data.theme);
+            document.getElementById('themeSelect').value = data.theme;
+            document.getElementById('board-title').innerText = data.boardTitle;
+            renderBoardSelector();
+            renderBoard();
+        }
+
+        function addBoard() {
+            const id = "board-" + Date.now();
+            boards[id] = {
+                columns: ["Not started", "In progress", "Done"],
+                tasks: [],
+                boardTitle: "New Board",
+                theme: "purple",
+                columnColors: {}
+            };
+            localStorage.setItem("todoBoardsStudio", JSON.stringify(boards));
+            switchBoard(id);
+        }
+
+        function deleteBoard() {
+            const ids = Object.keys(boards);
+            if (ids.length <= 1) return alert("You need at least one board.");
+            if (!confirm(`Delete the board "${data.boardTitle}"? This cannot be undone.`)) return;
+            delete boards[activeBoardId];
+            localStorage.setItem("todoBoardsStudio", JSON.stringify(boards));
+            switchBoard(Object.keys(boards)[0]);
+        }
+
+        // --- Undo toast ---
+        function showUndoToast(message, restoreFn) {
+            pendingDelete = restoreFn;
+            clearTimeout(undoTimeoutId);
+            const toast = document.getElementById("undoToast");
+            document.getElementById("undoToastMsg").innerText = message;
+            toast.classList.add("show");
+            undoTimeoutId = setTimeout(() => {
+                toast.classList.remove("show");
+                pendingDelete = null;
+            }, 5000);
+        }
+
+        function undoDelete() {
+            if (!pendingDelete) return;
+            clearTimeout(undoTimeoutId);
+            document.getElementById("undoToast").classList.remove("show");
+            const restore = pendingDelete;
+            pendingDelete = null;
+            restore();
         }
 
         // --- Rendering ---
@@ -375,7 +419,8 @@
                     card.className = "card";
                     card.draggable = true;
                     card.ondragstart = (e) => drag(e, task.id);
-                    card.onclick = () => openTask(task.id);
+                    card.ondragover = (e) => allowDrop(e);
+                    card.ondrop = (e) => cardDrop(e, task.id);
 
                     // Card adopts column color, lightened via a white transparent overlay
                     card.style.backgroundColor = data.columnColors[colName] || 'var(--bg-card)';
@@ -508,6 +553,27 @@
             document.querySelectorAll('.card').forEach(c => c.classList.remove('dragging'));
         }
 
+        function cardDrop(ev, targetTaskId) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            const id = ev.dataTransfer.getData("card-id");
+            if (!id || id === targetTaskId) return;
+
+            const task = data.tasks.find(t => t.id === id);
+            const targetTask = data.tasks.find(t => t.id === targetTaskId);
+            if (!task || !targetTask) return;
+
+            task.column = targetTask.column;
+
+            const fromIdx = data.tasks.indexOf(task);
+            data.tasks.splice(fromIdx, 1);
+            const toIdx = data.tasks.indexOf(targetTask);
+            data.tasks.splice(toIdx, 0, task);
+
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('dragging'));
+            saveData();
+        }
+
         function colDragStart(ev, name) {
             ev.dataTransfer.setData("col-name", name);
             ev.target.classList.add('col-dragging');
@@ -528,66 +594,6 @@
             saveData();
         }
 
-        // --- Modal logic ---
-        const modal = document.getElementById("taskModal");
-
-        function openTask(id) {
-            const task = data.tasks.find(t => t.id === id);
-            document.getElementById("editId").value = task.id;
-            document.getElementById("editTitle").value = task.text;
-            document.getElementById("editDesc").value = task.desc || "";
-            document.getElementById("editPri").value = task.priority || "None";
-
-            const colSelect = document.getElementById("editCol");
-            colSelect.innerHTML = data.columns.map(c => `<option value="${c}">${c}</option>`).join('');
-            colSelect.value = task.column;
-
-            activeChecklist = JSON.parse(JSON.stringify(task.checklist || []));
-            renderChecklist();
-            modal.showModal();
-        }
-
-        function renderChecklist() {
-            const cont = document.getElementById("chkContainer");
-            cont.innerHTML = activeChecklist.map((item, i) => `
-                <div class="chk-item">
-                    <input type="checkbox" ${item.done ? "checked" : ""} onchange="activeChecklist[${i}].done = this.checked">
-                    <span style="flex:1; ${item.done ? 'text-decoration: line-through; color: var(--text-muted);' : ''}">${item.text}</span>
-                    <button type="button" onclick="activeChecklist.splice(${i}, 1); renderChecklist()">✕</button>
-                </div>
-            `).join("");
-        }
-
-        function addChecklistItem() {
-            const input = document.getElementById("newChkInput");
-            if (input.value.trim()) {
-                activeChecklist.push({ text: input.value.trim(), done: false });
-                input.value = "";
-                renderChecklist();
-            }
-        }
-
-        function saveTask() {
-            const id = document.getElementById("editId").value;
-            const task = data.tasks.find(t => t.id === id);
-            task.text = document.getElementById("editTitle").value;
-            task.column = document.getElementById("editCol").value;
-            task.priority = document.getElementById("editPri").value;
-            task.desc = document.getElementById("editDesc").value;
-            task.checklist = activeChecklist;
-            modal.close();
-            saveData();
-        }
-
-        function deleteTask() {
-            if (confirm("Permanently delete this card?")) {
-                const id = document.getElementById("editId").value;
-                data.tasks = data.tasks.filter(t => t.id !== id);
-                modal.close();
-                saveData();
-            }
-        }
-
         function updateColColor(name, color) {
             data.columnColors[name] = color;
             saveData();
@@ -606,15 +612,29 @@
             const task = data.tasks.find(t => t.id === taskId);
             if (task && task.checklistOpen !== isOpen) {
                 task.checklistOpen = isOpen;
-                localStorage.setItem("todoDataStudio", JSON.stringify(data));
+                boards[activeBoardId] = data;
+                localStorage.setItem("todoBoardsStudio", JSON.stringify(boards));
             }
         }
 
         // --- Column actions ---
         function deleteCol(name) {
             if (data.columns.length <= 1) return alert("You need at least one list.");
+
+            const colIdx = data.columns.indexOf(name);
+            const removedTasks = data.tasks.filter(t => t.column === name);
+            const color = data.columnColors[name];
+
+            data.columns.splice(colIdx, 1);
             data.tasks = data.tasks.filter(t => t.column !== name);
-            data.columns = data.columns.filter(c => c !== name);
+            delete data.columnColors[name];
+
+            showUndoToast(`Deleted list "${name}"`, () => {
+                data.columns.splice(colIdx, 0, name);
+                data.tasks.push(...removedTasks);
+                if (color) data.columnColors[name] = color;
+                saveData();
+            });
             saveData();
         }
 
@@ -633,6 +653,7 @@
             saveData();
         }
 
+        // --- Task actions ---
         function updateCardName(id, newText) {
             const task = data.tasks.find(t => t.id === id);
             if (task) {
@@ -650,14 +671,19 @@
         }
 
         function quickDeleteTask(id) {
-            data.tasks = data.tasks.filter(t => t.id !== id);
+            const idx = data.tasks.findIndex(t => t.id === id);
+            if (idx === -1) return;
+            const [removed] = data.tasks.splice(idx, 1);
+            showUndoToast(`Deleted "${removed.text}"`, () => {
+                data.tasks.splice(idx, 0, removed);
+                saveData();
+            });
             saveData();
         }
 
         // --- Checklist actions ---
         function quickAddTask(col) {
             const id = Date.now().toString();
-            // Priority defaults to "Low" here (overrides the earlier definition above)
             data.tasks.push({ id, text: "New Card", column: col, priority: "Low", desc: "", checklist: [], checklistOpen: true });
             saveData();
             setTimeout(() => {
@@ -741,10 +767,11 @@
             event.target.value = ""; // Reset input so the same file can be re-uploaded if needed
         }
 
-        // Boot sequence: set theme and custom board title
+        // Boot sequence: set theme, board title, and populate the board switcher
         window.onload = () => {
             document.getElementById('themeSelect').value = data.theme;
             document.getElementById('board-title').innerText = data.boardTitle;
+            renderBoardSelector();
         };
 
         // Initialize
