@@ -96,7 +96,7 @@
 
         header {
             background: var(--bg-col-head); padding: 16px 24px;
-            font-size: 20px; font-weight: bold; display: flex; justify-content: space-between;
+            display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
         }
 
         #board {
@@ -207,25 +207,25 @@
 <body>
 
     <header>
-        <span>✦ Todo Board Studio</span>
-        <select id="themeSelect" onchange="changeTheme(this.value)" style="background: var(--entry-bg); color: var(--text-light); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 4px 8px; font-weight: bold; font-size: 14px; outline: none; cursor: pointer;">
-            <!-- Base Themes -->
-            <option value="purple">Midnight Purple</option>
-            <option value="dark">Classic Dark</option>
-            <option value="blue">Slate Blue</option>
-            <!-- New Themes -->
-            <option value="forest">Forest Green</option>
-            <option value="crimson">Crimson Red</option>
-            <option value="mocha">Coffee Mocha</option>
-            <option value="teal">Ocean Teal</option>
-            <option value="sunset">Sunset Orange</option>
-            <option value="nord">Nordic Frost</option>
-            <option value="dracula">Dracula</option>
-            <!-- Dev & Workspace Themes -->
-            <option value="viewport">3D Viewport Dark</option>
-            <option value="engine">Game Engine Graphite</option>
-            <option value="retro">Retro Console Boot</option>
-        </select>
+        <div></div> <span id="board-title" contenteditable="true" onblur="updateBoardTitle(this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" style="font-size: 20px; font-weight: bold; outline: none; cursor: text; text-align: center;">✦ Todo Board Studio</span>
+        
+        <div style="justify-self: end;">
+            <select id="themeSelect" onchange="changeTheme(this.value)" style="background: var(--entry-bg); color: var(--text-light); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 4px 8px; font-weight: bold; font-size: 14px; outline: none; cursor: pointer;">
+                <option value="purple">Midnight Purple</option>
+                <option value="dark">Classic Dark</option>
+                <option value="blue">Slate Blue</option>
+                <option value="forest">Forest Green</option>
+                <option value="crimson">Crimson Red</option>
+                <option value="mocha">Coffee Mocha</option>
+                <option value="teal">Ocean Teal</option>
+                <option value="sunset">Sunset Orange</option>
+                <option value="nord">Nordic Frost</option>
+                <option value="dracula">Dracula</option>
+                <option value="viewport">3D Viewport Dark</option>
+                <option value="engine">Game Engine Graphite</option>
+                <option value="retro">Retro Console Boot</option>
+            </select>
+        </div>
     </header>
     <div id="board"></div>
 
