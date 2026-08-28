@@ -227,12 +227,29 @@
                     if (task.checklist && task.checklist.length > 0) {
                         const done = task.checklist.filter(c => c.done).length;
                         const pct = (done / task.checklist.length) * 100;
+                        
+                        // Generate the individual checkboxes
+                        let chkHtml = task.checklist.map((c, i) => `
+                            <div style="font-size: 12px; margin-top: 4px; display: flex; align-items: center; gap: 6px;">
+                                <input type="checkbox" ${c.done ? 'checked' : ''} onclick="event.stopPropagation(); toggleCardCheck('${task.id}', ${i}, this.checked)">
+                                <span style="${c.done ? 'text-decoration: line-through; color: var(--text-muted);' : ''}">${c.text}</span>
+                            </div>
+                        `).join('');
+
+                        // Wrap them in an HTML <details> dropdown so they can be shown/hidden
                         html += `
+                            <details onclick="event.stopPropagation()">
+                                <summary style="font-size: 12px; color: var(--text-muted); cursor: pointer; outline: none; margin-top: 8px;">Checklist (${done}/${task.checklist.length})</summary>
+                                <div style="margin-top: 6px; padding-left: 4px; margin-bottom: 8px;">
+                                    ${chkHtml}
+                                </div>
+                            </details>
                             <div class="progress-bg">
                                 <div class="progress-fill ${pct === 100 ? 'done' : ''}" style="width: ${pct}%"></div>
                             </div>
                         `;
                     }
+                    card.innerHTML = html;
                     card.innerHTML = html;
                     listEl.appendChild(card);
                 });
