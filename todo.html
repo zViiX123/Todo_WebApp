@@ -280,10 +280,23 @@
                         }
                     }
 
-                    // --- 3. GENERATE HTML (Titles and Checklists are now editable!) ---
+                    // --- 3. GENERATE HTML (Priority Dropdown + Always-Visible Checklist) ---
+                    let priColor = "var(--text-light)";
+                    if(task.priority === "High") priColor = "var(--pri-high)";
+                    if(task.priority === "Medium") priColor = "var(--pri-med)";
+                    if(task.priority === "Low") priColor = "var(--pri-low)";
+
                     let html = `
-                        <div style="font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px; background: rgba(0,0,0,0.3); color: ${statusColor}; display: inline-block; margin-bottom: 6px;">
-                            ${statusText}
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <div style="font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px; background: rgba(0,0,0,0.3); color: ${statusColor};">
+                                ${statusText}
+                            </div>
+                            <select onchange="updatePriority('${task.id}', this.value)" onclick="event.stopPropagation()" style="font-size: 10px; font-weight: bold; padding: 2px 4px; border-radius: 4px; background: rgba(0,0,0,0.2); color: ${priColor}; border: none; outline: none; cursor: pointer; text-align: right;">
+                                <option value="None" style="background: var(--entry-bg); color: var(--text-light);" ${task.priority === 'None' ? 'selected' : ''}>No Priority</option>
+                                <option value="High" style="background: var(--entry-bg); color: var(--pri-high);" ${task.priority === 'High' ? 'selected' : ''}>High Priority</option>
+                                <option value="Medium" style="background: var(--entry-bg); color: var(--pri-med);" ${task.priority === 'Medium' ? 'selected' : ''}>Med Priority</option>
+                                <option value="Low" style="background: var(--entry-bg); color: var(--pri-low);" ${task.priority === 'Low' ? 'selected' : ''}>Low Priority</option>
+                            </select>
                         </div>
                         <div class="card-header">
                             <div id="card-title-${task.id}" class="card-title" contenteditable="true" onblur="updateCardName('${task.id}', this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="outline: none; cursor: text; min-height: 18px; flex-grow: 1;">${task.text}</div>
@@ -291,30 +304,32 @@
                         </div>
                     `;
                     
-                    if (total > 0) {
-                        let chkHtml = task.checklist.map((c, i) => `
+                    // Generate checkboxes (Now rendered even if empty)
+                    let chkHtml = '';
+                    if (task.checklist) {
+                        chkHtml = task.checklist.map((c, i) => `
                             <div style="font-size: 12px; margin-top: 4px; display: flex; align-items: center; gap: 6px;">
                                 <input type="checkbox" ${c.done ? 'checked' : ''} onclick="event.stopPropagation(); toggleCardCheck('${task.id}', ${i}, this.checked)">
                                 <span id="chk-title-${task.id}-${i}" contenteditable="true" onblur="updateChkName('${task.id}', ${i}, this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="flex-grow: 1; outline: none; cursor: text; ${c.done ? 'text-decoration: line-through; color: var(--text-muted);' : ''}">${c.text}</span>
                                 <button class="chk-icon-btn del" title="Delete Item" onclick="event.stopPropagation(); quickDelCheck('${task.id}', ${i})">✕</button>
                             </div>
                         `).join('');
-
-                        html += `
-                            <details ${task.checklistOpen ? 'open' : ''} onclick="event.stopPropagation()" ontoggle="toggleDetails('${task.id}', this.open)">
-                                <summary class="glow-hover" style="font-size: 12px; color: var(--text-muted); cursor: pointer; outline: none; margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
-                                    <span>Checklist (${done}/${total})</span>
-                                    <button class="chk-icon-btn add" title="Add Item" onclick="event.stopPropagation(); event.preventDefault(); quickAddCheck('${task.id}')">+</button>
-                                </summary>
-                                <div style="margin-top: 6px; padding-left: 4px; margin-bottom: 8px;">
-                                    ${chkHtml}
-                                </div>
-                            </details>
-                            <div class="progress-bg">
-                                <div class="progress-fill ${pct === 100 ? 'done' : ''}" style="width: ${pct}%"></div>
-                            </div>
-                        `;
                     }
+
+                    html += `
+                        <details ${task.checklistOpen ? 'open' : ''} onclick="event.stopPropagation()" ontoggle="toggleDetails('${task.id}', this.open)">
+                            <summary class="glow-hover" style="font-size: 12px; color: var(--text-muted); cursor: pointer; outline: none; margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
+                                <span>Checklist (${done}/${total})</span>
+                                <button class="chk-icon-btn add" title="Add Item" onclick="event.stopPropagation(); event.preventDefault(); quickAddCheck('${task.id}')">+</button>
+                            </summary>
+                            <div style="margin-top: 6px; padding-left: 4px; margin-bottom: 8px;">
+                                ${chkHtml}
+                            </div>
+                        </details>
+                        <div class="progress-bg">
+                            <div class="progress-fill ${pct === 100 && total > 0 ? 'done' : ''}" style="width: ${pct}%"></div>
+                        </div>
+                    `;
                     card.innerHTML = html;
                     listEl.appendChild(card);
                 });
@@ -499,7 +514,8 @@
         // --- Task Actions ---
         function quickAddTask(col) {
             const id = Date.now().toString();
-            data.tasks.push({ id, text: "New Card", column: col, priority: "None", desc: "", checklist: [] });
+            // Added checklistOpen: true so it drops down instantly
+            data.tasks.push({ id, text: "New Card", column: col, priority: "None", desc: "", checklist: [], checklistOpen: true });
             saveData();
             setTimeout(() => {
                 const el = document.getElementById(`card-title-${id}`);
