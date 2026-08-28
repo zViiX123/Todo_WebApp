@@ -27,6 +27,67 @@
             --text-muted: #94A3B8; --btn-bg: #475569; --entry-bg: #1E293B;
         }
 
+        /* 10 New Themes! */
+        [data-theme="forest"] {
+            --bg-main: #141C14; --bg-col: #1B291B; --bg-col-head: #283D28;
+            --bg-card: #354F35; --bg-card-hover: #466646;
+            --text-muted: #95B095; --btn-bg: #354F35; --entry-bg: #1B291B;
+        }
+        
+        [data-theme="crimson"] {
+            --bg-main: #201111; --bg-col: #2D1818; --bg-col-head: #422323;
+            --bg-card: #572F2F; --bg-card-hover: #703D3D;
+            --text-muted: #B89292; --btn-bg: #572F2F; --entry-bg: #2D1818;
+        }
+
+        [data-theme="mocha"] {
+            --bg-main: #231B15; --bg-col: #33261C; --bg-col-head: #453427;
+            --bg-card: #574333; --bg-card-hover: #6E5642;
+            --text-muted: #B09C8B; --btn-bg: #574333; --entry-bg: #33261C;
+        }
+
+        [data-theme="teal"] {
+            --bg-main: #0F1E1E; --bg-col: #162E2E; --bg-col-head: #204242;
+            --bg-card: #2B5757; --bg-card-hover: #3B7575;
+            --text-muted: #8BB3B3; --btn-bg: #2B5757; --entry-bg: #162E2E;
+        }
+
+        [data-theme="sunset"] {
+            --bg-main: #24130F; --bg-col: #361D16; --bg-col-head: #4A281E;
+            --bg-card: #613528; --bg-card-hover: #7D4434;
+            --text-muted: #B88A7D; --btn-bg: #613528; --entry-bg: #361D16;
+        }
+
+        [data-theme="nord"] {
+            --bg-main: #2E3440; --bg-col: #3B4252; --bg-col-head: #434C5E;
+            --bg-card: #4C566A; --bg-card-hover: #5E6A80;
+            --text-muted: #D8DEE9; --btn-bg: #4C566A; --entry-bg: #3B4252;
+        }
+
+        [data-theme="dracula"] {
+            --bg-main: #282A36; --bg-col: #44475A; --bg-col-head: #50536B;
+            --bg-card: #6272A4; --bg-card-hover: #7988B5;
+            --text-muted: #F8F8F2; --btn-bg: #6272A4; --entry-bg: #44475A;
+        }
+
+        [data-theme="retro"] {
+            --bg-main: #000000; --bg-col: #080D1A; --bg-col-head: #101A33;
+            --bg-card: #1A2A4D; --bg-card-hover: #243B6B;
+            --text-muted: #8099CC; --btn-bg: #1A2A4D; --entry-bg: #080D1A;
+        }
+
+        [data-theme="viewport"] {
+            --bg-main: #1D1D1D; --bg-col: #282828; --bg-col-head: #303030;
+            --bg-card: #3A3A3A; --bg-card-hover: #474747;
+            --text-muted: #9E9E9E; --btn-bg: #3A3A3A; --entry-bg: #282828;
+        }
+
+        [data-theme="engine"] {
+            --bg-main: #222222; --bg-col: #2A2A2A; --bg-col-head: #333333;
+            --bg-card: #404040; --bg-card-hover: #555555;
+            --text-muted: #AAAAAA; --btn-bg: #404040; --entry-bg: #2A2A2A;
+        }
+
         body {
             margin: 0; padding: 0; background: var(--bg-main); color: var(--text-light);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -148,9 +209,22 @@
     <header>
         <span>✦ Todo Board Studio</span>
         <select id="themeSelect" onchange="changeTheme(this.value)" style="background: var(--entry-bg); color: var(--text-light); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 4px 8px; font-weight: bold; font-size: 14px; outline: none; cursor: pointer;">
+            <!-- Base Themes -->
             <option value="purple">Midnight Purple</option>
             <option value="dark">Classic Dark</option>
             <option value="blue">Slate Blue</option>
+            <!-- New Themes -->
+            <option value="forest">Forest Green</option>
+            <option value="crimson">Crimson Red</option>
+            <option value="mocha">Coffee Mocha</option>
+            <option value="teal">Ocean Teal</option>
+            <option value="sunset">Sunset Orange</option>
+            <option value="nord">Nordic Frost</option>
+            <option value="dracula">Dracula</option>
+            <!-- Dev & Workspace Themes -->
+            <option value="viewport">3D Viewport Dark</option>
+            <option value="engine">Game Engine Graphite</option>
+            <option value="retro">Retro Console Boot</option>
         </select>
     </header>
     <div id="board"></div>
