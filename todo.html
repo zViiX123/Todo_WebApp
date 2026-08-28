@@ -241,14 +241,35 @@
                     if(task.priority === "Low") card.style.borderLeftColor = "var(--pri-low)";
 
                     // STATUS BADGE COLOR LOGIC
-                    let statusColor = "var(--text-light)"; 
-                    if (task.column === "Not started") statusColor = "#E06C75"; 
-                    else if (task.column === "In progress") statusColor = "#6FA8E5"; 
-                    else if (task.column === "Done") statusColor = "#7FCB8E"; 
+                    // --- 1. CALCULATE CHECKLIST PROGRESS FIRST ---
+                    let done = 0;
+                    let total = 0;
+                    let pct = 0;
+                    
+                    if (task.checklist && task.checklist.length > 0) {
+                        total = task.checklist.length;
+                        done = task.checklist.filter(c => c.done).length;
+                        pct = (done / total) * 100;
+                    }
 
+                    // --- 2. STATUS BADGE LOGIC (Based on Checklist, not Column) ---
+                    let statusText = "Not started";
+                    let statusColor = "#E06C75"; // Red (Default / 0%)
+
+                    if (total > 0) {
+                        if (pct === 100) {
+                            statusText = "Done";
+                            statusColor = "#7FCB8E"; // Green
+                        } else if (pct > 0) {
+                            statusText = "In progress";
+                            statusColor = "#6FA8E5"; // Blue
+                        }
+                    }
+
+                    // --- 3. GENERATE HTML ---
                     let html = `
                         <div style="font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px; background: rgba(0,0,0,0.3); color: ${statusColor}; display: inline-block; margin-bottom: 6px;">
-                            ${task.column}
+                            ${statusText}
                         </div>
                         <div class="card-header">
                             <div class="card-title">${task.text}</div>
@@ -256,10 +277,7 @@
                         </div>
                     `;
                     
-                    if (task.checklist && task.checklist.length > 0) {
-                        const done = task.checklist.filter(c => c.done).length;
-                        const pct = (done / task.checklist.length) * 100;
-                        
+                    if (total > 0) {
                         // Generate the individual checkboxes
                         let chkHtml = task.checklist.map((c, i) => `
                             <div style="font-size: 12px; margin-top: 4px; display: flex; align-items: center; gap: 6px;">
@@ -271,7 +289,7 @@
                         // Wrap them in an HTML <details> dropdown so they can be shown/hidden
                         html += `
                             <details onclick="event.stopPropagation()">
-                                <summary style="font-size: 12px; color: var(--text-muted); cursor: pointer; outline: none; margin-top: 8px;">Checklist (${done}/${task.checklist.length})</summary>
+                                <summary style="font-size: 12px; color: var(--text-muted); cursor: pointer; outline: none; margin-top: 8px;">Checklist (${done}/${total})</summary>
                                 <div style="margin-top: 6px; padding-left: 4px; margin-bottom: 8px;">
                                     ${chkHtml}
                                 </div>
