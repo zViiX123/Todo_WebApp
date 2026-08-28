@@ -95,6 +95,20 @@
         }
         .add-list-btn:hover { filter: brightness(1.2); }
 
+        /* Glowing Checklist Dropdown Text */
+        .glow-hover { transition: text-shadow 0.2s, color 0.2s; }
+        .glow-hover:hover { text-shadow: 0 0 8px rgba(255, 255, 255, 0.6); color: #FFF; }
+        
+        /* Mini buttons for the Checklist Items */
+        .chk-icon-btn {
+            background: transparent; border: none; font-weight: bold; cursor: pointer;
+            padding: 0 4px; font-size: 14px; transition: text-shadow 0.2s, color 0.2s;
+        }
+        .chk-icon-btn.add { color: #51A15F; font-size: 16px; }
+        .chk-icon-btn.add:hover { color: #6BE87F; text-shadow: 0 0 8px rgba(107, 232, 127, 0.8); }
+        .chk-icon-btn.del { color: #A64D4D; }
+        .chk-icon-btn.del:hover { color: #E86B6B; text-shadow: 0 0 8px rgba(232, 107, 107, 0.8); }
+
         /* Modal Styles */
         dialog {
             background: var(--bg-main); color: var(--text-light); border: 1px solid var(--bg-col-head);
@@ -278,18 +292,22 @@
                     `;
                     
                     if (total > 0) {
-                        // Generate the individual checkboxes
+                        // Generate the individual checkboxes + the new ✕ button
                         let chkHtml = task.checklist.map((c, i) => `
                             <div style="font-size: 12px; margin-top: 4px; display: flex; align-items: center; gap: 6px;">
                                 <input type="checkbox" ${c.done ? 'checked' : ''} onclick="event.stopPropagation(); toggleCardCheck('${task.id}', ${i}, this.checked)">
-                                <span style="${c.done ? 'text-decoration: line-through; color: var(--text-muted);' : ''}">${c.text}</span>
+                                <span style="flex-grow: 1; ${c.done ? 'text-decoration: line-through; color: var(--text-muted);' : ''}">${c.text}</span>
+                                <button class="chk-icon-btn del" title="Delete Item" onclick="event.stopPropagation(); quickDelCheck('${task.id}', ${i})">✕</button>
                             </div>
                         `).join('');
 
-                        // Wrap them in an HTML <details> dropdown so they can be shown/hidden
+                        // Added 'open' state memory, glow class, and the + button!
                         html += `
-                            <details onclick="event.stopPropagation()">
-                                <summary style="font-size: 12px; color: var(--text-muted); cursor: pointer; outline: none; margin-top: 8px;">Checklist (${done}/${total})</summary>
+                            <details ${task.checklistOpen ? 'open' : ''} onclick="event.stopPropagation()" ontoggle="toggleDetails('${task.id}', this.open)">
+                                <summary class="glow-hover" style="font-size: 12px; color: var(--text-muted); cursor: pointer; outline: none; margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Checklist (${done}/${total})</span>
+                                    <button class="chk-icon-btn add" title="Add Item" onclick="event.stopPropagation(); event.preventDefault(); quickAddCheck('${task.id}')">+</button>
+                                </summary>
                                 <div style="margin-top: 6px; padding-left: 4px; margin-bottom: 8px;">
                                     ${chkHtml}
                                 </div>
@@ -459,6 +477,38 @@
             if (confirm("Delete this card?")) {
                 data.tasks = data.tasks.filter(t => t.id !== id);
                 saveData();
+            }
+        }
+        // Silently saves the open/closed state of the dropdown without redrawing the whole board
+        function toggleDetails(taskId, isOpen) {
+            const task = data.tasks.find(t => t.id === taskId);
+            if (task && task.checklistOpen !== isOpen) {
+                task.checklistOpen = isOpen;
+                localStorage.setItem("todoDataStudio", JSON.stringify(data)); 
+            }
+        }
+
+        // Adds an item directly from the card face
+        function quickAddCheck(taskId) {
+            const text = prompt("New checklist item:");
+            if (text && text.trim()) {
+                const task = data.tasks.find(t => t.id === taskId);
+                if (task) {
+                    task.checklist.push({ text: text.trim(), done: false });
+                    task.checklistOpen = true; // Auto-open the dropdown to show the new item
+                    saveData();
+                }
+            }
+        }
+
+        // Deletes an item directly from the card face
+        function quickDelCheck(taskId, chkIndex) {
+            if (confirm("Delete this item?")) {
+                const task = data.tasks.find(t => t.id === taskId);
+                if (task) {
+                    task.checklist.splice(chkIndex, 1);
+                    saveData();
+                }
             }
         }
 
