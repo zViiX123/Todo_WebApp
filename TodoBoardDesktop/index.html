@@ -1444,15 +1444,23 @@
             const name = data.columns[idx];
             const removedTasks = data.tasks.filter(t => t.column === name);
             const color = data.columnColors[name];
+            const wasCollapsed = data.collapsedCols ? data.collapsedCols.includes(name) : false;
 
             data.columns.splice(idx, 1);
             data.tasks = data.tasks.filter(t => t.column !== name);
             delete data.columnColors[name];
+            if (wasCollapsed && data.collapsedCols) {
+                const cIdx = data.collapsedCols.indexOf(name);
+                if (cIdx > -1) data.collapsedCols.splice(cIdx, 1);
+            }
 
             showUndoToast(`Deleted column "${name}"`, () => {
                 data.columns.splice(idx, 0, name);
                 data.tasks.push(...removedTasks);
                 if (color) data.columnColors[name] = color;
+                if (wasCollapsed && data.collapsedCols && !data.collapsedCols.includes(name)) {
+                    data.collapsedCols.push(name);
+                }
                 saveData();
             });
             saveData();
@@ -1928,10 +1936,16 @@
                 if (parsed.columns && parsed.tasks) {
                     // Single board format
                     const id = "board-" + Date.now();
+                    parsed.tasks = (parsed.tasks || []).map(sanitizeTask);
                     boards[id] = parsed;
                     activeBoardId = id;
                 } else if (typeof parsed === 'object' && Object.keys(parsed).length > 0) {
                     // Multi-board format
+                    Object.keys(parsed).forEach(k => {
+                        if (parsed[k] && parsed[k].tasks) {
+                            parsed[k].tasks = (parsed[k].tasks || []).map(sanitizeTask);
+                        }
+                    });
                     boards = parsed;
                     activeBoardId = Object.keys(boards)[0];
                 } else {
