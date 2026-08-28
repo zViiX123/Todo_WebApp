@@ -202,6 +202,12 @@
         .chk-item { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
         .chk-item input[type="checkbox"] { width: 16px; height: 16px; }
         .chk-item button { background: transparent; border: none; color: var(--danger); cursor: pointer; }
+
+        /* Custom Themed Scrollbars */
+        ::-webkit-scrollbar { height: 12px; width: 12px; }
+        ::-webkit-scrollbar-track { background: var(--bg-main); }
+        ::-webkit-scrollbar-thumb { background: var(--btn-bg); border-radius: 6px; border: 3px solid var(--bg-main); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--btn-hover); }
     </style>
 </head>
 <body>
@@ -209,7 +215,13 @@
     <header>
         <div></div> <span id="board-title" contenteditable="true" onblur="updateBoardTitle(this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" style="font-size: 20px; font-weight: bold; outline: none; cursor: text; text-align: center;">✦ Todo Board Studio</span>
         
-        <div style="justify-self: end;">
+        <div style="justify-self: end; display: flex; gap: 8px; align-items: center;">
+            <button onclick="exportData()" title="Save backup to PC" style="background: var(--entry-bg); color: var(--text-light); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 4px 8px; font-weight: bold; font-size: 14px; cursor: pointer; outline: none;">💾 Export</button>
+            <label title="Load backup from PC" style="background: var(--entry-bg); color: var(--text-light); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 4px 8px; font-weight: bold; font-size: 14px; cursor: pointer; outline: none;">
+                📂 Import
+                <input type="file" accept=".json" onchange="importData(event)" style="display: none;">
+            </label>
+
             <select id="themeSelect" onchange="changeTheme(this.value)" style="background: var(--entry-bg); color: var(--text-light); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 4px 8px; font-weight: bold; font-size: 14px; outline: none; cursor: pointer;">
                 <option value="purple">Midnight Purple</option>
                 <option value="dark">Classic Dark</option>
@@ -678,6 +690,44 @@
             data.boardTitle = newTitle.trim() || "✦ Todo Board Studio";
             document.getElementById('board-title').innerText = data.boardTitle;
             saveData();
+        }
+
+        // --- Backup Actions ---
+        function exportData() {
+            const dataStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "todo_board_backup.json";
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (importedData.columns && importedData.tasks) {
+                        data = importedData;
+                        saveData();
+                        
+                        // Force refresh the title and theme dropdown to match the imported file
+                        document.getElementById('themeSelect').value = data.theme || 'purple';
+                        document.documentElement.setAttribute('data-theme', data.theme || 'purple');
+                        document.getElementById('board-title').innerText = data.boardTitle || '✦ Todo Board Studio';
+                    } else {
+                        alert("Invalid backup file format.");
+                    }
+                } catch (err) {
+                    alert("Error reading file. Make sure it is a valid JSON backup.");
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = ""; // Reset input so you can upload the same file again if needed
         }
 
         // Boot sequence: set theme and custom board title
