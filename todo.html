@@ -112,7 +112,7 @@
         #board {
             display: flex; gap: 16px; padding: 20px; flex-grow: 1;
             align-items: flex-start; align-content: flex-start;
-            flex-wrap: wrap; /* This forces columns to a new row when they don't fit */
+            flex-wrap: wrap; /* Forces columns to a new row when they don't fit */
             overflow-y: auto; /* Enables vertical scrolling for the whole board */
             overflow-x: hidden; /* Kills horizontal scrolling entirely */
         }
@@ -120,7 +120,7 @@
         .column {
             background: var(--bg-col); border-radius: 8px; width: 280px; min-width: 280px;
             display: flex; flex-direction: column; 
-            height: 65vh; /* Locks all columns to exactly 65% of your screen height */
+            height: 65vh; /* Locks all columns to exactly 65% of screen height */
         }
         .column.col-dragging { opacity: 0.4; border: 2px dashed var(--text-muted); }
 
@@ -168,7 +168,7 @@
         .card {
             background: var(--bg-card); border-radius: 6px; padding: 12px; margin-bottom: 8px;
             cursor: pointer; 
-            border: 1px solid #000000; /* Added the black outline */
+            border: 1px solid #000000;
             border-left: 4px solid var(--pri-none);
         }
         .card:hover { filter: brightness(1.2); }
@@ -188,11 +188,11 @@
             background: rgba(0, 0, 0, 0.3); border-color: rgba(255, 255, 255, 0.3); color: var(--text-light); 
         }
 
-        /* Glowing Checklist Dropdown Text */
+        /* Glowing checklist dropdown text on hover */
         .glow-hover { transition: text-shadow 0.2s, color 0.2s; }
         .glow-hover:hover { text-shadow: 0 0 8px rgba(255, 255, 255, 0.6); color: #FFF; }
         
-        /* Mini buttons for the Checklist Items */
+        /* Mini buttons for the checklist items */
         .chk-icon-btn {
             background: transparent; border: none; font-weight: bold; cursor: pointer;
             padding: 0 4px; font-size: 14px; transition: text-shadow 0.2s, color 0.2s;
@@ -202,7 +202,7 @@
         .chk-icon-btn.del { color: #A64D4D; }
         .chk-icon-btn.del:hover { color: #E86B6B; text-shadow: 0 0 8px rgba(232, 107, 107, 0.8); }
 
-        /* Modal Styles */
+        /* Modal styles */
         dialog {
             background: var(--bg-main); color: var(--text-light); border: 1px solid var(--bg-col-head);
             border-radius: 8px; padding: 24px; width: 450px; max-width: 90%;
@@ -222,7 +222,7 @@
         .chk-item input[type="checkbox"] { width: 16px; height: 16px; }
         .chk-item button { background: transparent; border: none; color: var(--danger); cursor: pointer; }
 
-        /* Custom Themed Scrollbars */
+        /* Custom themed scrollbars */
         ::-webkit-scrollbar { height: 12px; width: 12px; }
         ::-webkit-scrollbar-track { background: var(--bg-main); }
         ::-webkit-scrollbar-thumb { background: var(--btn-bg); border-radius: 6px; border: 3px solid var(--bg-main); }
@@ -232,8 +232,9 @@
 <body>
 
     <header>
-        <div></div> <span id="board-title" contenteditable="true" onblur="updateBoardTitle(this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" style="font-size: 20px; font-weight: bold; outline: none; cursor: text; text-align: center;">✦ Todo Board Studio</span>
-        
+        <div></div>
+        <span id="board-title" contenteditable="true" onblur="updateBoardTitle(this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" style="font-size: 20px; font-weight: bold; outline: none; cursor: text; text-align: center;">✦ Todo Board Studio</span>
+
         <div style="justify-self: end; display: flex; gap: 8px; align-items: center;">
             <button onclick="exportData()" title="Save backup to PC" style="background: var(--entry-bg); color: var(--text-light); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 4px 8px; font-weight: bold; font-size: 14px; cursor: pointer; outline: none;">💾 Export</button>
             <label title="Load backup from PC" style="background: var(--entry-bg); color: var(--text-light); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 4px 8px; font-weight: bold; font-size: 14px; cursor: pointer; outline: none;">
@@ -263,7 +264,7 @@
     <!-- Edit Task Modal -->
     <dialog id="taskModal">
         <input type="hidden" id="editId">
-        
+
         <div class="modal-group">
             <input type="text" id="editTitle" style="font-size: 18px; font-weight: bold; border-bottom: 2px solid var(--entry-bg); background: transparent; padding: 0 0 8px 0;">
         </div>
@@ -308,12 +309,12 @@
     </dialog>
 
     <script>
-        // --- State Management ---
+        // --- State management ---
         const DEFAULT_DATA = {
             columns: ["Not started", "In progress", "Done"],
             tasks: [
-                { id: "1", text: "Unwrap archway UV using Active Quads", column: "Not started", priority: "High", desc: "Ensure islands are straightened.", checklist: [{text: "Apply stone brick texture", done: false}] },
-                { id: "2", text: "Draw barrel plank edge highlights", column: "In progress", priority: "Medium", desc: "Use vector layers and bezier curves.", checklist: [{text: "Base color", done: true}, {text: "Shadow lines", done: true}, {text: "Highlights", done: false}] },
+                { id: "1", text: "Unwrap archway UV using Active Quads", column: "Not started", priority: "High", desc: "Ensure islands are straightened.", checklist: [{ text: "Apply stone brick texture", done: false }] },
+                { id: "2", text: "Draw barrel plank edge highlights", column: "In progress", priority: "Medium", desc: "Use vector layers and bezier curves.", checklist: [{ text: "Base color", done: true }, { text: "Shadow lines", done: true }, { text: "Highlights", done: false }] },
                 { id: "3", text: "Bake mantaflow cache for candle fire", column: "Not started", priority: "Low", desc: "Fix physics viewport visibility.", checklist: [] }
             ]
         };
@@ -337,21 +338,21 @@
 
             data.columns.forEach((colName, index) => {
                 const colTasks = data.tasks.filter(t => t.column === colName);
-                
+
                 // Determine dynamic text color based on background contrast
                 let colBg = data.columnColors[colName] || '#31224A';
                 let dynText = '#111111'; // Hardcoded to deep dark gray/black
-                
+
                 const colEl = document.createElement("div");
                 colEl.className = "column";
                 colEl.draggable = true;
                 colEl.ondragstart = (e) => colDragStart(e, colName);
                 colEl.ondragover = (e) => allowDrop(e);
                 colEl.ondrop = (e) => colDrop(e, colName);
-                
+
                 colEl.style.backgroundColor = colBg;
-                
-                // Column Header (Title text is now dynamically colored)
+
+                // Column header (title text is dynamically colored)
                 colEl.innerHTML = `
                     <div class="col-header" style="background: rgba(0,0,0,0.2); display: flex; align-items: center;">
                         <span id="col-title-${index}" contenteditable="true" onblur="updateColName('${colName}', this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" style="flex-grow: 1; outline: none; cursor: text; color: ${dynText};">${colName}</span>
@@ -367,7 +368,7 @@
                     <div class="card-list" ondragover="allowDrop(event)" ondrop="drop(event, '${colName}')"></div>
                 `;
 
-                // Render Tasks
+                // Render tasks
                 const listEl = colEl.querySelector(".card-list");
                 colTasks.forEach(task => {
                     const card = document.createElement("div");
@@ -375,31 +376,30 @@
                     card.draggable = true;
                     card.ondragstart = (e) => drag(e, task.id);
                     card.onclick = () => openTask(task.id);
-                    
-                    // CARD ADOPTS COLUMN COLOR (Lightened further via a stronger white transparent overlay)
+
+                    // Card adopts column color, lightened via a white transparent overlay
                     card.style.backgroundColor = data.columnColors[colName] || 'var(--bg-card)';
                     card.style.backgroundImage = 'linear-gradient(rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.22))';
-                    
-                    // Priority Color mapping
-                    if(task.priority === "High") card.style.borderLeftColor = "var(--pri-high)";
-                    if(task.priority === "Medium") card.style.borderLeftColor = "var(--pri-med)";
-                    if(task.priority === "Low") card.style.borderLeftColor = "var(--pri-low)";
 
-                    // STATUS BADGE COLOR LOGIC
-                    // --- 1. CALCULATE CHECKLIST PROGRESS FIRST ---
+                    // Priority color mapping
+                    if (task.priority === "High") card.style.borderLeftColor = "var(--pri-high)";
+                    if (task.priority === "Medium") card.style.borderLeftColor = "var(--pri-med)";
+                    if (task.priority === "Low") card.style.borderLeftColor = "var(--pri-low)";
+
+                    // --- 1. Calculate checklist progress first ---
                     let done = 0;
                     let total = 0;
                     let pct = 0;
-                    
+
                     if (task.checklist && task.checklist.length > 0) {
                         total = task.checklist.length;
                         done = task.checklist.filter(c => c.done).length;
                         pct = (done / total) * 100;
                     }
 
-                    // --- 2. STATUS BADGE LOGIC (Based on Checklist, not Column) ---
+                    // --- 2. Status badge logic (based on checklist, not column) ---
                     let statusText = "Not started";
-                    let statusColor = "#E06C75"; // Red (Default / 0%)
+                    let statusColor = "#E06C75"; // Red (default / 0%)
 
                     if (total > 0) {
                         if (pct === 100) {
@@ -411,11 +411,11 @@
                         }
                     }
 
-                    // --- 3. GENERATE HTML (Priority Dropdown + Always-Visible Checklist) ---
+                    // --- 3. Generate HTML (priority dropdown + always-visible checklist) ---
                     let priColor = "var(--text-light)";
-                    if(task.priority === "High") priColor = "var(--pri-high)";
-                    if(task.priority === "Medium") priColor = "var(--pri-med)";
-                    if(task.priority === "Low") priColor = "var(--pri-low)";
+                    if (task.priority === "High") priColor = "var(--pri-high)";
+                    if (task.priority === "Medium") priColor = "var(--pri-med)";
+                    if (task.priority === "Low") priColor = "var(--pri-low)";
 
                     let html = `
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
@@ -433,31 +433,31 @@
                             <button class="card-del-btn" title="Delete Card" onclick="event.stopPropagation(); quickDeleteTask('${task.id}')">✕</button>
                         </div>
                     `;
-                    
-                    // Generate the individual checkboxes (Text uses dynText, Done items use opacity to fade out)
-                        let chkHtml = task.checklist.map((c, i) => `
-                            <div style="font-size: 12px; margin-top: 4px; display: flex; align-items: center; gap: 6px;">
-                                <input type="checkbox" ${c.done ? 'checked' : ''} onclick="event.stopPropagation(); toggleCardCheck('${task.id}', ${i}, this.checked)">
-                                <span id="chk-title-${task.id}-${i}" contenteditable="true" onblur="updateChkName('${task.id}', ${i}, this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="flex-grow: 1; outline: none; cursor: text; color: ${dynText}; ${c.done ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${c.text}</span>
-                                <button class="chk-icon-btn del" title="Delete Item" onclick="event.stopPropagation(); quickDelCheck('${task.id}', ${i})">✕</button>
-                            </div>
-                        `).join('');
 
-                        // Wrap them in an HTML <details> dropdown (Summary text uses dynText)
-                        html += `
-                            <details ${task.checklistOpen ? 'open' : ''} onclick="event.stopPropagation()" ontoggle="toggleDetails('${task.id}', this.open)">
-                                <summary class="glow-hover" style="font-size: 12px; color: ${dynText}; opacity: 0.85; cursor: pointer; outline: none; margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
-                                    <span>Checklist (${done}/${total})</span>
-                                    <button class="chk-icon-btn add" title="Add Item" onclick="event.stopPropagation(); event.preventDefault(); quickAddCheck('${task.id}')">+</button>
-                                </summary>
-                                <div style="margin-top: 6px; padding-left: 4px; margin-bottom: 8px;">
-                                    ${chkHtml}
-                                </div>
-                            </details>
-                            <div class="progress-bg">
-                                <div class="progress-fill ${pct === 100 && total > 0 ? 'done' : ''}" style="width: ${pct}%"></div>
+                    // Generate individual checkboxes (done items fade out via opacity)
+                    let chkHtml = task.checklist.map((c, i) => `
+                        <div style="font-size: 12px; margin-top: 4px; display: flex; align-items: center; gap: 6px;">
+                            <input type="checkbox" ${c.done ? 'checked' : ''} onclick="event.stopPropagation(); toggleCardCheck('${task.id}', ${i}, this.checked)">
+                            <span id="chk-title-${task.id}-${i}" contenteditable="true" onblur="updateChkName('${task.id}', ${i}, this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="flex-grow: 1; outline: none; cursor: text; color: ${dynText}; ${c.done ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${c.text}</span>
+                            <button class="chk-icon-btn del" title="Delete Item" onclick="event.stopPropagation(); quickDelCheck('${task.id}', ${i})">✕</button>
+                        </div>
+                    `).join('');
+
+                    // Wrap them in an HTML <details> dropdown
+                    html += `
+                        <details ${task.checklistOpen ? 'open' : ''} onclick="event.stopPropagation()" ontoggle="toggleDetails('${task.id}', this.open)">
+                            <summary class="glow-hover" style="font-size: 12px; color: ${dynText}; opacity: 0.85; cursor: pointer; outline: none; margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
+                                <span>Checklist (${done}/${total})</span>
+                                <button class="chk-icon-btn add" title="Add Item" onclick="event.stopPropagation(); event.preventDefault(); quickAddCheck('${task.id}')">+</button>
+                            </summary>
+                            <div style="margin-top: 6px; padding-left: 4px; margin-bottom: 8px;">
+                                ${chkHtml}
                             </div>
-                        `;
+                        </details>
+                        <div class="progress-bg">
+                            <div class="progress-fill ${pct === 100 && total > 0 ? 'done' : ''}" style="width: ${pct}%"></div>
+                        </div>
+                    `;
                     card.innerHTML = html;
                     listEl.appendChild(card);
                 });
@@ -465,7 +465,7 @@
                 board.appendChild(colEl);
             });
 
-            // Add List Button
+            // Add List button
             const addBtn = document.createElement("button");
             addBtn.className = "add-list-btn";
             addBtn.innerHTML = "+";
@@ -479,27 +479,27 @@
                 // Instantly select the text of the new list so you can type immediately
                 setTimeout(() => {
                     const el = document.getElementById(`col-title-${data.columns.length - 1}`);
-                    if(el) { el.focus(); document.execCommand('selectAll', false, null); }
+                    if (el) { el.focus(); document.execCommand('selectAll', false, null); }
                 }, 10);
             };
             board.appendChild(addBtn);
         }
 
-        // --- Drag and Drop ---
+        // --- Drag and drop ---
         function drag(ev, id) {
             ev.dataTransfer.setData("card-id", id);
             ev.target.classList.add('dragging');
-            ev.stopPropagation(); 
+            ev.stopPropagation();
         }
-        
+
         function allowDrop(ev) { ev.preventDefault(); }
-        
+
         function drop(ev, toCol) {
             ev.preventDefault();
             ev.stopPropagation();
             const id = ev.dataTransfer.getData("card-id");
-            if (!id) return; 
-            
+            if (!id) return;
+
             const task = data.tasks.find(t => t.id === id);
             if (task && task.column !== toCol) {
                 task.column = toCol;
@@ -528,10 +528,7 @@
             saveData();
         }
 
-        // --- Column Actions ---
-        
-
-        // --- Modal Logic ---
+        // --- Modal logic ---
         const modal = document.getElementById("taskModal");
 
         function openTask(id) {
@@ -540,7 +537,7 @@
             document.getElementById("editTitle").value = task.text;
             document.getElementById("editDesc").value = task.desc || "";
             document.getElementById("editPri").value = task.priority || "None";
-            
+
             const colSelect = document.getElementById("editCol");
             colSelect.innerHTML = data.columns.map(c => `<option value="${c}">${c}</option>`).join('');
             colSelect.value = task.column;
@@ -600,24 +597,20 @@
             const task = data.tasks.find(t => t.id === taskId);
             if (task) {
                 task.checklist[chkIndex].done = isChecked;
-                saveData(); 
+                saveData();
             }
         }
-
 
         // Silently saves the open/closed state of the dropdown without redrawing the whole board
         function toggleDetails(taskId, isOpen) {
             const task = data.tasks.find(t => t.id === taskId);
             if (task && task.checklistOpen !== isOpen) {
                 task.checklistOpen = isOpen;
-                localStorage.setItem("todoDataStudio", JSON.stringify(data)); 
+                localStorage.setItem("todoDataStudio", JSON.stringify(data));
             }
         }
 
-        // Adds an item directly from the card face
-
-
-        // --- Column Actions ---
+        // --- Column actions ---
         function deleteCol(name) {
             if (data.columns.length <= 1) return alert("You need at least one list.");
             data.tasks = data.tasks.filter(t => t.column !== name);
@@ -628,11 +621,11 @@
         function updateColName(oldName, newName) {
             newName = newName.trim();
             if (!newName || newName === oldName || data.columns.includes(newName)) return renderBoard();
-            
+
             const idx = data.columns.indexOf(oldName);
-            if(idx > -1) data.columns[idx] = newName;
-            
-            data.tasks.forEach(t => { if(t.column === oldName) t.column = newName; });
+            if (idx > -1) data.columns[idx] = newName;
+
+            data.tasks.forEach(t => { if (t.column === oldName) t.column = newName; });
             if (data.columnColors[oldName]) {
                 data.columnColors[newName] = data.columnColors[oldName];
                 delete data.columnColors[oldName];
@@ -640,7 +633,10 @@
             saveData();
         }
 
-        // --- Task Actions ---
+        // --- Task actions ---
+        // NOTE: quickAddTask is intentionally defined twice in the original file; the second
+        // definition (priority "Low") below overrides this first one at runtime. Left both
+        // in place since no logic changes were requested.
         function quickAddTask(col) {
             const id = Date.now().toString();
             // Added checklistOpen: true so it drops down instantly
@@ -648,7 +644,7 @@
             saveData();
             setTimeout(() => {
                 const el = document.getElementById(`card-title-${id}`);
-                if(el) { el.focus(); document.execCommand('selectAll', false, null); }
+                if (el) { el.focus(); document.execCommand('selectAll', false, null); }
             }, 10);
         }
 
@@ -659,6 +655,7 @@
                 saveData();
             }
         }
+
         function updatePriority(id, pri) {
             const task = data.tasks.find(t => t.id === id);
             if (task) {
@@ -672,15 +669,15 @@
             saveData();
         }
 
-        // --- Checklist Actions ---
+        // --- Checklist actions ---
         function quickAddTask(col) {
             const id = Date.now().toString();
-            // priority is now set to "Low" instead of "None"
+            // Priority defaults to "Low" here (overrides the earlier definition above)
             data.tasks.push({ id, text: "New Card", column: col, priority: "Low", desc: "", checklist: [], checklistOpen: true });
             saveData();
             setTimeout(() => {
                 const el = document.getElementById(`card-title-${id}`);
-                if(el) { el.focus(); document.execCommand('selectAll', false, null); }
+                if (el) { el.focus(); document.execCommand('selectAll', false, null); }
             }, 10);
         }
 
@@ -712,7 +709,7 @@
             saveData();
         }
 
-        // --- Backup Actions ---
+        // --- Backup actions ---
         function exportData() {
             const dataStr = JSON.stringify(data, null, 2);
             const blob = new Blob([dataStr], { type: "application/json" });
@@ -734,7 +731,7 @@
                     if (importedData.columns && importedData.tasks) {
                         data = importedData;
                         saveData();
-                        
+
                         // Force refresh the title and theme dropdown to match the imported file
                         document.getElementById('themeSelect').value = data.theme || 'purple';
                         document.documentElement.setAttribute('data-theme', data.theme || 'purple');
@@ -747,12 +744,12 @@
                 }
             };
             reader.readAsText(file);
-            event.target.value = ""; // Reset input so you can upload the same file again if needed
+            event.target.value = ""; // Reset input so the same file can be re-uploaded if needed
         }
 
         // Boot sequence: set theme and custom board title
-        window.onload = () => { 
-            document.getElementById('themeSelect').value = data.theme; 
+        window.onload = () => {
+            document.getElementById('themeSelect').value = data.theme;
             document.getElementById('board-title').innerText = data.boardTitle;
         };
 
