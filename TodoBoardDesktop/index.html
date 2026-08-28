@@ -695,8 +695,36 @@
         }
 
         // --- Data Migration & Helper ---
+        function syncTaskChecklistTimers(task) {
+            if (!task) return;
+            const total = task.checklist ? task.checklist.length : 0;
+            const done = total ? task.checklist.filter(c => c.done).length : 0;
+
+            if (total === 0) {
+                // No checklist: do not automatically override manual dates
+            } else if (done === 0) {
+                // 0 checked -> not started, timer reset
+                task.startDate = null;
+                task.completedDate = null;
+            } else if (done > 0 && done < total) {
+                // In progress -> timer starts!
+                if (!task.startDate) {
+                    task.startDate = getLocalDateTimeString();
+                }
+                task.completedDate = null;
+            } else if (done === total && total > 0) {
+                // All checked -> timer ends!
+                if (!task.startDate) {
+                    task.startDate = getLocalDateTimeString();
+                }
+                if (!task.completedDate) {
+                    task.completedDate = getLocalDateTimeString();
+                }
+            }
+        }
+
         function sanitizeTask(t) {
-            return {
+            const task = {
                 id: t.id || Date.now().toString() + Math.random().toString(36).substr(2, 5),
                 text: t.text || "Untitled Task",
                 column: t.column || (data.columns[0] || "To Do"),
@@ -704,13 +732,17 @@
                 desc: t.desc || "",
                 tags: Array.isArray(t.tags) ? t.tags : [],
                 dueDate: t.dueDate || null,
-                startDate: t.startDate || (t.createdAt ? getLocalDateTimeString(new Date(t.createdAt)) : getLocalDateTimeString()),
+                startDate: t.startDate || null,
                 completedDate: t.completedDate || null,
                 checklist: Array.isArray(t.checklist) ? t.checklist : [],
                 checklistOpen: t.checklistOpen !== false,
                 createdAt: t.createdAt || Date.now(),
                 updatedAt: t.updatedAt || Date.now()
             };
+            if (task.checklist && task.checklist.length > 0) {
+                syncTaskChecklistTimers(task);
+            }
+            return task;
         }
 
         // --- Initialization ---
@@ -1131,17 +1163,32 @@
                             dueHtml = `<span class="due-badge ${dueStatus.type}">📅 ${dueStatus.label}</span>`;
                         }
 
-                        // Time tracking badges
+                        // Time tracking badges based on checklist state
                         let timeHtml = '';
-                        if (task.completedDate) {
-                            const dur = calculateDuration(task.startDate, task.completedDate);
-                            timeHtml += `<span class="due-badge" style="background: rgba(127, 203, 142, 0.2); color: #7FCB8E; border: 1px solid rgba(127, 203, 142, 0.5);" title="Completed ${formatDateTimeDisplay(task.completedDate)}">🏁 ${formatDateTimeDisplay(task.completedDate)}</span>`;
-                            if (dur) {
-                                timeHtml += `<span class="due-badge" style="background: rgba(255,255,255,0.08); color: var(--text-muted);" title="Duration taken: ${dur}">⏱️ ${dur}</span>`;
+                        if (total > 0) {
+                            if (done === 0) {
+                                timeHtml = `<span class="due-badge" style="background: rgba(255,255,255,0.06); color: var(--text-muted);" title="0 of ${total} subtasks completed">⏳ Not Started</span>`;
+                            } else if (done > 0 && done < total) {
+                                const dur = calculateDuration(task.startDate, null);
+                                timeHtml = `<span class="due-badge" style="background: rgba(111, 168, 229, 0.18); color: #6FA8E5; border: 1px solid rgba(111, 168, 229, 0.5);" title="Started ${formatDateTimeDisplay(task.startDate)} (${done}/${total} completed)">⏱️ ${dur || 'In Progress'}</span>`;
+                            } else if (done === total) {
+                                const dur = calculateDuration(task.startDate, task.completedDate);
+                                timeHtml = `<span class="due-badge" style="background: rgba(127, 203, 142, 0.2); color: #7FCB8E; border: 1px solid rgba(127, 203, 142, 0.5);" title="Completed ${formatDateTimeDisplay(task.completedDate)} (All ${total} subtasks done)">🏁 Done</span>`;
+                                if (dur) {
+                                    timeHtml += `<span class="due-badge" style="background: rgba(255,255,255,0.08); color: var(--text-muted);" title="Duration taken: ${dur}">⏱️ ${dur}</span>`;
+                                }
                             }
-                        } else if (task.startDate) {
-                            const dur = calculateDuration(task.startDate, null);
-                            timeHtml += `<span class="due-badge" style="background: rgba(111, 168, 229, 0.15); color: #6FA8E5; border: 1px solid rgba(111, 168, 229, 0.4);" title="Started ${formatDateTimeDisplay(task.startDate)}">⏱️ ${dur || 'Started'}</span>`;
+                        } else {
+                            if (task.completedDate) {
+                                const dur = calculateDuration(task.startDate, task.completedDate);
+                                timeHtml = `<span class="due-badge" style="background: rgba(127, 203, 142, 0.2); color: #7FCB8E; border: 1px solid rgba(127, 203, 142, 0.5);" title="Completed ${formatDateTimeDisplay(task.completedDate)}">🏁 Done</span>`;
+                                if (dur) {
+                                    timeHtml += `<span class="due-badge" style="background: rgba(255,255,255,0.08); color: var(--text-muted);" title="Duration taken: ${dur}">⏱️ ${dur}</span>`;
+                                }
+                            } else if (task.startDate) {
+                                const dur = calculateDuration(task.startDate, null);
+                                timeHtml = `<span class="due-badge" style="background: rgba(111, 168, 229, 0.18); color: #6FA8E5; border: 1px solid rgba(111, 168, 229, 0.5);" title="Started ${formatDateTimeDisplay(task.startDate)}">⏱️ ${dur || 'In Progress'}</span>`;
+                            }
                         }
 
                         // Tags HTML
@@ -1379,6 +1426,7 @@
             const task = data.tasks.find(t => t.id === taskId);
             if (task && task.checklist && task.checklist[chkIndex]) {
                 task.checklist[chkIndex].done = isChecked;
+                syncTaskChecklistTimers(task);
                 task.updatedAt = Date.now();
                 saveData();
             }
@@ -1434,6 +1482,7 @@
                 const newIdx = task.checklist.length;
                 task.checklist.push({ text: "New Subtask", done: false });
                 task.checklistOpen = true;
+                syncTaskChecklistTimers(task);
                 task.updatedAt = Date.now();
                 saveData();
                 setTimeout(() => {
@@ -1459,6 +1508,7 @@
             const task = data.tasks.find(t => t.id === taskId);
             if (task && task.checklist) {
                 task.checklist.splice(chkIndex, 1);
+                syncTaskChecklistTimers(task);
                 task.updatedAt = Date.now();
                 saveData();
             }
@@ -1532,6 +1582,39 @@
             renderModalTags();
         }
 
+        function syncModalInputsFromChecklist() {
+            const total = modalWorkingChecklist.length;
+            const done = total ? modalWorkingChecklist.filter(c => c.done).length : 0;
+            const startInp = document.getElementById('modalTaskStartDate');
+            const endInp = document.getElementById('modalTaskCompletedDate');
+
+            if (total === 0) {
+                // No checklist
+            } else if (done === 0) {
+                startInp.value = '';
+                endInp.value = '';
+            } else if (done > 0 && done < total) {
+                if (!startInp.value) startInp.value = getLocalDateTimeString();
+                endInp.value = '';
+            } else if (done === total) {
+                if (!startInp.value) startInp.value = getLocalDateTimeString();
+                if (!endInp.value) endInp.value = getLocalDateTimeString();
+            }
+            updateModalDurationInfo();
+        }
+
+        function handleModalChecklistToggle(idx, isChecked) {
+            modalWorkingChecklist[idx].done = isChecked;
+            syncModalInputsFromChecklist();
+            renderModalChecklist();
+        }
+
+        function handleModalChecklistDelete(idx) {
+            modalWorkingChecklist.splice(idx, 1);
+            syncModalInputsFromChecklist();
+            renderModalChecklist();
+        }
+
         function renderModalChecklist() {
             const cont = document.getElementById('modalChecklistContainer');
             const done = modalWorkingChecklist.filter(c => c.done).length;
@@ -1540,9 +1623,9 @@
 
             cont.innerHTML = modalWorkingChecklist.map((c, i) => `
                 <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.2); padding: 5px 8px; border-radius: 6px;">
-                    <input type="checkbox" style="cursor: pointer; width: 14px; height: 14px; accent-color: var(--accent);" ${c.done ? 'checked' : ''} onchange="modalWorkingChecklist[${i}].done = this.checked; renderModalChecklist();">
+                    <input type="checkbox" style="cursor: pointer; width: 14px; height: 14px; accent-color: var(--accent);" ${c.done ? 'checked' : ''} onchange="handleModalChecklistToggle(${i}, this.checked)">
                     <input type="text" value="${escapeHtml(c.text)}" oninput="modalWorkingChecklist[${i}].text = this.value" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" style="flex-grow: 1; padding: 2px 6px; font-size: 12px; ${c.done ? 'text-decoration: line-through; opacity: 0.6;' : ''}">
-                    <button type="button" class="icon-btn del" onclick="modalWorkingChecklist.splice(${i}, 1); renderModalChecklist();" style="font-size: 12px;">✕</button>
+                    <button type="button" class="icon-btn del" onclick="handleModalChecklistDelete(${i})" style="font-size: 12px;">✕</button>
                 </div>
             `).join('');
         }
@@ -1552,6 +1635,7 @@
             const val = inp.value.trim();
             if (val) {
                 modalWorkingChecklist.push({ text: val, done: false });
+                syncModalInputsFromChecklist();
                 renderModalChecklist();
             }
             inp.value = '';
@@ -1572,6 +1656,7 @@
             task.desc = document.getElementById('modalTaskDesc').value.trim();
             task.tags = [...modalWorkingTags];
             task.checklist = [...modalWorkingChecklist];
+            syncTaskChecklistTimers(task);
             task.updatedAt = Date.now();
 
             closeTaskModal();
