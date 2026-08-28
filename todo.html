@@ -45,13 +45,23 @@
         .col-btn-group { display: flex; gap: 12px; align-items: center; margin-right: 12px; }
         
         .icon-btn {
-            background: transparent; border: none; font-size: 18px; font-weight: bold;
-            cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center;
+            background: transparent; border: none; font-size: 16px; font-weight: bold;
+            cursor: pointer; padding: 0; display: inline-flex; align-items: center; justify-content: center;
+            width: 20px; height: 20px; transition: text-shadow 0.2s, color 0.2s;
         }
-        .icon-btn.add { color: #51A15F; /* Green + */ }
-        .icon-btn.add:hover { color: #6BE87F; }
-        .icon-btn.del { color: #A64D4D; /* Red X */ }
-        .icon-btn.del:hover { color: #E86B6B; }
+        .icon-btn.add { color: #51A15F; }
+        .icon-btn.add:hover { color: #6BE87F; text-shadow: 0 0 8px rgba(107, 232, 127, 0.8); }
+        .icon-btn.del { color: #A64D4D; }
+        .icon-btn.del:hover { color: #E86B6B; text-shadow: 0 0 8px rgba(232, 107, 107, 0.8); }
+
+        .tiny-color-picker {
+            width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.2);
+            overflow: hidden; cursor: pointer; display: inline-block; position: relative;
+        }
+        .tiny-color-picker:hover { border-color: rgba(255,255,255,0.6); }
+        .tiny-color-picker input[type="color"] {
+            position: absolute; top: -5px; left: -5px; width: 24px; height: 24px; cursor: pointer; border: none;
+        }
         
         .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
         .card-title { font-size: 14px; font-weight: bold; word-wrap: break-word; margin: 0; }
@@ -211,10 +221,14 @@
                 
                 // Column Header (Uses a semi-transparent black overlay to naturally darken the chosen custom color)
                 // Column Header (Matches image layout: Title -> [+] [✕] -> Count)
+                // Column Header
                 colEl.innerHTML = `
                     <div class="col-header" style="background: rgba(0,0,0,0.2); display: flex; align-items: center;">
                         <span style="flex-grow: 1;">${colName}</span>
                         <div class="col-btn-group">
+                            <div class="tiny-color-picker" title="Change Color">
+                                <input type="color" value="${data.columnColors[colName] || '#31224A'}" onchange="updateColColor('${colName}', this.value)">
+                            </div>
                             <button class="icon-btn add" title="Add Todo" onclick="quickAddTask('${colName}')">+</button>
                             <button class="icon-btn del" title="Delete List" onclick="deleteCol('${colName}')">✕</button>
                         </div>
