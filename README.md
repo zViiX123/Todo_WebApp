@@ -8,82 +8,44 @@ Organize tasks across multiple boards, track time automatically with checklist-d
 
 ## ✨ Features
 
-### 📋 Multi-Board Management
-* Create, rename, switch, and delete independent boards (`Ctrl + B`).
-* Each board preserves its own columns, tasks, colors, themes, and configuration.
+### 🍅 Integrated Pomodoro Focus Mode
+* **Focus Timer**: Work in 25-minute focus intervals with automatic 5-minute short breaks and 15-minute long breaks after 4 sessions.
+* **Header & Floating HUD**: Live time display in header (`🍅 Focus 25:00`) and a floating minimizable widget at the bottom-right of the screen.
+* **Task Attachment**: Click **`🍅 Focus on Task`** in any Task Detail modal to anchor your session to that task.
+* **Activity Logging & Sounds**: Plays a resonant singing bowl chime on completion, triggers celebration confetti, and logs the session to the task's activity history.
 
-### 🗂️ Kanban Columns & Customization
-* **Dynamic Columns**: Add, rename directly in place, or delete with an automatic 5-second undo toast.
-* **✨ Smooth Drag & Drop Reordering**: Fluidly drag and drop columns or cards with live transparent preview placeholders showing exact drop positions.
-* **📌 Single Pinned Column with Swapping**: Pin any column (`📌`) to highlight and lock it at the front. Pinning a second column cleanly swaps places with the previously pinned column.
-* **📁 Dedicated Folded Columns Dock**: Folding a column (`◀`) moves it smoothly to a compact dedicated left rail shelf with color dots and task counts. **Unfolding any column automatically places it at the last position**.
-* **Color Customization**: Pick custom background colors per column with automatic font brightness contrast calculation.
-* **Quick Sort**: Instantly sort tasks in a specific column alphabetically (`⇅`).
+### ⚡ Global Quick-Capture HUD (Spotlight-Style)
+* **Spotlight Modal**: Press <kbd>Ctrl</kbd> + <kbd>K</kbd> or <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Space</kbd> from anywhere to summon a floating quick-add prompt.
+* **Smart Shorthand Parsing**: Live badges parse while typing:
+  * `!high` / `!med` / `!low` / `!urgent` — Priority
+  * `@today` / `@tomorrow` / `@yesterday` / `@+3d` / `@YYYY-MM-DD` / `@monday` — Due date
+  * `#tag1 #tag2` — Tags & categories
+  * `^ColumnName` — Target column
+* Press <kbd>Enter</kbd> to immediately create the task with audio feedback.
 
-### ⏱️ Checklist-Driven Time Tracking & Live Ticking
-* **Automatic Timers**: Check the **`Started`** subtask to start the timer (`startDate` stamped).
-* **🟢 Real-Time Ticking**: In-progress timers tick automatically in real-time on board cards and in task detail views every 10 seconds without needing manual refreshes.
-* **Progress Tracking**: Intermediate subtasks keep track of progress (`1/3`, `2/3`).
-* **Completion Timestamp**: Check **`Finished`** to stop the timer (`completedDate` stamped) and lock in total duration taken.
-* **Persistent Duration**: Calculates elapsed time against real-world wall-clock timestamps—duration is maintained accurately even when closing and reopening the app.
-* **Protected Anchor Subtasks**: Every task initializes with **`Started`** and **`Finished`** subtasks. `Finished` remains anchored at the bottom, and both steps are protected from deletion or accidental renaming.
+### 📅 Interactive Calendar & 📈 Chronological Timeline Views
+* **Toolbar View Switcher**: Effortlessly toggle between **`⊞ Board`**, **`📅 Calendar`**, and **`📈 Timeline`**.
+* **Monthly Calendar Grid**: Navigate months (`‹`, `›`, `Today`), view color-coded task pills on their due dates, and click any day's `+` to add tasks.
+* **Drag-and-Drop Rescheduling**: Drag any task pill onto another day cell to reschedule its due date instantly!
+* **Gantt-Lite Timeline**: Visual horizontal bars plotting task durations and progress grouped by column stages.
 
-### 📦 Dedicated Task Archive Vault
-* **Separate Archive Storage**: Keep completed boards and columns clean by archiving finished tasks into a dedicated vault.
-* **Vault Management**: View archived tasks with duration, column origin, priority, and tags.
-* **Restore & Permanent Delete**: Restore tasks back to any active board or delete individual/all archived records permanently.
-* **Batch Archiving**: 1-click **Archive All Completed** button to archive all completed tasks from the active board.
+### 📁 Enhanced Workspace & Multi-Board Switcher
+* **Modern Workspace Menu**: Elevated dropdown showing active workspace title, folder icon, and active task progress counts.
+* **Fast Switching & Duplication**: 1-click duplication of boards, quick rename, delete, and instant navigation via <kbd>Ctrl</kbd> + <kbd>1</kbd> .. <kbd>9</kbd>.
 
-### 📊 Productivity & Metrics Dashboard
-* Click **📊 Stats** in the header to view an analytics dashboard:
-* **Key Metrics**: Total Tasks, Completion Rate %, Average Duration per task, and Total Tracked Work Hours.
-* **Priority Distribution**: Visual color-coded percentage bar across High, Medium, Low, and None priorities.
-* **Stage & Column Breakdown**: Real-time breakdown of tasks across workflow stages.
-* **Momentum & Velocity**: Tasks completed today counter and total subtask progress metrics.
+### 📎 Local File & Web Link Attachments
+* **Local Documents & Images**: Attach files from your computer via native file dialogs or drag-and-drop directly into the Task Modal.
+* **Web Link Cards**: Add URL links with 1-click browser opening.
+* **Direct OS Opening**: Click `↗` to open local attached files or images directly in your operating system's default viewer.
 
-### 📝 Rich Task Details & Markdown Editor
-Click on any task card (or click `✏️`) to open the Task Detail Modal:
-* **🖋️ Markdown Support**: Write rich descriptions with headings (`#`), bold/italic (`**`, `*`), bullet/task lists (`- [x]`), blockquotes (`>`), code blocks, inline code, and links.
-* **Live Tab Switcher**: Seamlessly toggle between **`✏️ Edit`** and **`👁️ Preview (MD)`**.
-* **📋 Activity & History Log**: View an audit timeline of all modifications (renames, column moves, priority changes, subtasks toggled, archive/restore).
-* **Quick Task Actions**: One-click buttons to **Duplicate / Clone (`📋`)**, **Archive (`📦`)**, **Edit (`✏️`)**, or **Delete (`✕`)** cards.
-* **Priority Levels**: `🔴 High`, `🟡 Medium`, `🔵 Low`, and `⚪ None`.
-* **Due Date & Quick Presets**: Date picker with quick buttons (`Today`, `Tomorrow`, `+1 Week`, `Clear`).
-* **Start & End Date/Time**: Precise `datetime-local` pickers with **Now** and **Clear** controls and live duration calculation.
-* **Tags & Categories**: Tag chips with quick add/remove.
-* **Subtasks & Progress**: Full checklist editor with completion statistics.
+### 🎉 Micro-Celebrations & Procedural Sound Synthesizer
+* **Zero-Asset Web Audio API Engine**: High-fidelity sound effects for clicks (`tick`), drag-and-drop (`pop`), completions (`complete` two-tone chime), fanfare arpeggios, and focus timer bells.
+* **HTML5 Canvas Confetti**: Particle confetti burst upon completing tasks or reaching 100% checklist progress.
+* **Sound Toggle**: Quick toggle button (`🔊 / 🔇`) in the header.
 
-### 🔍 Search, Filters & Sorting
-* **Live Search**: Real-time keyword search across task titles, descriptions, tags, and checklist items (`Ctrl + F`).
-* **Priority Filters**: Filter by `All`, `🔴 High`, `🟡 Medium`, `🔵 Low`.
-* **Status Filters**: Filter by `All`, `⚡ In Progress`, `✓ Done`, `⚠️ Overdue`.
-* **Board Sorting**: Sort by `Manual Order`, `Due Date (Earliest)`, `Priority (High → Low)`, `Title (A-Z)`, or `Checklist % Done`.
-
-### 🎨 13 Built-in Color Themes
-Switch between 13 themes with high-contrast, theme-adapted green `+` (Add) and red `✕` (Delete) buttons:
-* 🔮 **Midnight Purple** (Default)
-* 🌑 **Classic Dark**
-* 🌌 **Slate Blue**
-* 🌲 **Forest Green**
-* 🍷 **Crimson Red**
-* ☕ **Coffee Mocha**
-* 🌊 **Ocean Teal**
-* 🌅 **Sunset Orange**
-* ❄️ **Nordic Frost**
-* 🧛 **Dracula**
-* 🖥️ **3D Viewport Dark**
-* ⚙️ **Game Engine Graphite**
-* 📟 **Retro Console Boot**
-
-### 🔔 System Tray & Desktop Integration
-* **System Tray**: Minimize to tray, restore, and quick-add tasks from tray context menu.
-* **Due Date Notifications**: Native system notifications alert you when tasks are due today or overdue upon launching.
-* **Window Persistence**: Saves window dimensions, coordinates, and maximized state across sessions.
-
-### 💾 Backup, Import & CSV Export
-* **JSON Backup**: Export and restore complete multi-board backups via native file dialogs.
-* **CSV Export**: Export all tasks with columns for Board, Column, Title, Priority, Status, Start Date/Time, End Date/Time, Duration, Due Date, Tags, and Checklist stats for Excel / Google Sheets.
-* **Offline Storage**: Primary data saved to `todo_board_data.json` in user app data directory with automatic `localStorage` fallback.
+### 🔄 1-Click In-App Update Checker
+* Click **🔄 Updates** in the header to check GitHub Releases in real-time.
+* Displays release notes, version comparisons, and direct download links.
 
 ---
 
@@ -91,11 +53,14 @@ Switch between 13 themes with high-contrast, theme-adapted green `+` (Add) and r
 
 | Shortcut | Action |
 | :--- | :--- |
+| <kbd>Ctrl</kbd> + <kbd>K</kbd> / <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Space</kbd> | Spotlight Global Quick-Capture HUD |
+| <kbd>Ctrl</kbd> + <kbd>P</kbd> | Toggle Pomodoro Focus Timer |
+| <kbd>Ctrl</kbd> + <kbd>1</kbd> .. <kbd>9</kbd> | Switch Workspace (1 to 9) |
 | <kbd>Ctrl</kbd> + <kbd>N</kbd> | Quick Add Task to first column |
 | <kbd>Ctrl</kbd> + <kbd>F</kbd> | Focus Search Bar |
-| <kbd>Ctrl</kbd> + <kbd>B</kbd> | Create New Board |
+| <kbd>Ctrl</kbd> + <kbd>B</kbd> | Create New Workspace |
 | <kbd>Ctrl</kbd> + <kbd>Z</kbd> | Undo Last Delete (5s window) |
-| <kbd>Escape</kbd> | Close Modal / Clear Search |
+| <kbd>Escape</kbd> | Close Modals / Clear Search |
 | <kbd>?</kbd> | Open Keyboard Shortcuts Help |
 
 ---
