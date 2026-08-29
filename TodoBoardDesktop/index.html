@@ -223,6 +223,59 @@
             box-shadow: 0 0 10px var(--accent-glow);
         }
 
+        /* Board & Folded Dock Container */
+        #boardContainer {
+            display: flex; flex-grow: 1; overflow: hidden; position: relative;
+            height: calc(100vh - 100px);
+        }
+
+        /* Folded Columns Dedicated Space (Left Rail / Shelf) */
+        #foldedColumnsDock {
+            width: 48px; min-width: 48px;
+            background: color-mix(in srgb, var(--bg-col-head) 85%, transparent);
+            backdrop-filter: blur(12px);
+            border-right: 1px solid var(--border-glass);
+            display: flex; flex-direction: column; align-items: center; padding: 12px 4px;
+            gap: 10px; z-index: 20; overflow-y: auto; overflow-x: hidden;
+            transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+        }
+
+        .folded-dock-header {
+            font-size: 10px; font-weight: 800; color: var(--text-muted); letter-spacing: 0.5px;
+            text-transform: uppercase; writing-mode: vertical-rl; transform: rotate(180deg);
+            margin-bottom: 4px; display: flex; align-items: center; gap: 4px;
+        }
+
+        .folded-dock-list {
+            display: flex; flex-direction: column; gap: 8px; width: 100%; align-items: center;
+        }
+
+        .folded-col-chip {
+            width: 38px; min-height: 110px; padding: 8px 4px;
+            border-radius: 8px; cursor: pointer;
+            border: 1px solid var(--border-glass);
+            background: rgba(255, 255, 255, 0.05);
+            display: flex; flex-direction: column; justify-content: space-between; align-items: center;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        .folded-col-chip:hover {
+            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.14);
+            border-color: var(--accent);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.35), 0 0 10px var(--accent-glow);
+        }
+        .folded-col-title {
+            writing-mode: vertical-rl; transform: rotate(180deg);
+            font-size: 11px; font-weight: 700; color: var(--text-light);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            max-height: 130px;
+        }
+        .folded-col-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+        }
+
         /* Board Area */
         #board {
             display: flex; gap: 16px; padding: 18px; flex-grow: 1;
@@ -240,29 +293,39 @@
             display: flex; flex-direction: column;
             height: calc(100vh - 128px); max-height: calc(100vh - 128px);
             border: 1px solid var(--border-glass);
-            transition: width 0.2s ease, min-width 0.2s ease, opacity 0.2s;
+            transition: width 0.2s ease, min-width 0.2s ease, opacity 0.2s, box-shadow 0.2s;
             box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+            position: relative;
         }
-        .column.col-dragging { opacity: 0.4; border: 2px dashed var(--text-muted); }
-        .column.collapsed {
-            width: 48px; min-width: 48px; cursor: pointer;
+        .column.pinned {
+            border: 1px solid var(--accent);
+            box-shadow: 0 0 18px var(--accent-glow), 0 4px 20px rgba(0,0,0,0.25);
         }
-        .column.collapsed .col-header {
-            writing-mode: vertical-rl; transform: rotate(180deg);
-            padding: 16px 8px; height: 100%; border-radius: 10px;
-            display: flex; justify-content: space-between; align-items: center;
+        .column.col-dragging {
+            opacity: 0.35 !important;
+            transform: scale(0.98) !important;
+            border: 2px dashed var(--accent) !important;
         }
-        .column.collapsed .col-btn-group,
-        .column.collapsed .card-list,
-        .column.collapsed .col-quick-add {
-            display: none !important;
+
+        .col-drop-placeholder {
+            width: 300px; min-width: 300px;
+            height: calc(100vh - 128px); max-height: calc(100vh - 128px);
+            border-radius: 10px;
+            border: 2px dashed var(--accent);
+            background: color-mix(in srgb, var(--accent) 12%, transparent);
+            box-shadow: inset 0 0 20px var(--accent-glow);
+            pointer-events: none;
+            transition: all 0.15s ease;
+            animation: pulsePlaceholder 1.5s infinite alternate ease-in-out;
         }
 
         .col-header {
             background: rgba(0, 0, 0, 0.22); padding: 10px 14px; border-radius: 10px 10px 0 0;
             display: flex; justify-content: space-between; align-items: center; font-weight: 600;
             border-bottom: 1px solid var(--border-glass);
+            cursor: grab;
         }
+        .col-header:active { cursor: grabbing; }
 
         .col-count {
             background: rgba(255,255,255,0.12); padding: 2px 7px; border-radius: 12px;
@@ -282,6 +345,16 @@
         }
         .icon-btn:hover { background: rgba(255,255,255,0.12); color: var(--text-light); }
         
+        .icon-btn.pin-btn {
+            color: var(--text-muted);
+            font-size: 11px;
+        }
+        .icon-btn.pin-btn:hover { color: #FCD34D; }
+        .icon-btn.pin-btn.active {
+            color: #FCD34D;
+            text-shadow: 0 0 8px rgba(252, 211, 77, 0.85);
+        }
+
         .icon-btn.add {
             color: var(--color-add); font-size: 15px; font-weight: 700;
         }
@@ -312,9 +385,10 @@
         .card-list {
             padding: 10px; overflow-y: auto; flex-grow: 1; min-height: 50px;
             display: flex; flex-direction: column; gap: 8px;
+            transition: background 0.15s ease;
         }
         .card-list.drag-over {
-            background: rgba(255,255,255,0.05); border-radius: 6px;
+            background: rgba(255,255,255,0.04); border-radius: 6px;
         }
 
         /* Task Cards */
@@ -331,7 +405,29 @@
             box-shadow: 0 6px 14px rgba(0,0,0,0.25);
         }
         .card:active { cursor: grabbing; }
-        .card.dragging { opacity: 0.35; transform: scale(0.98); }
+        .card.dragging {
+            opacity: 0.35 !important;
+            transform: scale(0.97) rotate(0.8deg) !important;
+            box-shadow: 0 12px 24px rgba(0,0,0,0.4) !important;
+            border: 1px dashed var(--accent) !important;
+        }
+
+        .card-drop-placeholder {
+            min-height: 52px;
+            border-radius: 8px;
+            border: 2px dashed var(--accent);
+            background: color-mix(in srgb, var(--accent) 15%, transparent);
+            box-shadow: inset 0 0 12px var(--accent-glow);
+            pointer-events: none;
+            margin: 4px 0;
+            transition: all 0.15s ease;
+            animation: pulsePlaceholder 1.5s infinite alternate ease-in-out;
+        }
+
+        @keyframes pulsePlaceholder {
+            0% { opacity: 0.55; }
+            100% { opacity: 0.95; }
+        }
         
         .card-top-row {
             display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;
@@ -746,8 +842,19 @@
         </div>
     </div>
 
-    <!-- Kanban Board -->
-    <div id="board"></div>
+    <!-- Main Content Area: Board + Dedicated Folded Columns Dock -->
+    <div id="boardContainer">
+        <!-- Folded Columns Dedicated Space (Left Rail) -->
+        <div id="foldedColumnsDock" style="display: none;">
+            <div class="folded-dock-header">
+                <span>📁 Folded (<span id="foldedDockCount">0</span>)</span>
+            </div>
+            <div class="folded-dock-list" id="foldedDockList"></div>
+        </div>
+
+        <!-- Kanban Board -->
+        <div id="board" ondragover="boardDragOver(event)" ondrop="boardDrop(event)"></div>
+    </div>
 
     <!-- Undo Toast Notification -->
     <div id="undoToast">
@@ -1029,7 +1136,8 @@
             theme: "purple",
             boardTitle: "✦ Todo Board Studio",
             columnColors: {},
-            collapsedCols: []
+            collapsedCols: [],
+            pinnedCol: null
         };
 
         let boards = {};
@@ -1436,6 +1544,7 @@
             if (!data.tasks) data.tasks = [];
             if (!data.archivedTasks) data.archivedTasks = [];
             if (!data.columns) data.columns = ["To Do", "In Progress", "Done"];
+            if (data.pinnedCol && !data.columns.includes(data.pinnedCol)) data.pinnedCol = null;
 
             data.tasks = data.tasks.map(sanitizeTask);
             data.archivedTasks = data.archivedTasks.map(sanitizeTask);
@@ -1489,6 +1598,7 @@
             if (!data.tasks) data.tasks = [];
             if (!data.archivedTasks) data.archivedTasks = [];
             if (!data.columns) data.columns = ["To Do", "In Progress", "Done"];
+            if (data.pinnedCol && !data.columns.includes(data.pinnedCol)) data.pinnedCol = null;
 
             data.tasks = data.tasks.map(sanitizeTask);
             data.archivedTasks = data.archivedTasks.map(sanitizeTask);
@@ -1509,7 +1619,8 @@
                 boardTitle: "New Project Board",
                 theme: data.theme || "purple",
                 columnColors: {},
-                collapsedCols: []
+                collapsedCols: [],
+                pinnedCol: null
             };
             switchBoard(id);
             saveData();
@@ -2083,12 +2194,303 @@
             return ((0.299 * r + 0.587 * g + 0.114 * b) / 255) > 0.5;
         }
 
+        // --- Drag & Drop and Rearranging State ---
+        let draggedCardId = null;
+        let currentCardPlaceholder = null;
+        let draggedColName = null;
+        let currentColPlaceholder = null;
+
+        function cardDragStart(ev, id) {
+            draggedCardId = id;
+            ev.dataTransfer.setData("text/plain", id);
+            ev.dataTransfer.effectAllowed = "move";
+            setTimeout(() => {
+                const el = document.querySelector(`.card[data-task-id="${id}"]`);
+                if (el) el.classList.add('dragging');
+            }, 0);
+            ev.stopPropagation();
+        }
+
+        function cardDragEnd(ev) {
+            draggedCardId = null;
+            document.querySelectorAll('.card.dragging').forEach(c => c.classList.remove('dragging'));
+            document.querySelectorAll('.card-drop-placeholder').forEach(p => p.remove());
+            document.querySelectorAll('.card-list').forEach(l => l.classList.remove('drag-over'));
+            currentCardPlaceholder = null;
+        }
+
+        function cardListDragOver(ev, colName) {
+            if (!draggedCardId) return;
+            ev.preventDefault();
+            ev.stopPropagation();
+            ev.dataTransfer.dropEffect = "move";
+
+            const listEl = ev.currentTarget;
+            listEl.classList.add('drag-over');
+
+            const cards = [...listEl.querySelectorAll('.card:not(.dragging)')];
+            let closestCard = null;
+            let closestOffset = Number.NEGATIVE_INFINITY;
+
+            cards.forEach(child => {
+                const box = child.getBoundingClientRect();
+                const offset = ev.clientY - box.top - box.height / 2;
+                if (offset < 0 && offset > closestOffset) {
+                    closestOffset = offset;
+                    closestCard = child;
+                }
+            });
+
+            if (!currentCardPlaceholder || !listEl.contains(currentCardPlaceholder)) {
+                document.querySelectorAll('.card-drop-placeholder').forEach(p => p.remove());
+                currentCardPlaceholder = document.createElement('div');
+                currentCardPlaceholder.className = 'card-drop-placeholder';
+            }
+
+            if (closestCard) {
+                listEl.insertBefore(currentCardPlaceholder, closestCard);
+            } else {
+                listEl.appendChild(currentCardPlaceholder);
+            }
+        }
+
+        function cardListDrop(ev, colName) {
+            if (!draggedCardId) return;
+            ev.preventDefault();
+            ev.stopPropagation();
+
+            const id = draggedCardId;
+            const task = data.tasks.find(t => t.id === id);
+            if (!task) return cardDragEnd(ev);
+
+            const oldCol = task.column;
+            task.column = colName;
+            if (colName.toLowerCase().includes('done') || colName.toLowerCase().includes('complete')) {
+                if (!task.completedDate) task.completedDate = getLocalDateTimeString();
+            }
+            if (oldCol !== colName) {
+                logTaskActivity(task, `Moved to column "${colName}"`);
+            }
+
+            const listEl = ev.currentTarget.classList.contains('card-list') ? ev.currentTarget : ev.currentTarget.querySelector('.card-list');
+            let targetIndexInCol = 0;
+
+            if (listEl && currentCardPlaceholder && listEl.contains(currentCardPlaceholder)) {
+                const children = [...listEl.children];
+                const placeholderIdx = children.indexOf(currentCardPlaceholder);
+                targetIndexInCol = children.slice(0, placeholderIdx).filter(c => c.classList.contains('card') && c.getAttribute('data-task-id') !== id).length;
+            }
+
+            // Remove task from data.tasks
+            const taskIdx = data.tasks.indexOf(task);
+            if (taskIdx > -1) data.tasks.splice(taskIdx, 1);
+
+            // Re-insert at the target position among tasks in colName
+            const tasksInCol = data.tasks.filter(t => t.column === colName);
+            if (targetIndexInCol >= tasksInCol.length) {
+                if (tasksInCol.length > 0) {
+                    const lastTask = tasksInCol[tasksInCol.length - 1];
+                    const insertAt = data.tasks.indexOf(lastTask) + 1;
+                    data.tasks.splice(insertAt, 0, task);
+                } else {
+                    data.tasks.push(task);
+                }
+            } else {
+                const targetTask = tasksInCol[targetIndexInCol];
+                const insertAt = data.tasks.indexOf(targetTask);
+                data.tasks.splice(insertAt, 0, task);
+            }
+
+            task.updatedAt = Date.now();
+            cardDragEnd(ev);
+            saveData();
+        }
+
+        // --- Column Drag & Drop ---
+        function colDragStart(ev, name) {
+            draggedColName = name;
+            ev.dataTransfer.setData("col-name", name);
+            ev.dataTransfer.effectAllowed = "move";
+            setTimeout(() => {
+                const col = document.querySelector(`.column[data-col-name="${name}"]`);
+                if (col) col.classList.add('col-dragging');
+            }, 0);
+        }
+
+        function colDragEnd(ev) {
+            draggedColName = null;
+            document.querySelectorAll('.column.col-dragging').forEach(c => c.classList.remove('col-dragging'));
+            document.querySelectorAll('.col-drop-placeholder').forEach(p => p.remove());
+            currentColPlaceholder = null;
+        }
+
+        function boardDragOver(ev) {
+            if (!draggedColName) return;
+            ev.preventDefault();
+            ev.dataTransfer.dropEffect = "move";
+
+            const board = document.getElementById('board');
+            const cols = [...board.querySelectorAll('.column:not(.col-dragging)')];
+
+            let closestCol = null;
+            let closestOffset = Number.NEGATIVE_INFINITY;
+
+            cols.forEach(child => {
+                const box = child.getBoundingClientRect();
+                const offset = ev.clientX - box.left - box.width / 2;
+                if (offset < 0 && offset > closestOffset) {
+                    closestOffset = offset;
+                    closestCol = child;
+                }
+            });
+
+            if (!currentColPlaceholder || !board.contains(currentColPlaceholder)) {
+                document.querySelectorAll('.col-drop-placeholder').forEach(p => p.remove());
+                currentColPlaceholder = document.createElement('div');
+                currentColPlaceholder.className = 'col-drop-placeholder';
+            }
+
+            if (closestCol) {
+                board.insertBefore(currentColPlaceholder, closestCol);
+            } else {
+                const addBtn = board.querySelector('.add-list-btn');
+                if (addBtn) board.insertBefore(currentColPlaceholder, addBtn);
+                else board.appendChild(currentColPlaceholder);
+            }
+        }
+
+        function boardDrop(ev) {
+            if (!draggedColName) return;
+            ev.preventDefault();
+
+            const name = draggedColName;
+            const board = document.getElementById('board');
+            const cols = [...board.children];
+            const placeholderIdx = cols.indexOf(currentColPlaceholder);
+
+            if (placeholderIdx !== -1) {
+                const activeCols = data.columns.filter(c => !data.collapsedCols.includes(c));
+                const nonPlaceholderCols = cols.slice(0, placeholderIdx).filter(c => c.classList.contains('column') && c.getAttribute('data-col-name') !== name);
+                const targetActiveIdx = nonPlaceholderCols.length;
+
+                const fromIdx = data.columns.indexOf(name);
+                data.columns.splice(fromIdx, 1);
+
+                if (targetActiveIdx >= activeCols.length) {
+                    data.columns.push(name);
+                } else {
+                    const targetColName = activeCols[targetActiveIdx];
+                    const toIdx = data.columns.indexOf(targetColName);
+                    data.columns.splice(toIdx, 0, name);
+                }
+            }
+
+            colDragEnd(ev);
+            saveData();
+        }
+
+        // --- Column Pinning & Swapping ---
+        function togglePinColumn(colName) {
+            if (data.pinnedCol === colName) {
+                data.pinnedCol = null;
+                saveData();
+                showUndoToast(`Unpinned "${colName}"`);
+                return;
+            }
+
+            const oldPinned = data.pinnedCol;
+            data.pinnedCol = colName;
+            const targetIdx = data.columns.indexOf(colName);
+
+            if (oldPinned && data.columns.includes(oldPinned)) {
+                const oldIdx = data.columns.indexOf(oldPinned);
+                // Swap places
+                data.columns[oldIdx] = colName;
+                data.columns[targetIdx] = oldPinned;
+                showUndoToast(`Pinned "${colName}" (swapped with "${oldPinned}")`);
+            } else {
+                if (targetIdx > 0) {
+                    const firstCol = data.columns[0];
+                    data.columns[0] = colName;
+                    data.columns[targetIdx] = firstCol;
+                }
+                showUndoToast(`Pinned "${colName}"`);
+            }
+
+            if (data.collapsedCols && data.collapsedCols.includes(colName)) {
+                const cIdx = data.collapsedCols.indexOf(colName);
+                data.collapsedCols.splice(cIdx, 1);
+            }
+
+            saveData();
+        }
+
+        // --- Column Folding into Dedicated Dock & Unfolding to 1st Position ---
+        function foldColumn(colName) {
+            if (data.pinnedCol === colName) {
+                data.pinnedCol = null;
+            }
+            if (!data.collapsedCols) data.collapsedCols = [];
+            if (!data.collapsedCols.includes(colName)) {
+                data.collapsedCols.push(colName);
+            }
+            saveData();
+            showUndoToast(`Folded "${colName}" to dock`);
+        }
+
+        function unfoldColumn(colName) {
+            if (data.collapsedCols) {
+                const idx = data.collapsedCols.indexOf(colName);
+                if (idx > -1) data.collapsedCols.splice(idx, 1);
+            }
+
+            // Unfolding a column always places it back at the first position column (index 0)
+            const fromIdx = data.columns.indexOf(colName);
+            if (fromIdx > -1) {
+                data.columns.splice(fromIdx, 1);
+            }
+            data.columns.unshift(colName);
+
+            saveData();
+            showUndoToast(`Unfolded "${colName}" to 1st position`);
+        }
+
         // --- Rendering ---
         function renderBoard() {
             const board = document.getElementById("board");
             board.innerHTML = "";
 
-            data.columns.forEach((colName, colIdx) => {
+            if (!data.collapsedCols) data.collapsedCols = [];
+
+            // 1. Render Dedicated Folded Columns Dock
+            const dockEl = document.getElementById('foldedColumnsDock');
+            const dockList = document.getElementById('foldedDockList');
+            const dockCount = document.getElementById('foldedDockCount');
+            const foldedCols = data.columns.filter(c => data.collapsedCols.includes(c));
+
+            if (foldedCols.length > 0) {
+                dockEl.style.display = 'flex';
+                dockCount.innerText = foldedCols.length;
+                dockList.innerHTML = foldedCols.map(colName => {
+                    const count = data.tasks.filter(t => t.column === colName).length;
+                    const colBg = data.columnColors[colName] || getComputedStyle(document.documentElement).getPropertyValue('--bg-col').trim() || '#31224A';
+                    return `
+                        <div class="folded-col-chip" onclick="unfoldColumn('${escapeHtml(colName)}')" title="Click to unfold '${escapeHtml(colName)}' to 1st position">
+                            <span class="folded-col-dot" style="background: ${colBg}; border: 1px solid rgba(255,255,255,0.4);"></span>
+                            <span class="folded-col-title">${escapeHtml(colName)}</span>
+                            <span class="col-count" style="margin-left: 0;">${count}</span>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                dockEl.style.display = 'none';
+            }
+
+            // 2. Render Active (Unfolded) Columns on Board
+            const activeCols = data.columns.filter(c => !data.collapsedCols.includes(c));
+
+            activeCols.forEach((colName, activeIdx) => {
+                const colIdx = data.columns.indexOf(colName);
                 let colTasks = data.tasks.filter(t => t.column === colName);
 
                 // Apply Search Filter
@@ -2138,180 +2540,161 @@
 
                 const colBg = data.columnColors[colName] || getComputedStyle(document.documentElement).getPropertyValue('--bg-col').trim() || '#31224A';
                 const textColor = isLightColor(colBg) ? '#111111' : '#F1E9FF';
-                const isCollapsed = data.collapsedCols.includes(colName);
+                const isPinned = data.pinnedCol === colName;
 
                 const colEl = document.createElement("div");
-                colEl.className = `column ${isCollapsed ? 'collapsed' : ''}`;
-                colEl.draggable = !isCollapsed;
-                colEl.ondragstart = (e) => colDragStart(e, colName);
-                colEl.ondragend = () => { document.querySelectorAll('.column').forEach(c => c.classList.remove('col-dragging')); };
-                colEl.ondragover = (e) => allowDrop(e);
-                colEl.ondrop = (e) => colDrop(e, colName);
+                colEl.className = `column ${isPinned ? 'pinned' : ''}`;
+                colEl.setAttribute('data-col-name', colName);
                 colEl.style.backgroundColor = colBg;
 
-                if (isCollapsed) {
-                    colEl.innerHTML = `
-                        <div class="col-header" onclick="toggleCollapseCol('${escapeHtml(colName)}')">
-                            <span style="font-weight: 700; color: ${textColor};">${escapeHtml(colName)}</span>
-                            <span class="col-count">${colTasks.length}</span>
-                        </div>
-                    `;
-                } else {
-                    colEl.innerHTML = `
-                        <div class="col-header">
-                            <span id="col-title-${colIdx}" contenteditable="true" onblur="updateColName(${colIdx}, this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" style="flex-grow: 1; outline: none; cursor: text; color: ${textColor};">${escapeHtml(colName)}</span>
-                            <div class="col-btn-group">
-                                <div class="tiny-color-picker" title="Change Color">
-                                    <input type="color" value="${data.columnColors[colName] || '#31224A'}" onchange="updateColColor(${colIdx}, this.value)">
-                                </div>
-                                <button class="icon-btn" title="Sort Column" onclick="sortSingleColumn('${escapeHtml(colName)}')">⇅</button>
-                                <button class="icon-btn" title="Fold / Collapse Column" onclick="toggleCollapseCol('${escapeHtml(colName)}')">◀</button>
-                                <button class="icon-btn add" title="Quick Add Task" onclick="quickAddTask(${colIdx})">+</button>
-                                <button class="icon-btn del" title="Delete Column" onclick="deleteCol(${colIdx})">✕</button>
+                colEl.innerHTML = `
+                    <div class="col-header" draggable="true" ondragstart="colDragStart(event, '${escapeHtml(colName)}')" ondragend="colDragEnd(event)" title="Drag column to reorder">
+                        <span id="col-title-${colIdx}" contenteditable="true" onblur="updateColName(${colIdx}, this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="flex-grow: 1; outline: none; cursor: text; color: ${textColor};">${escapeHtml(colName)}</span>
+                        <div class="col-btn-group" onclick="event.stopPropagation()">
+                            <button class="icon-btn pin-btn ${isPinned ? 'active' : ''}" title="${isPinned ? 'Unpin column' : 'Pin column (moves to front & swaps with existing)'}" onclick="togglePinColumn('${escapeHtml(colName)}')">📌</button>
+                            <div class="tiny-color-picker" title="Change Color">
+                                <input type="color" value="${data.columnColors[colName] || '#31224A'}" onchange="updateColColor(${colIdx}, this.value)">
                             </div>
-                            <span class="col-count">${colTasks.length}</span>
+                            <button class="icon-btn" title="Sort Column Alphabetically" onclick="sortSingleColumn('${escapeHtml(colName)}')">⇅</button>
+                            <button class="icon-btn" title="Fold column to dedicated dock" onclick="foldColumn('${escapeHtml(colName)}')">◀</button>
+                            <button class="icon-btn add" title="Quick Add Task" onclick="quickAddTask(${colIdx})">+</button>
+                            <button class="icon-btn del" title="Delete Column" onclick="deleteCol(${colIdx})">✕</button>
                         </div>
-                        <div class="card-list" ondragover="allowDrop(event); this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="drop(event, ${colIdx}); this.classList.remove('drag-over')"></div>
-                    `;
+                        <span class="col-count">${colTasks.length}</span>
+                    </div>
+                    <div class="card-list" ondragover="cardListDragOver(event, '${escapeHtml(colName)}')" ondragleave="this.classList.remove('drag-over')" ondrop="cardListDrop(event, '${escapeHtml(colName)}')"></div>
+                `;
 
-                    const listEl = colEl.querySelector(".card-list");
-                    colTasks.forEach(task => {
-                        const card = document.createElement("div");
-                        card.className = "card";
-                        card.draggable = true;
-                        card.ondragstart = (e) => drag(e, task.id);
-                        card.ondragend = () => {
-                            document.querySelectorAll('.card').forEach(c => c.classList.remove('dragging'));
-                            document.querySelectorAll('.card-list').forEach(l => l.classList.remove('drag-over'));
-                        };
-                        card.ondragover = (e) => allowDrop(e);
-                        card.ondrop = (e) => cardDrop(e, task.id);
-                        card.onclick = (e) => {
-                            if (!e.target.closest('button') && !e.target.closest('input') && !e.target.closest('select') && !e.target.isContentEditable) {
-                                openTaskModal(task.id);
-                            }
-                        };
-
-                        card.style.backgroundColor = colBg;
-                        card.style.backgroundImage = 'linear-gradient(rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.16))';
-
-                        // Priority color
-                        if (task.priority === "High") card.style.borderLeftColor = "var(--pri-high)";
-                        else if (task.priority === "Medium") card.style.borderLeftColor = "var(--pri-med)";
-                        else if (task.priority === "Low") card.style.borderLeftColor = "var(--pri-low)";
-                        else card.style.borderLeftColor = "transparent";
-
-                        // Checklist calculations
-                        const total = task.checklist ? task.checklist.length : 0;
-                        const done = total ? task.checklist.filter(c => c.done).length : 0;
-                        const pct = total ? (done / total) * 100 : 0;
-
-                        // Due date badge
-                        const isDone = isTaskCompleted(task);
-                        const dueStatus = getDueDateStatus(task.dueDate, isDone);
-                        let dueHtml = '';
-                        if (dueStatus) {
-                            dueHtml = `<span class="due-badge ${dueStatus.type}" title="${isDone ? 'Completed' : ''}">📅 ${dueStatus.label}</span>`;
+                const listEl = colEl.querySelector(".card-list");
+                colTasks.forEach(task => {
+                    const card = document.createElement("div");
+                    card.className = "card";
+                    card.setAttribute('data-task-id', task.id);
+                    card.draggable = true;
+                    card.ondragstart = (e) => cardDragStart(e, task.id);
+                    card.ondragend = (e) => cardDragEnd(e);
+                    card.onclick = (e) => {
+                        if (!e.target.closest('button') && !e.target.closest('input') && !e.target.closest('select') && !e.target.isContentEditable) {
+                            openTaskModal(task.id);
                         }
+                    };
 
-                        // Time tracking badges based on checklist state
-                        let timeHtml = '';
-                        if (total > 0) {
-                            if (done === 0) {
-                                timeHtml = `<span class="due-badge" style="background: rgba(255,255,255,0.06); color: var(--text-muted);" title="0 of ${total} subtasks completed">⏳ Not Started</span>`;
-                            } else if (done > 0 && done < total) {
-                                const dur = calculateDuration(task.startDate, null);
-                                timeHtml = `<span class="due-badge card-in-progress-badge" data-start-time="${task.startDate}" style="background: rgba(111, 168, 229, 0.18); color: #6FA8E5; border: 1px solid rgba(111, 168, 229, 0.5);" title="Started ${formatDateTimeDisplay(task.startDate)} (${done}/${total} completed)">⏱️ ${dur || 'In Progress'}</span>`;
-                            } else if (done === total) {
-                                const dur = calculateDuration(task.startDate, task.completedDate);
-                                timeHtml = `<span class="due-badge" style="background: rgba(127, 203, 142, 0.2); color: #7FCB8E; border: 1px solid rgba(127, 203, 142, 0.5);" title="Completed ${formatDateTimeDisplay(task.completedDate)} (All ${total} subtasks done)">🏁 Done</span>`;
-                                if (dur) {
-                                    timeHtml += `<span class="due-badge" style="background: rgba(255,255,255,0.08); color: var(--text-muted);" title="Duration taken: ${dur}">⏱️ ${dur}</span>`;
-                                }
-                            }
-                        } else {
-                            if (task.completedDate) {
-                                const dur = calculateDuration(task.startDate, task.completedDate);
-                                timeHtml = `<span class="due-badge" style="background: rgba(127, 203, 142, 0.2); color: #7FCB8E; border: 1px solid rgba(127, 203, 142, 0.5);" title="Completed ${formatDateTimeDisplay(task.completedDate)}">🏁 Done</span>`;
-                                if (dur) {
-                                    timeHtml += `<span class="due-badge" style="background: rgba(255,255,255,0.08); color: var(--text-muted);" title="Duration taken: ${dur}">⏱️ ${dur}</span>`;
-                                }
-                            } else if (task.startDate) {
-                                const dur = calculateDuration(task.startDate, null);
-                                timeHtml = `<span class="due-badge card-in-progress-badge" data-start-time="${task.startDate}" style="background: rgba(111, 168, 229, 0.18); color: #6FA8E5; border: 1px solid rgba(111, 168, 229, 0.5);" title="Started ${formatDateTimeDisplay(task.startDate)}">⏱️ ${dur || 'In Progress'}</span>`;
+                    card.style.backgroundColor = colBg;
+                    card.style.backgroundImage = 'linear-gradient(rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.16))';
+
+                    // Priority color
+                    if (task.priority === "High") card.style.borderLeftColor = "var(--pri-high)";
+                    else if (task.priority === "Medium") card.style.borderLeftColor = "var(--pri-med)";
+                    else if (task.priority === "Low") card.style.borderLeftColor = "var(--pri-low)";
+                    else card.style.borderLeftColor = "transparent";
+
+                    // Checklist calculations
+                    const total = task.checklist ? task.checklist.length : 0;
+                    const done = total ? task.checklist.filter(c => c.done).length : 0;
+                    const pct = total ? (done / total) * 100 : 0;
+
+                    // Due date badge
+                    const isDone = isTaskCompleted(task);
+                    const dueStatus = getDueDateStatus(task.dueDate, isDone);
+                    let dueHtml = '';
+                    if (dueStatus) {
+                        dueHtml = `<span class="due-badge ${dueStatus.type}" title="${isDone ? 'Completed' : ''}">📅 ${dueStatus.label}</span>`;
+                    }
+
+                    // Time tracking badges
+                    let timeHtml = '';
+                    if (total > 0) {
+                        if (done === 0) {
+                            timeHtml = `<span class="due-badge" style="background: rgba(255,255,255,0.06); color: var(--text-muted);" title="0 of ${total} subtasks completed">⏳ Not Started</span>`;
+                        } else if (done > 0 && done < total) {
+                            const dur = calculateDuration(task.startDate, null);
+                            timeHtml = `<span class="due-badge card-in-progress-badge" data-start-time="${task.startDate}" style="background: rgba(111, 168, 229, 0.18); color: #6FA8E5; border: 1px solid rgba(111, 168, 229, 0.5);" title="Started ${formatDateTimeDisplay(task.startDate)} (${done}/${total} completed)">⏱️ ${dur || 'In Progress'}</span>`;
+                        } else if (done === total) {
+                            const dur = calculateDuration(task.startDate, task.completedDate);
+                            timeHtml = `<span class="due-badge" style="background: rgba(127, 203, 142, 0.2); color: #7FCB8E; border: 1px solid rgba(127, 203, 142, 0.5);" title="Completed ${formatDateTimeDisplay(task.completedDate)} (All ${total} subtasks done)">🏁 Done</span>`;
+                            if (dur) {
+                                timeHtml += `<span class="due-badge" style="background: rgba(255,255,255,0.08); color: var(--text-muted);" title="Duration taken: ${dur}">⏱️ ${dur}</span>`;
                             }
                         }
-
-                        // Tags HTML
-                        let tagsHtml = '';
-                        if (task.tags && task.tags.length > 0) {
-                            tagsHtml = `<div class="card-tags">${task.tags.map(tag => `<span class="tag-chip">${escapeHtml(tag)}</span>`).join('')}</div>`;
+                    } else {
+                        if (task.completedDate) {
+                            const dur = calculateDuration(task.startDate, task.completedDate);
+                            timeHtml = `<span class="due-badge" style="background: rgba(127, 203, 142, 0.2); color: #7FCB8E; border: 1px solid rgba(127, 203, 142, 0.5);" title="Completed ${formatDateTimeDisplay(task.completedDate)}">🏁 Done</span>`;
+                            if (dur) {
+                                timeHtml += `<span class="due-badge" style="background: rgba(255,255,255,0.08); color: var(--text-muted);" title="Duration taken: ${dur}">⏱️ ${dur}</span>`;
+                            }
+                        } else if (task.startDate) {
+                            const dur = calculateDuration(task.startDate, null);
+                            timeHtml = `<span class="due-badge card-in-progress-badge" data-start-time="${task.startDate}" style="background: rgba(111, 168, 229, 0.18); color: #6FA8E5; border: 1px solid rgba(111, 168, 229, 0.5);" title="Started ${formatDateTimeDisplay(task.startDate)}">⏱️ ${dur || 'In Progress'}</span>`;
                         }
+                    }
 
-                        // Checkbox list
-                        let chkHtml = (task.checklist || []).map((c, i) => {
-                            const isProtected = ['started', 'finished'].includes((c.text || '').trim().toLowerCase());
-                            const delBtn = isProtected
-                                ? `<span style="width: 22px; height: 22px; min-width: 22px; min-height: 22px; display: inline-block;"></span>`
-                                : `<button class="icon-btn del" title="Delete Subtask" onclick="event.stopPropagation(); quickDelCheck('${task.id}', ${i})">✕</button>`;
-                            const isEditable = !isProtected;
-                            return `
-                                <div class="chk-row" onclick="event.stopPropagation()" style="font-size: 12px; margin-top: 5px; display: flex; align-items: center; gap: 6px;">
-                                    <input type="checkbox" style="cursor: pointer; width: 14px; height: 14px; accent-color: var(--accent);" ${c.done ? 'checked' : ''} onclick="event.stopPropagation()" onchange="toggleCardCheck('${task.id}', ${i}, this.checked)">
-                                    <span id="chk-title-${task.id}-${i}" contenteditable="${isEditable}" ${isEditable ? `onblur="updateChkName('${task.id}', ${i}, this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}"` : ''} onclick="event.stopPropagation()" style="flex-grow: 1; outline: none; cursor: ${isEditable ? 'text' : 'default'}; font-weight: ${isProtected ? '600' : 'normal'}; ${c.done ? 'text-decoration: line-through; opacity: 0.55;' : ''}">${escapeHtml(c.text)}</span>
-                                    ${delBtn}
-                                </div>
-                            `;
-                        }).join('');
+                    // Tags HTML
+                    let tagsHtml = '';
+                    if (task.tags && task.tags.length > 0) {
+                        tagsHtml = `<div class="card-tags">${task.tags.map(tag => `<span class="tag-chip">${escapeHtml(tag)}</span>`).join('')}</div>`;
+                    }
 
-                        const nextColIdx = data.columns.indexOf(task.column) + 1;
-                        const nextColName = nextColIdx < data.columns.length ? data.columns[nextColIdx] : null;
-
-                        card.innerHTML = `
-                            <div class="card-top-row">
-                                <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-                                    <select onchange="updatePriority('${task.id}', this.value)" onclick="event.stopPropagation()" style="font-size: 10px; font-weight: bold; padding: 2px 4px; border-radius: 4px; background: rgba(0,0,0,0.25); color: inherit; border: none; outline: none; cursor: pointer;">
-                                        <option value="High" ${task.priority === 'High' ? 'selected' : ''}>🔴 High</option>
-                                        <option value="Medium" ${task.priority === 'Medium' ? 'selected' : ''}>🟡 Med</option>
-                                        <option value="Low" ${task.priority === 'Low' || task.priority === 'None' ? 'selected' : ''}>🔵 Low</option>
-                                        <option value="None" ${task.priority === 'None' ? 'selected' : ''}>⚪ None</option>
-                                    </select>
-                                    ${dueHtml}
-                                    ${timeHtml}
-                                </div>
-                                <div style="display: flex; gap: 4px; align-items: center;">
-                                    ${nextColName ? `<button class="icon-btn" title="Move to ${escapeHtml(nextColName)}" onclick="event.stopPropagation(); moveToColumn('${task.id}', '${escapeHtml(nextColName)}')">▶</button>` : ''}
-                                    <button class="icon-btn" title="Duplicate Task" onclick="event.stopPropagation(); duplicateTask('${task.id}')">📋</button>
-                                    <button class="icon-btn" title="Archive Task" onclick="event.stopPropagation(); archiveTask('${task.id}')">📦</button>
-                                    <button class="icon-btn" title="Open Full Details" onclick="event.stopPropagation(); openTaskModal('${task.id}')">✏️</button>
-                                    <button class="icon-btn del" title="Delete Card" onclick="event.stopPropagation(); quickDeleteTask('${task.id}')">✕</button>
-                                </div>
+                    // Checkbox list
+                    let chkHtml = (task.checklist || []).map((c, i) => {
+                        const isProtected = ['started', 'finished'].includes((c.text || '').trim().toLowerCase());
+                        const delBtn = isProtected
+                            ? `<span style="width: 22px; height: 22px; min-width: 22px; min-height: 22px; display: inline-block;"></span>`
+                            : `<button class="icon-btn del" title="Delete Subtask" onclick="event.stopPropagation(); quickDelCheck('${task.id}', ${i})">✕</button>`;
+                        const isEditable = !isProtected;
+                        return `
+                            <div class="chk-row" onclick="event.stopPropagation()" style="font-size: 12px; margin-top: 5px; display: flex; align-items: center; gap: 6px;">
+                                <input type="checkbox" style="cursor: pointer; width: 14px; height: 14px; accent-color: var(--accent);" ${c.done ? 'checked' : ''} onclick="event.stopPropagation()" onchange="toggleCardCheck('${task.id}', ${i}, this.checked)">
+                                <span id="chk-title-${task.id}-${i}" contenteditable="${isEditable}" ${isEditable ? `onblur="updateChkName('${task.id}', ${i}, this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}"` : ''} onclick="event.stopPropagation()" style="flex-grow: 1; outline: none; cursor: ${isEditable ? 'text' : 'default'}; font-weight: ${isProtected ? '600' : 'normal'}; ${c.done ? 'text-decoration: line-through; opacity: 0.55;' : ''}">${escapeHtml(c.text)}</span>
+                                ${delBtn}
                             </div>
-                            
-                            <div id="card-title-${task.id}" class="card-title" contenteditable="true" onblur="updateCardName('${task.id}', this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="outline: none; cursor: text; min-height: 18px;">${escapeHtml(task.text)}</div>
-                            
-                            ${task.desc ? `<div class="card-desc-preview">${escapeHtml(task.desc)}</div>` : ''}
-                            ${tagsHtml}
-
-                            <details ${task.checklistOpen ? 'open' : ''} onclick="event.stopPropagation()" ontoggle="toggleDetails('${task.id}', this.open)" style="margin-top: 8px;">
-                                <summary style="font-size: 11px; opacity: 0.85; cursor: pointer; outline: none; display: flex; justify-content: space-between; align-items: center; user-select: none;">
-                                    <span>Checklist (${done}/${total})</span>
-                                    <button class="icon-btn add" title="Add Subtask" onclick="event.stopPropagation(); event.preventDefault(); quickAddCheck('${task.id}')">+</button>
-                                </summary>
-                                <div style="margin-top: 4px; padding-left: 2px;">
-                                    ${chkHtml}
-                                </div>
-                            </details>
-                            
-                            ${total > 0 ? `
-                                <div class="progress-bg">
-                                    <div class="progress-fill ${pct === 100 ? 'done' : ''}" style="width: ${pct}%"></div>
-                                </div>
-                            ` : ''}
                         `;
-                        listEl.appendChild(card);
-                    });
-                }
+                    }).join('');
+
+                    // NOTE: Removed ▶ button as requested!
+                    card.innerHTML = `
+                        <div class="card-top-row">
+                            <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                                <select onchange="updatePriority('${task.id}', this.value)" onclick="event.stopPropagation()" style="font-size: 10px; font-weight: bold; padding: 2px 4px; border-radius: 4px; background: rgba(0,0,0,0.25); color: inherit; border: none; outline: none; cursor: pointer;">
+                                    <option value="High" ${task.priority === 'High' ? 'selected' : ''}>🔴 High</option>
+                                    <option value="Medium" ${task.priority === 'Medium' ? 'selected' : ''}>🟡 Med</option>
+                                    <option value="Low" ${task.priority === 'Low' || task.priority === 'None' ? 'selected' : ''}>🔵 Low</option>
+                                    <option value="None" ${task.priority === 'None' ? 'selected' : ''}>⚪ None</option>
+                                </select>
+                                ${dueHtml}
+                                ${timeHtml}
+                            </div>
+                            <div style="display: flex; gap: 4px; align-items: center;">
+                                <button class="icon-btn" title="Duplicate Task" onclick="event.stopPropagation(); duplicateTask('${task.id}')">📋</button>
+                                <button class="icon-btn" title="Archive Task" onclick="event.stopPropagation(); archiveTask('${task.id}')">📦</button>
+                                <button class="icon-btn" title="Open Full Details" onclick="event.stopPropagation(); openTaskModal('${task.id}')">✏️</button>
+                                <button class="icon-btn del" title="Delete Card" onclick="event.stopPropagation(); quickDeleteTask('${task.id}')">✕</button>
+                            </div>
+                        </div>
+                        
+                        <div id="card-title-${task.id}" class="card-title" contenteditable="true" onblur="updateCardName('${task.id}', this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="outline: none; cursor: text; min-height: 18px;">${escapeHtml(task.text)}</div>
+                        
+                        ${task.desc ? `<div class="card-desc-preview">${escapeHtml(task.desc)}</div>` : ''}
+                        ${tagsHtml}
+
+                        <details ${task.checklistOpen ? 'open' : ''} onclick="event.stopPropagation()" ontoggle="toggleDetails('${task.id}', this.open)" style="margin-top: 8px;">
+                            <summary style="font-size: 11px; opacity: 0.85; cursor: pointer; outline: none; display: flex; justify-content: space-between; align-items: center; user-select: none;">
+                                <span>Checklist (${done}/${total})</span>
+                                <button class="icon-btn add" title="Add Subtask" onclick="event.stopPropagation(); event.preventDefault(); quickAddCheck('${task.id}')">+</button>
+                            </summary>
+                            <div style="margin-top: 4px; padding-left: 2px;">
+                                ${chkHtml}
+                            </div>
+                        </details>
+                        
+                        ${total > 0 ? `
+                            <div class="progress-bg">
+                                <div class="progress-fill ${pct === 100 ? 'done' : ''}" style="width: ${pct}%"></div>
+                            </div>
+                        ` : ''}
+                    `;
+                    listEl.appendChild(card);
+                });
 
                 board.appendChild(colEl);
             });
@@ -2335,89 +2718,6 @@
             board.appendChild(addColBtn);
         }
 
-        // --- Drag and drop ---
-        function drag(ev, id) {
-            ev.dataTransfer.setData("card-id", id);
-            ev.target.classList.add('dragging');
-            ev.stopPropagation();
-        }
-
-        function allowDrop(ev) { ev.preventDefault(); }
-
-        function drop(ev, idx) {
-            ev.preventDefault();
-            ev.stopPropagation();
-            const id = ev.dataTransfer.getData("card-id");
-            if (!id) return;
-
-            const toCol = data.columns[idx];
-            const task = data.tasks.find(t => t.id === id);
-            if (task && task.column !== toCol) {
-                task.column = toCol;
-                if (toCol.toLowerCase().includes('done') || toCol.toLowerCase().includes('complete')) {
-                    if (!task.completedDate) task.completedDate = getLocalDateTimeString();
-                }
-                task.updatedAt = Date.now();
-                saveData();
-            }
-            document.querySelectorAll('.card').forEach(c => c.classList.remove('dragging'));
-        }
-
-        function cardDrop(ev, targetTaskId) {
-            ev.preventDefault();
-            ev.stopPropagation();
-            const id = ev.dataTransfer.getData("card-id");
-            if (!id || id === targetTaskId) return;
-
-            const task = data.tasks.find(t => t.id === id);
-            const targetTask = data.tasks.find(t => t.id === targetTaskId);
-            if (!task || !targetTask) return;
-
-            task.column = targetTask.column;
-            if (task.column.toLowerCase().includes('done') || task.column.toLowerCase().includes('complete')) {
-                if (!task.completedDate) task.completedDate = getLocalDateTimeString();
-            }
-            task.updatedAt = Date.now();
-
-            const fromIdx = data.tasks.indexOf(task);
-            data.tasks.splice(fromIdx, 1);
-            const toIdx = data.tasks.indexOf(targetTask);
-            data.tasks.splice(toIdx, 0, task);
-
-            document.querySelectorAll('.card').forEach(c => c.classList.remove('dragging'));
-            saveData();
-        }
-
-        function colDragStart(ev, name) {
-            ev.dataTransfer.setData("col-name", name);
-            ev.target.classList.add('col-dragging');
-        }
-
-        function colDrop(ev, targetColName) {
-            ev.preventDefault();
-            const draggedColName = ev.dataTransfer.getData("col-name");
-            if (!draggedColName || draggedColName === targetColName) return;
-
-            const fromIdx = data.columns.indexOf(draggedColName);
-            const toIdx = data.columns.indexOf(targetColName);
-
-            data.columns.splice(fromIdx, 1);
-            data.columns.splice(toIdx, 0, draggedColName);
-
-            document.querySelectorAll('.column').forEach(c => c.classList.remove('col-dragging'));
-            saveData();
-        }
-
-        function toggleCollapseCol(colName) {
-            const idx = data.collapsedCols.indexOf(colName);
-            if (idx > -1) {
-                data.collapsedCols.splice(idx, 1);
-            } else {
-                data.collapsedCols.push(colName);
-            }
-            saveData();
-        }
-
         function sortSingleColumn(colName) {
             const colTasks = data.tasks.filter(t => t.column === colName);
             colTasks.sort((a, b) => a.text.localeCompare(b.text));
@@ -2437,6 +2737,7 @@
             const removedTasks = data.tasks.filter(t => t.column === name);
             const color = data.columnColors[name];
             const wasCollapsed = data.collapsedCols ? data.collapsedCols.includes(name) : false;
+            const wasPinned = data.pinnedCol === name;
 
             data.columns.splice(idx, 1);
             data.tasks = data.tasks.filter(t => t.column !== name);
@@ -2445,6 +2746,7 @@
                 const cIdx = data.collapsedCols.indexOf(name);
                 if (cIdx > -1) data.collapsedCols.splice(cIdx, 1);
             }
+            if (wasPinned) data.pinnedCol = null;
 
             showUndoToast(`Deleted column "${name}"`, () => {
                 data.columns.splice(idx, 0, name);
@@ -2453,8 +2755,29 @@
                 if (wasCollapsed && data.collapsedCols && !data.collapsedCols.includes(name)) {
                     data.collapsedCols.push(name);
                 }
+                if (wasPinned) data.pinnedCol = name;
                 saveData();
             });
+            saveData();
+        }
+
+        function updateColName(idx, newName) {
+            const oldName = data.columns[idx];
+            newName = newName.trim();
+            if (!newName || newName === oldName || data.columns.includes(newName)) return renderBoard();
+
+            data.columns[idx] = newName;
+            data.tasks.forEach(t => { if (t.column === oldName) t.column = newName; });
+            if (data.columnColors[oldName]) {
+                data.columnColors[newName] = data.columnColors[oldName];
+                delete data.columnColors[oldName];
+            }
+            if (data.collapsedCols && data.collapsedCols.includes(oldName)) {
+                data.collapsedCols = data.collapsedCols.map(c => c === oldName ? newName : c);
+            }
+            if (data.pinnedCol === oldName) {
+                data.pinnedCol = newName;
+            }
             saveData();
         }
 

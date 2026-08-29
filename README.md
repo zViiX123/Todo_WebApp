@@ -14,9 +14,10 @@ Organize tasks across multiple boards, track time automatically with checklist-d
 
 ### 🗂️ Kanban Columns & Customization
 * **Dynamic Columns**: Add, rename directly in place, or delete with an automatic 5-second undo toast.
-* **Column Drag & Drop**: Reorder entire columns effortlessly.
+* **✨ Smooth Drag & Drop Reordering**: Fluidly drag and drop columns or cards with live transparent preview placeholders showing exact drop positions.
+* **📌 Single Pinned Column with Swapping**: Pin any column (`📌`) to highlight and lock it at the front. Pinning a second column cleanly swaps places with the previously pinned column.
+* **📁 Dedicated Folded Columns Dock**: Folding a column (`◀`) moves it smoothly to a compact dedicated left rail shelf with color dots and task counts. **Unfolding any column automatically places it back at the first position (`index 0`)**.
 * **Color Customization**: Pick custom background colors per column with automatic font brightness contrast calculation.
-* **Column Folding**: Collapse / fold columns (`◀`) to keep your workspace focused and decluttered.
 * **Quick Sort**: Instantly sort tasks in a specific column alphabetically (`⇅`).
 
 ### ⏱️ Checklist-Driven Time Tracking & Live Ticking
@@ -45,7 +46,7 @@ Click on any task card (or click `✏️`) to open the Task Detail Modal:
 * **🖋️ Markdown Support**: Write rich descriptions with headings (`#`), bold/italic (`**`, `*`), bullet/task lists (`- [x]`), blockquotes (`>`), code blocks, inline code, and links.
 * **Live Tab Switcher**: Seamlessly toggle between **`✏️ Edit`** and **`👁️ Preview (MD)`**.
 * **📋 Activity & History Log**: View an audit timeline of all modifications (renames, column moves, priority changes, subtasks toggled, archive/restore).
-* **Quick Task Actions**: One-click buttons to **Duplicate / Clone (`📋`)**, **Archive (`📦`)**, or **Move (`▶`)** tasks.
+* **Quick Task Actions**: One-click buttons to **Duplicate / Clone (`📋`)**, **Archive (`📦`)**, **Edit (`✏️`)**, or **Delete (`✕`)** cards.
 * **Priority Levels**: `🔴 High`, `🟡 Medium`, `🔵 Low`, and `⚪ None`.
 * **Due Date & Quick Presets**: Date picker with quick buttons (`Today`, `Tomorrow`, `+1 Week`, `Clear`).
 * **Start & End Date/Time**: Precise `datetime-local` pickers with **Now** and **Clear** controls and live duration calculation.
