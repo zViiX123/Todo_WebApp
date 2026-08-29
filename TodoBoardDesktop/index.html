@@ -2225,7 +2225,8 @@
             ev.stopPropagation();
             ev.dataTransfer.dropEffect = "move";
 
-            const listEl = ev.currentTarget;
+            const listEl = ev.currentTarget.classList.contains('card-list') ? ev.currentTarget : ev.currentTarget.querySelector('.card-list');
+            if (!listEl) return;
             listEl.classList.add('drag-over');
 
             const cards = [...listEl.querySelectorAll('.card:not(.dragging)')];
@@ -2273,32 +2274,40 @@
             }
 
             const listEl = ev.currentTarget.classList.contains('card-list') ? ev.currentTarget : ev.currentTarget.querySelector('.card-list');
-            let targetIndexInCol = 0;
-
-            if (listEl && currentCardPlaceholder && listEl.contains(currentCardPlaceholder)) {
-                const children = [...listEl.children];
-                const placeholderIdx = children.indexOf(currentCardPlaceholder);
-                targetIndexInCol = children.slice(0, placeholderIdx).filter(c => c.classList.contains('card') && c.getAttribute('data-task-id') !== id).length;
-            }
 
             // Remove task from data.tasks
             const taskIdx = data.tasks.indexOf(task);
             if (taskIdx > -1) data.tasks.splice(taskIdx, 1);
 
-            // Re-insert at the target position among tasks in colName
-            const tasksInCol = data.tasks.filter(t => t.column === colName);
-            if (targetIndexInCol >= tasksInCol.length) {
+            if (listEl && currentCardPlaceholder && listEl.contains(currentCardPlaceholder)) {
+                const children = [...listEl.children];
+                const placeholderIdx = children.indexOf(currentCardPlaceholder);
+                const nextCardEl = children.slice(placeholderIdx + 1).find(el => el.classList.contains('card') && el.getAttribute('data-task-id') !== id);
+
+                if (nextCardEl) {
+                    const nextTaskId = nextCardEl.getAttribute('data-task-id');
+                    const nextTask = data.tasks.find(t => t.id === nextTaskId);
+                    const insertIdx = data.tasks.indexOf(nextTask);
+                    data.tasks.splice(insertIdx, 0, task);
+                } else {
+                    const tasksInCol = data.tasks.filter(t => t.column === colName);
+                    if (tasksInCol.length > 0) {
+                        const lastTask = tasksInCol[tasksInCol.length - 1];
+                        const insertIdx = data.tasks.indexOf(lastTask) + 1;
+                        data.tasks.splice(insertIdx, 0, task);
+                    } else {
+                        data.tasks.push(task);
+                    }
+                }
+            } else {
+                const tasksInCol = data.tasks.filter(t => t.column === colName);
                 if (tasksInCol.length > 0) {
                     const lastTask = tasksInCol[tasksInCol.length - 1];
-                    const insertAt = data.tasks.indexOf(lastTask) + 1;
-                    data.tasks.splice(insertAt, 0, task);
+                    const insertIdx = data.tasks.indexOf(lastTask) + 1;
+                    data.tasks.splice(insertIdx, 0, task);
                 } else {
                     data.tasks.push(task);
                 }
-            } else {
-                const targetTask = tasksInCol[targetIndexInCol];
-                const insertAt = data.tasks.indexOf(targetTask);
-                data.tasks.splice(insertAt, 0, task);
             }
 
             task.updatedAt = Date.now();
@@ -2308,6 +2317,11 @@
 
         // --- Column Drag & Drop ---
         function colDragStart(ev, name) {
+            if (data.pinnedCol && name === data.pinnedCol) {
+                // Pinned column cannot be dragged away from position 0
+                ev.preventDefault();
+                return;
+            }
             draggedColName = name;
             ev.dataTransfer.setData("col-name", name);
             ev.dataTransfer.effectAllowed = "move";
@@ -2325,12 +2339,18 @@
         }
 
         function boardDragOver(ev) {
-            if (!draggedColName) return;
+            if (!draggedColName || (data.pinnedCol && draggedColName === data.pinnedCol)) return;
             ev.preventDefault();
             ev.dataTransfer.dropEffect = "move";
 
             const board = document.getElementById('board');
-            const cols = [...board.querySelectorAll('.column:not(.col-dragging)')];
+            // If a column is pinned, do not allow inserting before the pinned column (index 0)
+            const cols = [...board.querySelectorAll('.column:not(.col-dragging)')].filter(col => {
+                if (data.pinnedCol && col.getAttribute('data-col-name') === data.pinnedCol) {
+                    return false;
+                }
+                return true;
+            });
 
             let closestCol = null;
             let closestOffset = Number.NEGATIVE_INFINITY;
@@ -2362,26 +2382,32 @@
         function boardDrop(ev) {
             if (!draggedColName) return;
             ev.preventDefault();
+            ev.stopPropagation();
 
             const name = draggedColName;
             const board = document.getElementById('board');
-            const cols = [...board.children];
-            const placeholderIdx = cols.indexOf(currentColPlaceholder);
 
-            if (placeholderIdx !== -1) {
-                const activeCols = data.columns.filter(c => !data.collapsedCols.includes(c));
-                const nonPlaceholderCols = cols.slice(0, placeholderIdx).filter(c => c.classList.contains('column') && c.getAttribute('data-col-name') !== name);
-                const targetActiveIdx = nonPlaceholderCols.length;
+            if (currentColPlaceholder && board.contains(currentColPlaceholder)) {
+                const children = [...board.children];
+                const placeholderIdx = children.indexOf(currentColPlaceholder);
+
+                // Find the next column element after the placeholder
+                const nextColEl = children.slice(placeholderIdx + 1).find(el => el.classList.contains('column') && el.getAttribute('data-col-name') !== name);
 
                 const fromIdx = data.columns.indexOf(name);
-                data.columns.splice(fromIdx, 1);
+                if (fromIdx > -1) data.columns.splice(fromIdx, 1);
 
-                if (targetActiveIdx >= activeCols.length) {
-                    data.columns.push(name);
+                if (nextColEl) {
+                    const nextColName = nextColEl.getAttribute('data-col-name');
+                    let insertIdx = data.columns.indexOf(nextColName);
+                    // Ensure non-pinned columns are never placed before the pinned column at index 0
+                    if (data.pinnedCol && data.pinnedCol !== name && insertIdx === 0) {
+                        insertIdx = 1;
+                    }
+                    data.columns.splice(insertIdx, 0, name);
                 } else {
-                    const targetColName = activeCols[targetActiveIdx];
-                    const toIdx = data.columns.indexOf(targetColName);
-                    data.columns.splice(toIdx, 0, name);
+                    // Dragged to the very end of columns!
+                    data.columns.push(name);
                 }
             }
 
@@ -2398,24 +2424,13 @@
                 return;
             }
 
-            const oldPinned = data.pinnedCol;
+            // Set as pinned column and firmly place at 1st position (index 0)
             data.pinnedCol = colName;
             const targetIdx = data.columns.indexOf(colName);
-
-            if (oldPinned && data.columns.includes(oldPinned)) {
-                const oldIdx = data.columns.indexOf(oldPinned);
-                // Swap places
-                data.columns[oldIdx] = colName;
-                data.columns[targetIdx] = oldPinned;
-                showUndoToast(`Pinned "${colName}" (swapped with "${oldPinned}")`);
-            } else {
-                if (targetIdx > 0) {
-                    const firstCol = data.columns[0];
-                    data.columns[0] = colName;
-                    data.columns[targetIdx] = firstCol;
-                }
-                showUndoToast(`Pinned "${colName}"`);
+            if (targetIdx > -1) {
+                data.columns.splice(targetIdx, 1);
             }
+            data.columns.unshift(colName);
 
             if (data.collapsedCols && data.collapsedCols.includes(colName)) {
                 const cIdx = data.collapsedCols.indexOf(colName);
@@ -2423,6 +2438,7 @@
             }
 
             saveData();
+            showUndoToast(`Pinned "${colName}" at 1st position`);
         }
 
         // --- Column Folding into Dedicated Dock & Unfolding to 1st Position ---
@@ -2444,15 +2460,17 @@
                 if (idx > -1) data.collapsedCols.splice(idx, 1);
             }
 
-            // Unfolding a column always places it back at the first position column (index 0)
             const fromIdx = data.columns.indexOf(colName);
             if (fromIdx > -1) {
                 data.columns.splice(fromIdx, 1);
             }
-            data.columns.unshift(colName);
+
+            // If a column is pinned and is not this column, insert at index 1 so pinned column is never bypassed
+            const targetIdx = (data.pinnedCol && data.pinnedCol !== colName && data.columns.includes(data.pinnedCol)) ? 1 : 0;
+            data.columns.splice(targetIdx, 0, colName);
 
             saveData();
-            showUndoToast(`Unfolded "${colName}" to 1st position`);
+            showUndoToast(`Unfolded "${colName}"`);
         }
 
         // --- Rendering ---
@@ -2475,7 +2493,7 @@
                     const count = data.tasks.filter(t => t.column === colName).length;
                     const colBg = data.columnColors[colName] || getComputedStyle(document.documentElement).getPropertyValue('--bg-col').trim() || '#31224A';
                     return `
-                        <div class="folded-col-chip" onclick="unfoldColumn('${escapeHtml(colName)}')" title="Click to unfold '${escapeHtml(colName)}' to 1st position">
+                        <div class="folded-col-chip" onclick="unfoldColumn('${escapeHtml(colName)}')" title="Click to unfold '${escapeHtml(colName)}' (restores to front)">
                             <span class="folded-col-dot" style="background: ${colBg}; border: 1px solid rgba(255,255,255,0.4);"></span>
                             <span class="folded-col-title">${escapeHtml(colName)}</span>
                             <span class="col-count" style="margin-left: 0;">${count}</span>
@@ -2546,12 +2564,20 @@
                 colEl.className = `column ${isPinned ? 'pinned' : ''}`;
                 colEl.setAttribute('data-col-name', colName);
                 colEl.style.backgroundColor = colBg;
+                colEl.ondragover = (e) => {
+                    if (draggedColName) boardDragOver(e);
+                    else if (draggedCardId) cardListDragOver(e, colName);
+                };
+                colEl.ondrop = (e) => {
+                    if (draggedColName) boardDrop(e);
+                    else if (draggedCardId) cardListDrop(e, colName);
+                };
 
                 colEl.innerHTML = `
-                    <div class="col-header" draggable="true" ondragstart="colDragStart(event, '${escapeHtml(colName)}')" ondragend="colDragEnd(event)" title="Drag column to reorder">
+                    <div class="col-header" draggable="${!isPinned}" ondragstart="${!isPinned ? `colDragStart(event, '${escapeHtml(colName)}')` : 'event.preventDefault()'}" ondragend="colDragEnd(event)" title="${isPinned ? '📌 Pinned Column (locked at 1st position)' : 'Drag column to reorder'}">
                         <span id="col-title-${colIdx}" contenteditable="true" onblur="updateColName(${colIdx}, this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="flex-grow: 1; outline: none; cursor: text; color: ${textColor};">${escapeHtml(colName)}</span>
                         <div class="col-btn-group" onclick="event.stopPropagation()">
-                            <button class="icon-btn pin-btn ${isPinned ? 'active' : ''}" title="${isPinned ? 'Unpin column' : 'Pin column (moves to front & swaps with existing)'}" onclick="togglePinColumn('${escapeHtml(colName)}')">📌</button>
+                            <button class="icon-btn pin-btn ${isPinned ? 'active' : ''}" title="${isPinned ? 'Unpin column' : 'Pin column (locks to 1st position)'}" onclick="togglePinColumn('${escapeHtml(colName)}')">📌</button>
                             <div class="tiny-color-picker" title="Change Color">
                                 <input type="color" value="${data.columnColors[colName] || '#31224A'}" onchange="updateColColor(${colIdx}, this.value)">
                             </div>
