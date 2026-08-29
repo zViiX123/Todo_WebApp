@@ -102,9 +102,12 @@ function createWindow() {
 
     // Securely handle external links (e.g. from Markdown descriptions) in default system browser
     mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-        if (url.startsWith('https://') || url.startsWith('http://')) {
-            shell.openExternal(url);
-        }
+        try {
+            const parsed = new URL(url);
+            if (parsed.protocol === 'https:' || parsed.protocol === 'http:') {
+                shell.openExternal(url);
+            }
+        } catch (e) {}
         return { action: 'deny' };
     });
 
@@ -114,9 +117,12 @@ function createWindow() {
             if (parsedUrl.protocol === 'file:') return;
         } catch (e) {}
         event.preventDefault();
-        if (navigationUrl.startsWith('https://') || navigationUrl.startsWith('http://')) {
-            shell.openExternal(navigationUrl);
-        }
+        try {
+            const parsed = new URL(navigationUrl);
+            if (parsed.protocol === 'https:' || parsed.protocol === 'http:') {
+                shell.openExternal(navigationUrl);
+            }
+        } catch (e) {}
     });
 
     mainWindow.on('close', (event) => {
@@ -332,18 +338,46 @@ ipcMain.handle('pick-attachment-file', async () => {
     }
 });
 
-// Open File in OS Default Application
+// Block dangerous executable and script extensions on Windows
+const DANGEROUS_EXTENSIONS = new Set([
+    '.exe', '.bat', '.cmd', '.ps1', '.ps1xml', '.ps2', '.psc1', '.psc2',
+    '.vbs', '.vbe', '.js', '.jse', '.wsf', '.wsh', '.scr', '.msi', '.msp',
+    '.com', '.hta', '.cpl', '.reg', '.jar', '.pif', '.gadget', '.inf',
+    '.ins', '.isp', '.lnk', '.dll', '.sys', '.drv', '.ocx', '.bin'
+]);
+
+// Open File in OS Default Application (Protected against Executable Execution)
 ipcMain.handle('open-attachment-path', async (event, filePath) => {
     if (!filePath || typeof filePath !== 'string') return { success: false, error: 'Invalid path' };
+
+    // Normalize and clean path
+    const normalizedPath = path.normalize(filePath);
+
+    // Disallow UNC network share paths or remote pipes (e.g. \\evil.com\payload)
+    if (normalizedPath.startsWith('\\\\') || normalizedPath.startsWith('//')) {
+        return { success: false, error: 'Remote network paths are not allowed for security reasons.' };
+    }
+
+    // Check file extension safety
+    const ext = path.extname(normalizedPath).toLowerCase();
+    if (DANGEROUS_EXTENSIONS.has(ext)) {
+        return { success: false, error: `Executable or script files (${ext}) cannot be opened directly for security.` };
+    }
+
+    // Ensure file exists locally
+    if (!fs.existsSync(normalizedPath)) {
+        return { success: false, error: 'File does not exist on this machine.' };
+    }
+
     try {
-        const result = await shell.openPath(filePath);
+        const result = await shell.openPath(normalizedPath);
         return { success: !result, error: result || null };
     } catch (e) {
         return { success: false, error: e.message };
     }
 });
 
-// Check for App Updates via GitHub Releases API
+// Check for App Updates via GitHub Releases API (Secure, Sandboxed, and Validated)
 ipcMain.handle('check-for-updates', async () => {
     let currentVersion = '1.0.3';
     try {
@@ -356,38 +390,73 @@ ipcMain.handle('check-for-updates', async () => {
             hostname: 'api.github.com',
             path: '/repos/zViiX123/Todo_WebApp/releases/latest',
             headers: {
-                'User-Agent': 'TodoBoardStudio-DesktopApp'
+                'User-Agent': 'TodoBoardStudio-DesktopApp',
+                'Accept': 'application/vnd.github.v3+json'
             }
         };
 
+        const MAX_BODY_SIZE = 1024 * 1024; // 1MB maximum response limit
+        let totalBytes = 0;
+
         const req = https.get(options, (res) => {
+            if (res.statusCode !== 200) {
+                res.resume(); // Free memory
+                return resolve({
+                    success: false,
+                    currentVersion,
+                    error: `GitHub API returned HTTP ${res.statusCode}`
+                });
+            }
+
             let rawData = '';
-            res.on('data', (chunk) => rawData += chunk);
+            res.on('data', (chunk) => {
+                totalBytes += chunk.length;
+                if (totalBytes > MAX_BODY_SIZE) {
+                    req.destroy();
+                    return resolve({
+                        success: false,
+                        currentVersion,
+                        error: 'Response payload exceeded security threshold (1MB).'
+                    });
+                }
+                rawData += chunk;
+            });
+
             res.on('end', () => {
                 try {
-                    if (res.statusCode !== 200) {
+                    const release = JSON.parse(rawData);
+                    const rawTag = typeof release.tag_name === 'string' ? release.tag_name.trim() : '';
+
+                    // Validate tag format matches semantic versioning (e.g. v1.0.0 or 1.0.0)
+                    if (!/^v?\d+\.\d+\.\d+(-[a-zA-Z0-9.]+)?$/.test(rawTag)) {
                         return resolve({
                             success: false,
                             currentVersion,
-                            error: `GitHub API returned HTTP ${res.statusCode}`
+                            error: 'Invalid release version format received from server.'
                         });
                     }
-                    const release = JSON.parse(rawData);
-                    const rawTag = release.tag_name || '';
+
                     const latestVersion = rawTag.replace(/^v/, '');
                     const isUpdateAvailable = compareSemver(latestVersion, currentVersion) > 0;
+
+                    // Ensure releaseUrl strictly points to official repository releases page
+                    let safeReleaseUrl = 'https://github.com/zViiX123/Todo_WebApp/releases';
+                    if (typeof release.html_url === 'string' && release.html_url.startsWith('https://github.com/zViiX123/Todo_WebApp/releases')) {
+                        safeReleaseUrl = release.html_url;
+                    }
+
                     resolve({
                         success: true,
                         currentVersion,
                         latestVersion: latestVersion || currentVersion,
                         isUpdateAvailable,
-                        releaseName: release.name || rawTag || 'Latest Release',
-                        releaseNotes: release.body || 'No release notes provided.',
-                        releaseUrl: release.html_url || 'https://github.com/zViiX123/Todo_WebApp/releases',
+                        releaseName: String(release.name || rawTag || 'Latest Release').slice(0, 100),
+                        releaseNotes: String(release.body || 'No release notes provided.').slice(0, 10000),
+                        releaseUrl: safeReleaseUrl,
                         publishedAt: release.published_at
                     });
                 } catch (e) {
-                    resolve({ success: false, currentVersion, error: e.message });
+                    resolve({ success: false, currentVersion, error: 'Failed to parse update release data.' });
                 }
             });
         });
@@ -398,7 +467,7 @@ ipcMain.handle('check-for-updates', async () => {
 
         req.setTimeout(8000, () => {
             req.destroy();
-            resolve({ success: false, currentVersion, error: 'Connection timed out' });
+            resolve({ success: false, currentVersion, error: 'Update check timed out.' });
         });
     });
 });

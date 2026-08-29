@@ -2527,8 +2527,13 @@
         }
 
         function openUpdateDownloadUrl() {
-            if (latestReleaseData && latestReleaseData.releaseUrl) {
-                window.open(latestReleaseData.releaseUrl, '_blank');
+            if (latestReleaseData && typeof latestReleaseData.releaseUrl === 'string') {
+                const url = latestReleaseData.releaseUrl;
+                if (url.startsWith('https://github.com/zViiX123/Todo_WebApp/releases')) {
+                    window.open(url, '_blank');
+                } else {
+                    window.open('https://github.com/zViiX123/Todo_WebApp/releases', '_blank');
+                }
             }
             closeUpdateModal();
         }
