@@ -755,6 +755,201 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+        /* --- Feature 1: Pomodoro Focus Timer --- */
+        .pomodoro-header-badge {
+            background: rgba(224, 108, 117, 0.2); border: 1px solid rgba(224, 108, 117, 0.4);
+            color: #FFB3BA; padding: 4px 10px; border-radius: 14px; font-size: 12px; font-weight: 700;
+            display: inline-flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.15s ease;
+        }
+        .pomodoro-header-badge:hover {
+            background: rgba(224, 108, 117, 0.35); box-shadow: 0 0 10px rgba(224, 108, 117, 0.4);
+        }
+        .pomodoro-header-badge.active {
+            background: #E06C75; color: #FFF; animation: pulseGlow 2s infinite;
+        }
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 4px rgba(224, 108, 117, 0.4); }
+            50% { box-shadow: 0 0 14px rgba(224, 108, 117, 0.8); }
+            100% { box-shadow: 0 0 4px rgba(224, 108, 117, 0.4); }
+        }
+        .pomodoro-floating-hud {
+            position: fixed; bottom: 20px; right: 24px; z-index: 1000;
+            background: color-mix(in srgb, var(--modal-bg) 92%, black);
+            backdrop-filter: blur(16px); border: 1px solid var(--accent);
+            border-radius: 14px; padding: 10px 16px; display: flex; align-items: center; gap: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 16px var(--accent-glow);
+            animation: slideUp 0.25s ease; user-select: none;
+        }
+        .pomodoro-floating-hud .time-display {
+            font-size: 18px; font-weight: 800; font-family: monospace; letter-spacing: 1px; color: #FFF;
+        }
+
+        /* --- Feature 2: Spotlight Quick-Capture HUD --- */
+        .spotlight-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(8px);
+            display: flex; justify-content: center; align-items: flex-start;
+            padding-top: 14vh; z-index: 10000; animation: fadeIn 0.15s ease;
+        }
+        .spotlight-card {
+            width: 640px; max-width: 90vw; background: var(--modal-bg);
+            border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.6), 0 0 24px var(--accent-glow);
+            overflow: hidden; display: flex; flex-direction: column;
+        }
+        .spotlight-input-row {
+            display: flex; align-items: center; padding: 14px 18px; gap: 12px;
+            border-bottom: 1px solid var(--border-glass); background: rgba(0,0,0,0.15);
+        }
+        .spotlight-input {
+            width: 100%; font-size: 16px; font-weight: 600; background: transparent;
+            border: none; outline: none; color: #FFF;
+        }
+        .spotlight-preview {
+            padding: 12px 18px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+            min-height: 42px; background: rgba(0,0,0,0.1);
+        }
+        .shorthand-badge {
+            display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px;
+            border-radius: 6px; font-size: 11px; font-weight: 600;
+        }
+        .spotlight-footer {
+            padding: 10px 18px; font-size: 11px; color: var(--text-muted);
+            background: rgba(0,0,0,0.25); border-top: 1px solid var(--border-glass);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        /* --- Feature 3: Calendar & Timeline Views --- */
+        #calendarViewContainer, #timelineViewContainer {
+            display: flex; flex-direction: column; flex-grow: 1; height: calc(100vh - 100px);
+            overflow-y: auto; padding: 16px; gap: 12px;
+        }
+        .calendar-header-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            background: color-mix(in srgb, var(--bg-col-head) 85%, transparent);
+            padding: 10px 16px; border-radius: 10px; border: 1px solid var(--border-glass);
+        }
+        .calendar-grid {
+            display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; flex-grow: 1;
+        }
+        .calendar-day-header {
+            text-align: center; font-size: 11px; font-weight: 700; color: var(--text-muted);
+            padding: 6px; text-transform: uppercase;
+        }
+        .calendar-day-cell {
+            background: color-mix(in srgb, var(--bg-col) 85%, transparent);
+            border: 1px solid var(--border-glass); border-radius: 8px; min-height: 105px;
+            padding: 6px; display: flex; flex-direction: column; gap: 4px; transition: all 0.15s ease;
+        }
+        .calendar-day-cell:hover {
+            border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.06);
+        }
+        .calendar-day-cell.today {
+            border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow);
+        }
+        .calendar-day-cell.other-month { opacity: 0.35; }
+        .calendar-day-top {
+            display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 700;
+        }
+        .calendar-task-pill {
+            background: var(--bg-card); border: 1px solid var(--border-glass);
+            border-radius: 5px; padding: 3px 6px; font-size: 11px; font-weight: 600;
+            display: flex; align-items: center; gap: 5px; cursor: pointer;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+        .calendar-task-pill:hover {
+            transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+            border-color: var(--accent);
+        }
+        .calendar-task-pill.completed {
+            opacity: 0.6; text-decoration: line-through;
+        }
+
+        /* Timeline View */
+        .timeline-col-group {
+            background: color-mix(in srgb, var(--bg-col) 85%, transparent);
+            border: 1px solid var(--border-glass); border-radius: 10px; padding: 14px;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .timeline-task-row {
+            display: grid; grid-template-columns: 200px 1fr; gap: 16px; align-items: center;
+        }
+        .timeline-bar-track {
+            background: rgba(0,0,0,0.3); height: 26px; border-radius: 6px; position: relative; overflow: hidden;
+            display: flex; align-items: center; padding: 0 8px;
+        }
+        .timeline-bar-fill {
+            position: absolute; top: 0; bottom: 0; background: var(--accent);
+            border-radius: 6px; opacity: 0.85; transition: all 0.25s ease;
+        }
+
+        /* --- Feature 4: Workspace Dropdown Menu --- */
+        .workspace-dropdown-container {
+            position: relative; display: inline-block;
+        }
+        .workspace-trigger-btn {
+            background: var(--entry-bg); border: 1px solid var(--border-glass);
+            color: var(--text-light); border-radius: 8px; padding: 5px 12px;
+            display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+            font-size: 13px; font-weight: 700; transition: all 0.15s ease;
+        }
+        .workspace-trigger-btn:hover {
+            border-color: var(--accent); box-shadow: 0 0 8px var(--accent-glow);
+        }
+        .workspace-menu {
+            position: absolute; top: calc(100% + 6px); left: 0; width: 280px;
+            background: var(--modal-bg); border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            padding: 6px; z-index: 1000; display: none; flex-direction: column; gap: 4px;
+            animation: fadeIn 0.15s ease;
+        }
+        .workspace-menu-item {
+            padding: 8px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;
+            display: flex; align-items: center; justify-content: space-between;
+            color: var(--text-light); cursor: pointer; transition: background 0.1s ease;
+        }
+        .workspace-menu-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .workspace-menu-item.active {
+            background: var(--accent); color: #FFF;
+        }
+
+        /* --- Feature 5: File & Link Attachments --- */
+        .attachments-box {
+            display: flex; flex-direction: column; gap: 8px; margin-top: 6px;
+        }
+        .attachment-dropzone {
+            border: 2px dashed rgba(255, 255, 255, 0.2); border-radius: 8px;
+            padding: 12px; text-align: center; font-size: 11px; color: var(--text-muted);
+            cursor: pointer; transition: all 0.15s ease;
+        }
+        .attachment-dropzone:hover, .attachment-dropzone.drag-over {
+            border-color: var(--accent); background: rgba(142, 91, 232, 0.1); color: var(--text-light);
+        }
+        .attachment-list {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; max-height: 180px; overflow-y: auto;
+        }
+        .attachment-card {
+            background: rgba(0,0,0,0.25); border: 1px solid var(--border-glass);
+            border-radius: 6px; padding: 8px; display: flex; align-items: center; gap: 8px;
+            position: relative; overflow: hidden;
+        }
+        .attachment-card:hover { border-color: rgba(255,255,255,0.3); }
+        .attachment-thumb {
+            width: 32px; height: 32px; border-radius: 4px; object-fit: cover; background: rgba(0,0,0,0.3); flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; font-size: 16px;
+        }
+        .attachment-info {
+            flex-grow: 1; min-width: 0; font-size: 11px;
+        }
+        .attachment-title {
+            font-weight: 600; color: #FFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .attachment-meta {
+            color: var(--text-muted); font-size: 10px;
+        }
     </style>
 </head>
 <body>
@@ -762,9 +957,22 @@
     <!-- Header -->
     <header>
         <div class="header-left">
-            <select id="boardSelect" onchange="switchBoard(this.value)" title="Switch board"></select>
-            <button class="btn" onclick="addBoard()" title="New board (Ctrl+B)">＋</button>
-            <button class="btn danger" onclick="deleteBoard()" title="Delete board">🗑</button>
+            <div class="workspace-dropdown-container">
+                <button class="workspace-trigger-btn" id="workspaceDropdownBtn" onclick="toggleWorkspaceDropdown(event)" title="Switch workspace / project">
+                    <span>📁</span>
+                    <span id="currentWorkspaceName">✦ Todo Board Studio</span>
+                    <span id="currentWorkspaceCountBadge" style="background: rgba(255,255,255,0.15); padding: 1px 6px; border-radius: 10px; font-size: 11px;">0</span>
+                    <span style="font-size: 10px; opacity: 0.7;">▼</span>
+                </button>
+                <div class="workspace-menu" id="workspaceDropdownMenu">
+                    <div id="workspaceListItems"></div>
+                    <div style="height: 1px; background: var(--border-glass); margin: 4px 0;"></div>
+                    <div class="workspace-menu-item" onclick="addBoard()"><span style="display:flex;align-items:center;gap:6px;"><span>＋</span> New Workspace</span> <kbd style="font-size:10px;opacity:0.6;">Ctrl+B</kbd></div>
+                    <div class="workspace-menu-item" onclick="duplicateCurrentBoard()"><span style="display:flex;align-items:center;gap:6px;"><span>📋</span> Duplicate Current</span></div>
+                    <div class="workspace-menu-item" onclick="deleteBoard()" style="color: var(--danger);"><span style="display:flex;align-items:center;gap:6px;"><span>🗑</span> Delete Workspace</span></div>
+                </div>
+            </div>
+            <select id="boardSelect" onchange="switchBoard(this.value)" style="display: none;"></select>
         </div>
 
         <div class="header-center">
@@ -772,6 +980,17 @@
         </div>
 
         <div class="header-right">
+            <!-- Pomodoro Header Button -->
+            <div class="pomodoro-header-badge" id="headerPomodoroBtn" onclick="togglePomodoroTimer()" title="Pomodoro Focus Mode (Click to start/pause)">
+                <span>🍅</span>
+                <span id="headerPomodoroTime">Focus 25:00</span>
+            </div>
+
+            <!-- Spotlight Quick-Capture Trigger -->
+            <button class="btn" onclick="openSpotlightHud()" title="Global Quick Capture (Ctrl+K or Ctrl+Shift+Space)" style="display: inline-flex; align-items: center; gap: 5px;">
+                <span>⚡</span> Quick Add
+            </button>
+
             <!-- Stats Dashboard Button -->
             <button class="btn" onclick="openStatsModal()" title="Productivity & Metrics Dashboard">📊 Stats</button>
 
@@ -788,19 +1007,34 @@
             <!-- Import -->
             <button class="btn" onclick="triggerImport()" title="Import board data">📂 Import</button>
 
+            <!-- Sound Effects Toggle -->
+            <button class="btn" id="soundToggleBtn" onclick="toggleSoundEffects()" title="Toggle Sound Effects" style="font-size: 13px;">🔊</button>
+
             <!-- Theme Picker Button -->
             <button class="btn" id="themeModalBtn" onclick="openThemeModal()" title="Customize Color Theme" style="display: inline-flex; align-items: center; gap: 7px;">
                 <span id="headerThemeDot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent); display: inline-block; box-shadow: 0 0 6px var(--accent-glow);"></span>
                 <span id="headerThemeLabel">🎨 Themes</span>
             </button>
 
+            <!-- In-App Update Checker -->
+            <button class="btn" onclick="checkForAppUpdates()" title="Check for Updates">🔄 Updates</button>
+
             <!-- Shortcuts Help -->
             <button class="btn" onclick="openShortcutsModal()" title="Keyboard Shortcuts (?)">⌨️</button>
         </div>
     </header>
 
-    <!-- Toolbar: Search, Filters, Sort -->
+    <!-- Toolbar: Views, Search, Filters, Sort -->
     <div id="toolbar">
+        <!-- View Switcher -->
+        <div class="filter-pill-group" style="margin-right: 6px;">
+            <div class="filter-pill active" id="viewPillBoard" onclick="switchViewMode('board')">⊞ Board</div>
+            <div class="filter-pill" id="viewPillCalendar" onclick="switchViewMode('calendar')">📅 Calendar</div>
+            <div class="filter-pill" id="viewPillTimeline" onclick="switchViewMode('timeline')">📈 Timeline</div>
+        </div>
+
+        <div style="height: 18px; width: 1px; background: var(--border-glass); margin: 0 4px;"></div>
+
         <div class="search-box">
             <span class="search-icon">🔍</span>
             <input type="text" id="searchInput" placeholder="Search tasks... (Ctrl+F)" oninput="handleSearch(this.value)">
@@ -844,7 +1078,7 @@
         </div>
     </div>
 
-    <!-- Main Content Area: Board + Dedicated Folded Columns Dock -->
+    <!-- Main Content Area: Kanban Board View -->
     <div id="boardContainer">
         <!-- Folded Columns Dedicated Space (Left Rail) -->
         <div id="foldedColumnsDock" style="display: none;">
@@ -858,6 +1092,97 @@
         <div id="board" ondragover="boardDragOver(event)" ondrop="boardDrop(event)"></div>
     </div>
 
+    <!-- Calendar View Container -->
+    <div id="calendarViewContainer" style="display: none;">
+        <div class="calendar-header-bar">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <button class="btn" onclick="prevCalendarMonth()">‹</button>
+                <span id="calendarMonthTitle" style="font-size: 16px; font-weight: 800; min-width: 150px; text-align: center;">August 2026</span>
+                <button class="btn" onclick="nextCalendarMonth()">›</button>
+                <button class="btn" onclick="jumpCalendarToday()" style="font-size: 11px; padding: 4px 8px;">Today</button>
+            </div>
+            <div style="font-size: 12px; color: var(--text-muted);">
+                💡 Tip: Drag & drop tasks between days to reschedule due dates!
+            </div>
+        </div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+    </div>
+
+    <!-- Timeline View Container -->
+    <div id="timelineViewContainer" style="display: none;">
+        <div class="calendar-header-bar" style="margin-bottom: 8px;">
+            <span style="font-size: 15px; font-weight: 800;">📈 Chronological Timeline</span>
+            <span style="font-size: 12px; color: var(--text-muted);">Tasks plotted from start date to due date</span>
+        </div>
+        <div id="timelineList" style="display: flex; flex-direction: column; gap: 12px;"></div>
+    </div>
+
+    <!-- Floating Pomodoro Focus HUD Widget -->
+    <div class="pomodoro-floating-hud" id="pomodoroFloatingHud" style="display: none;">
+        <span style="font-size: 20px;">🍅</span>
+        <div style="display: flex; flex-direction: column;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <span id="pomodoroHudMode" style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--accent);">FOCUS</span>
+                <span id="pomodoroHudTaskTitle" style="font-size: 11px; color: var(--text-muted); max-width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></span>
+            </div>
+            <span class="time-display" id="pomodoroHudTime">25:00</span>
+        </div>
+        <div style="display: flex; gap: 4px;">
+            <button class="icon-btn" id="pomodoroHudPlayPauseBtn" onclick="togglePomodoroTimer()" title="Play / Pause">▶</button>
+            <button class="icon-btn" onclick="resetPomodoroTimer()" title="Reset Timer">↺</button>
+            <button class="icon-btn" onclick="skipPomodoroTimer()" title="Skip Session">⏭</button>
+            <button class="icon-btn del" onclick="hidePomodoroHud()" title="Close HUD">✕</button>
+        </div>
+    </div>
+
+    <!-- Spotlight Quick-Capture HUD Overlay -->
+    <div class="spotlight-overlay" id="spotlightHudOverlay" style="display: none;" onclick="if(event.target===this) closeSpotlightHud()">
+        <div class="spotlight-card">
+            <div class="spotlight-input-row">
+                <span style="font-size: 18px;">⚡</span>
+                <input type="text" id="spotlightInput" class="spotlight-input" placeholder="e.g. Finish tax report !high @tomorrow #finance ^In Progress" oninput="updateSpotlightPreview()" onkeydown="handleSpotlightKeydown(event)">
+                <button class="btn" style="background: var(--accent); padding: 5px 12px;" onclick="submitSpotlightTask()">Add Task ↵</button>
+            </div>
+            <div class="spotlight-preview" id="spotlightPreview">
+                <span style="color: var(--text-muted); font-size: 12px; font-style: italic;">Type task name with shorthand: !priority, @date, #tag, ^column</span>
+            </div>
+            <div class="spotlight-footer">
+                <span><b>Shorthand:</b> <span class="shorthand-badge" style="background: rgba(224,108,117,0.2); color:#FFB3BA;">!high/med/low</span> <span class="shorthand-badge" style="background: rgba(111,168,229,0.2); color:#A9D1FB;">@today/tomorrow</span> <span class="shorthand-badge" style="background: rgba(255,255,255,0.15);">#tag</span> <span class="shorthand-badge" style="background: rgba(142,91,232,0.2); color:#C5A4FF;">^column</span></span>
+                <span><kbd>Enter</kbd> to save • <kbd>Esc</kbd> to close</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Update Checker Modal -->
+    <div class="modal-overlay" id="updateModal" onclick="if(event.target===this) closeUpdateModal()">
+        <div class="modal-card" style="width: 520px;">
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-weight: 700; font-size: 16px;">🔄 App Update Available</span>
+                    <span id="updateModalVersionBadge" class="theme-active-tag" style="background: var(--accent);">v1.0.4</span>
+                </div>
+                <button class="icon-btn del" onclick="closeUpdateModal()" title="Close">✕</button>
+            </div>
+            <div class="modal-body" style="padding: 16px 20px;">
+                <div style="font-size: 13px; color: var(--text-light); margin-bottom: 12px;" id="updateModalSummary">
+                    A new version of <b>Todo Board Studio</b> is available!
+                </div>
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;">RELEASE NOTES</div>
+                <div id="updateModalNotes" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); border-radius: 8px; padding: 12px; max-height: 220px; overflow-y: auto; font-size: 12px; line-height: 1.4; color: var(--text-light);"></div>
+            </div>
+            <div class="modal-footer" style="justify-content: space-between;">
+                <span style="font-size: 11px; color: var(--text-muted);" id="updateCurrentVersionLabel">Current: v1.0.3</span>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn" onclick="closeUpdateModal()">Later</button>
+                    <button class="btn" id="updateModalDownloadBtn" style="background: var(--accent);" onclick="openUpdateDownloadUrl()">⬇️ Download Update</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Canvas Confetti Overlay -->
+    <canvas id="confettiCanvas" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 999999;"></canvas>
+
     <!-- Undo Toast Notification -->
     <div id="undoToast">
         <span id="undoToastMsg"></span>
@@ -869,6 +1194,9 @@
         <div class="modal-card">
             <div class="modal-header">
                 <span style="font-weight: 700; font-size: 16px;">Task Details</span>
+                <div style="margin-left: auto; margin-right: 8px; display: flex; gap: 6px;">
+                    <button type="button" class="btn" style="padding: 3px 8px; font-size: 11px;" onclick="startPomodoroForCurrentModalTask()" title="Start Pomodoro focus session on this task">🍅 Focus on Task</button>
+                </div>
                 <button class="icon-btn del" onclick="closeTaskModal()" title="Close">✕</button>
             </div>
             <div class="modal-body">
@@ -967,6 +1295,22 @@
                     <div id="modalChecklistContainer" style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px; max-height: 180px; overflow-y: auto;"></div>
                 </div>
 
+                <!-- Local Files & Web Link Attachments -->
+                <div class="form-group" style="margin-top: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <label style="margin-bottom: 0;">📎 ATTACHMENTS & LINKS (<span id="modalAttachmentCount">0</span>)</label>
+                        <button type="button" class="btn" style="padding: 2px 8px; font-size: 10px;" onclick="pickModalLocalFile()">＋ Attach File</button>
+                    </div>
+                    <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 8px;">
+                        <input type="text" id="modalLinkInput" placeholder="Paste web link (https://...) and press Enter" onkeydown="if(event.key==='Enter'){addModalWebLink(); event.preventDefault();}" style="flex-grow: 1; font-size: 12px;">
+                        <button type="button" class="btn" onclick="addModalWebLink()" style="padding: 4px 8px; font-size: 11px;">Add Link</button>
+                    </div>
+                    <div class="attachment-dropzone" id="modalAttachmentDropzone" ondragover="handleAttachmentDragOver(event)" ondragleave="handleAttachmentDragLeave(event)" ondrop="handleAttachmentDrop(event)" onclick="pickModalLocalFile()">
+                        📁 Drag & Drop files here or click to attach local documents/images
+                    </div>
+                    <div id="modalAttachmentList" class="attachment-list" style="margin-top: 6px;"></div>
+                </div>
+
                 <!-- Activity History Log -->
                 <div class="form-group" style="margin-top: 10px;">
                     <details style="cursor: pointer;">
@@ -1000,9 +1344,12 @@
             </div>
             <div class="modal-body">
                 <div class="shortcuts-grid">
+                    <div class="shortcut-item"><span>Quick Add / Spotlight</span><span class="shortcut-key">Ctrl + K / Ctrl+Shift+Space</span></div>
+                    <div class="shortcut-item"><span>Pomodoro Focus Toggle</span><span class="shortcut-key">Ctrl + P</span></div>
+                    <div class="shortcut-item"><span>Switch Workspace (1-9)</span><span class="shortcut-key">Ctrl + 1..9</span></div>
                     <div class="shortcut-item"><span>New Task</span><span class="shortcut-key">Ctrl + N</span></div>
                     <div class="shortcut-item"><span>Search Tasks</span><span class="shortcut-key">Ctrl + F</span></div>
-                    <div class="shortcut-item"><span>New Board</span><span class="shortcut-key">Ctrl + B</span></div>
+                    <div class="shortcut-item"><span>New Workspace</span><span class="shortcut-key">Ctrl + B</span></div>
                     <div class="shortcut-item"><span>Undo Delete</span><span class="shortcut-key">Ctrl + Z</span></div>
                     <div class="shortcut-item"><span>Close Modal</span><span class="shortcut-key">Escape</span></div>
                     <div class="shortcut-item"><span>Shortcuts Help</span><span class="shortcut-key">?</span></div>
@@ -1252,6 +1599,940 @@
             }).join('');
         }
 
+        // --- Procedural Web Audio API Sound Synthesizer ---
+        let audioCtx = null;
+        let soundEnabled = true;
+        let confettiEnabled = true;
+
+        function initAudioContext() {
+            if (!audioCtx) {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (AudioCtx) audioCtx = new AudioCtx();
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playUiSound(type) {
+            if (!soundEnabled) return;
+            try {
+                initAudioContext();
+                if (!audioCtx) return;
+
+                const now = audioCtx.currentTime;
+                const gain = audioCtx.createGain();
+                gain.connect(audioCtx.destination);
+
+                if (type === 'tick') {
+                    // Short crisp click
+                    const osc = audioCtx.createOscillator();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(880, now);
+                    osc.frequency.exponentialRampToValueAtTime(440, now + 0.04);
+                    gain.gain.setValueAtTime(0.12, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+                    osc.connect(gain);
+                    osc.start(now);
+                    osc.stop(now + 0.04);
+                } else if (type === 'pop') {
+                    // Soft pleasant bubble pop
+                    const osc = audioCtx.createOscillator();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.exponentialRampToValueAtTime(700, now + 0.06);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+                    osc.connect(gain);
+                    osc.start(now);
+                    osc.stop(now + 0.06);
+                } else if (type === 'complete') {
+                    // Two-tone major third chord chime (E5 -> G#5)
+                    [659.25, 830.61].forEach((freq, i) => {
+                        const osc = audioCtx.createOscillator();
+                        const noteGain = audioCtx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, now + i * 0.08);
+                        noteGain.gain.setValueAtTime(0.15, now + i * 0.08);
+                        noteGain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.35);
+                        osc.connect(noteGain);
+                        noteGain.connect(audioCtx.destination);
+                        osc.start(now + i * 0.08);
+                        osc.stop(now + i * 0.08 + 0.35);
+                    });
+                } else if (type === 'fanfare') {
+                    // Ascending triumphal chord (C5 -> E5 -> G5 -> C6)
+                    [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+                        const osc = audioCtx.createOscillator();
+                        const noteGain = audioCtx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(freq, now + i * 0.07);
+                        noteGain.gain.setValueAtTime(0.18, now + i * 0.07);
+                        noteGain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + 0.45);
+                        osc.connect(noteGain);
+                        noteGain.connect(audioCtx.destination);
+                        osc.start(now + i * 0.07);
+                        osc.stop(now + i * 0.07 + 0.45);
+                    });
+                } else if (type === 'bell') {
+                    // Resonant singing bowl / bell chime for Pomodoro completion
+                    [528, 1056].forEach((freq, i) => {
+                        const osc = audioCtx.createOscillator();
+                        const noteGain = audioCtx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, now);
+                        noteGain.gain.setValueAtTime(i === 0 ? 0.25 : 0.1, now);
+                        noteGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.8);
+                        osc.connect(noteGain);
+                        noteGain.connect(audioCtx.destination);
+                        osc.start(now);
+                        osc.stop(now + 1.8);
+                    });
+                }
+            } catch (e) {}
+        }
+
+        function toggleSoundEffects() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('soundToggleBtn');
+            if (btn) btn.innerText = soundEnabled ? '🔊' : '🔇';
+            if (soundEnabled) playUiSound('tick');
+            if (!data.settings) data.settings = {};
+            data.settings.soundEnabled = soundEnabled;
+            saveData();
+        }
+
+        // --- HTML5 Canvas Confetti Particle Burst Engine ---
+        let confettiParticles = [];
+        let confettiAnimId = null;
+
+        function fireConfetti(originX = null, originY = null) {
+            if (!confettiEnabled) return;
+            const canvas = document.getElementById('confettiCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const colors = ['#8E5BE8', '#4ADE80', '#FBBF24', '#60A5FA', '#F472B6', '#34D399', '#A78BFA'];
+            const count = 55;
+            const startX = originX !== null ? originX : window.innerWidth / 2;
+            const startY = originY !== null ? originY : window.innerHeight * 0.4;
+
+            for (let i = 0; i < count; i++) {
+                const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5);
+                const speed = Math.random() * 8 + 4;
+                confettiParticles.push({
+                    x: startX,
+                    y: startY,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed - 3,
+                    size: Math.random() * 7 + 4,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    rotation: Math.random() * 360,
+                    rotSpeed: (Math.random() - 0.5) * 12,
+                    gravity: 0.22,
+                    alpha: 1,
+                    decay: Math.random() * 0.015 + 0.012
+                });
+            }
+
+            if (!confettiAnimId) renderConfetti();
+        }
+
+        function renderConfetti() {
+            const canvas = document.getElementById('confettiCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = confettiParticles.length - 1; i >= 0; i--) {
+                const p = confettiParticles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += p.gravity;
+                p.rotation += p.rotSpeed;
+                p.alpha -= p.decay;
+
+                if (p.alpha <= 0 || p.y > canvas.height + 20) {
+                    confettiParticles.splice(i, 1);
+                    continue;
+                }
+
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate((p.rotation * Math.PI) / 180);
+                ctx.globalAlpha = p.alpha;
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.7);
+                ctx.restore();
+            }
+
+            if (confettiParticles.length > 0) {
+                confettiAnimId = requestAnimationFrame(renderConfetti);
+            } else {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                confettiAnimId = null;
+            }
+        }
+
+        // --- Integrated Pomodoro Focus Engine ---
+        const pomodoro = {
+            mode: 'focus', // 'focus' (25m), 'shortBreak' (5m), 'longBreak' (15m)
+            timeLeft: 25 * 60,
+            totalSeconds: 25 * 60,
+            isRunning: false,
+            timerId: null,
+            attachedTaskId: null,
+            sessionsCompleted: 0
+        };
+
+        function formatPomodoroTime(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
+        function updatePomodoroUI() {
+            const timeStr = formatPomodoroTime(pomodoro.timeLeft);
+            const headerBtn = document.getElementById('headerPomodoroBtn');
+            const headerTime = document.getElementById('headerPomodoroTime');
+            const hudTime = document.getElementById('pomodoroHudTime');
+            const hudMode = document.getElementById('pomodoroHudMode');
+            const hudPlayBtn = document.getElementById('pomodoroHudPlayPauseBtn');
+            const hudTaskTitle = document.getElementById('pomodoroHudTaskTitle');
+
+            if (headerTime) headerTime.innerText = `${pomodoro.mode === 'focus' ? 'Focus' : 'Break'} ${timeStr}`;
+            if (hudTime) hudTime.innerText = timeStr;
+            if (hudMode) hudMode.innerText = pomodoro.mode === 'focus' ? 'FOCUS' : 'BREAK';
+            if (hudPlayBtn) hudPlayBtn.innerText = pomodoro.isRunning ? '⏸' : '▶';
+
+            if (headerBtn) {
+                if (pomodoro.isRunning) headerBtn.classList.add('active');
+                else headerBtn.classList.remove('active');
+            }
+
+            if (hudTaskTitle) {
+                if (pomodoro.attachedTaskId) {
+                    const task = data.tasks.find(t => t.id === pomodoro.attachedTaskId);
+                    hudTaskTitle.innerText = task ? `• ${task.text}` : '';
+                } else {
+                    hudTaskTitle.innerText = '';
+                }
+            }
+        }
+
+        function togglePomodoroTimer() {
+            initAudioContext();
+            if (pomodoro.isRunning) {
+                pausePomodoroTimer();
+            } else {
+                startPomodoroTimer();
+            }
+        }
+
+        function startPomodoroTimer() {
+            pomodoro.isRunning = true;
+            clearInterval(pomodoro.timerId);
+            document.getElementById('pomodoroFloatingHud').style.display = 'flex';
+            updatePomodoroUI();
+            playUiSound('tick');
+
+            pomodoro.timerId = setInterval(() => {
+                if (pomodoro.timeLeft > 0) {
+                    pomodoro.timeLeft--;
+                    updatePomodoroUI();
+                } else {
+                    onPomodoroCompleted();
+                }
+            }, 1000);
+        }
+
+        function pausePomodoroTimer() {
+            pomodoro.isRunning = false;
+            clearInterval(pomodoro.timerId);
+            updatePomodoroUI();
+            playUiSound('tick');
+        }
+
+        function resetPomodoroTimer() {
+            pausePomodoroTimer();
+            pomodoro.timeLeft = pomodoro.totalSeconds;
+            updatePomodoroUI();
+        }
+
+        function skipPomodoroTimer() {
+            pausePomodoroTimer();
+            if (pomodoro.mode === 'focus') {
+                pomodoro.mode = 'shortBreak';
+                pomodoro.timeLeft = 5 * 60;
+                pomodoro.totalSeconds = 5 * 60;
+            } else {
+                pomodoro.mode = 'focus';
+                pomodoro.timeLeft = 25 * 60;
+                pomodoro.totalSeconds = 25 * 60;
+            }
+            updatePomodoroUI();
+        }
+
+        function hidePomodoroHud() {
+            document.getElementById('pomodoroFloatingHud').style.display = 'none';
+        }
+
+        function onPomodoroCompleted() {
+            pausePomodoroTimer();
+            playUiSound('bell');
+            fireConfetti();
+
+            if (pomodoro.mode === 'focus') {
+                pomodoro.sessionsCompleted++;
+                if (pomodoro.attachedTaskId) {
+                    const task = data.tasks.find(t => t.id === pomodoro.attachedTaskId);
+                    if (task) {
+                        logTaskActivity(task, `🍅 Completed 25m Pomodoro Focus Session (#${pomodoro.sessionsCompleted})`);
+                        if (editingTaskId === task.id) renderModalActivityLog(task);
+                    }
+                }
+
+                if (window.electronAPI && window.electronAPI.showNotification) {
+                    window.electronAPI.showNotification({
+                        title: '🍅 Pomodoro Focus Complete!',
+                        body: 'Great work! Take a well-deserved 5-minute break.'
+                    });
+                }
+
+                // Switch to break
+                pomodoro.mode = pomodoro.sessionsCompleted % 4 === 0 ? 'longBreak' : 'shortBreak';
+                const breakMins = pomodoro.mode === 'longBreak' ? 15 : 5;
+                pomodoro.timeLeft = breakMins * 60;
+                pomodoro.totalSeconds = breakMins * 60;
+            } else {
+                if (window.electronAPI && window.electronAPI.showNotification) {
+                    window.electronAPI.showNotification({
+                        title: '☕ Break Ended',
+                        body: 'Ready for another focused sprint?'
+                    });
+                }
+                pomodoro.mode = 'focus';
+                pomodoro.timeLeft = 25 * 60;
+                pomodoro.totalSeconds = 25 * 60;
+            }
+
+            updatePomodoroUI();
+            saveData();
+        }
+
+        function startPomodoroForCurrentModalTask() {
+            if (!editingTaskId) return;
+            pomodoro.attachedTaskId = editingTaskId;
+            pomodoro.mode = 'focus';
+            pomodoro.timeLeft = 25 * 60;
+            pomodoro.totalSeconds = 25 * 60;
+            startPomodoroTimer();
+            closeTaskModal();
+            showUndoToast(`🍅 Started Pomodoro on task!`);
+        }
+
+        // --- Spotlight Quick-Capture HUD ---
+        function openSpotlightHud() {
+            const overlay = document.getElementById('spotlightHudOverlay');
+            const input = document.getElementById('spotlightInput');
+            if (!overlay || !input) return;
+            overlay.style.display = 'flex';
+            input.value = '';
+            updateSpotlightPreview();
+            setTimeout(() => input.focus(), 50);
+        }
+
+        function closeSpotlightHud() {
+            const overlay = document.getElementById('spotlightHudOverlay');
+            if (overlay) overlay.style.display = 'none';
+        }
+
+        function parseShorthand(rawText) {
+            let text = (rawText || '').trim();
+            let priority = 'None';
+            let dueDate = null;
+            let tags = [];
+            let column = (data.columns && data.columns[0]) ? data.columns[0] : 'To Do';
+
+            // 1. Priority (!high, !med, !low, !none, !urgent, !1, !2, !3)
+            const priRegex = /!(high|urgent|med|medium|low|none|1|2|3)\b/i;
+            const priMatch = text.match(priRegex);
+            if (priMatch) {
+                const val = priMatch[1].toLowerCase();
+                if (val === 'high' || val === 'urgent' || val === '1') priority = 'High';
+                else if (val === 'med' || val === 'medium' || val === '2') priority = 'Medium';
+                else if (val === 'low' || val === '3') priority = 'Low';
+                else if (val === 'none') priority = 'None';
+                text = text.replace(priRegex, '').trim();
+            }
+
+            // 2. Due date (@today, @tomorrow, @yesterday, @YYYY-MM-DD, @+Nd, @mon..sun)
+            const dateRegex = /@(\+?\d+d|today|tomorrow|yesterday|\d{4}-\d{2}-\d{2}|mon|tue|wed|thu|fri|sat|sun|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i;
+            const dateMatch = text.match(dateRegex);
+            if (dateMatch) {
+                const dVal = dateMatch[1].toLowerCase();
+                const now = new Date();
+                now.setHours(0, 0, 0, 0);
+
+                if (dVal === 'today') {
+                    dueDate = now.toISOString().split('T')[0];
+                } else if (dVal === 'tomorrow') {
+                    now.setDate(now.getDate() + 1);
+                    dueDate = now.toISOString().split('T')[0];
+                } else if (dVal === 'yesterday') {
+                    now.setDate(now.getDate() - 1);
+                    dueDate = now.toISOString().split('T')[0];
+                } else if (/^\+\d+d$/.test(dVal)) {
+                    const days = parseInt(dVal.replace('+', '').replace('d', ''), 10);
+                    now.setDate(now.getDate() + days);
+                    dueDate = now.toISOString().split('T')[0];
+                } else if (/^\d{4}-\d{2}-\d{2}$/.test(dVal)) {
+                    dueDate = dVal;
+                } else {
+                    const dayNames = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+                    const targetDay = dayNames.findIndex(n => dVal.startsWith(n));
+                    if (targetDay !== -1) {
+                        const currentDay = now.getDay();
+                        let diff = targetDay - currentDay;
+                        if (diff <= 0) diff += 7;
+                        now.setDate(now.getDate() + diff);
+                        dueDate = now.toISOString().split('T')[0];
+                    }
+                }
+                text = text.replace(dateRegex, '').trim();
+            }
+
+            // 3. Tags (#tag)
+            const tagRegex = /#([a-zA-Z0-9_-]+)/g;
+            let tagMatch;
+            while ((tagMatch = tagRegex.exec(text)) !== null) {
+                tags.push(tagMatch[1]);
+            }
+            text = text.replace(tagRegex, '').trim();
+
+            // 4. Column (^column)
+            const colRegex = /\^([a-zA-Z0-9_\s-]+)$/;
+            const colMatch = text.match(colRegex);
+            if (colMatch) {
+                const reqCol = colMatch[1].trim();
+                const found = data.columns.find(c => c.toLowerCase() === reqCol.toLowerCase() || c.toLowerCase().includes(reqCol.toLowerCase()));
+                if (found) {
+                    column = found;
+                    text = text.replace(colRegex, '').trim();
+                }
+            }
+
+            text = text.replace(/\s+/g, ' ').trim();
+            return { title: text, priority, dueDate, tags, column };
+        }
+
+        function getPriorityColor(pri) {
+            if (pri === 'High') return 'var(--pri-high)';
+            if (pri === 'Medium') return 'var(--pri-med)';
+            if (pri === 'Low') return 'var(--pri-low)';
+            return 'rgba(255,255,255,0.2)';
+        }
+
+        function updateSpotlightPreview() {
+            const input = document.getElementById('spotlightInput');
+            const preview = document.getElementById('spotlightPreview');
+            if (!input || !preview) return;
+
+            const val = input.value.trim();
+            if (!val) {
+                preview.innerHTML = `<span style="color: var(--text-muted); font-size: 12px; font-style: italic;">Type task name with shorthand: !priority, @date, #tag, ^column</span>`;
+                return;
+            }
+
+            const p = parseShorthand(val);
+            const priBadge = p.priority !== 'None' ? `<span class="shorthand-badge" style="background: ${getPriorityColor(p.priority)}; color: #FFF;">${p.priority}</span>` : '';
+            const dateBadge = p.dueDate ? `<span class="shorthand-badge" style="background: rgba(111,168,229,0.2); color:#A9D1FB;">📅 ${formatShortDate(p.dueDate)}</span>` : '';
+            const tagBadges = p.tags.map(t => `<span class="shorthand-badge" style="background: rgba(255,255,255,0.15);">#${escapeHtml(t)}</span>`).join('');
+            const colBadge = `<span class="shorthand-badge" style="background: rgba(142,91,232,0.2); color:#C5A4FF;">📁 ${escapeHtml(p.column)}</span>`;
+
+            preview.innerHTML = `
+                <span style="font-weight: 700; color: #FFF; font-size: 13px; margin-right: 6px;">${escapeHtml(p.title || 'Untitled Task')}</span>
+                ${colBadge} ${priBadge} ${dateBadge} ${tagBadges}
+            `;
+        }
+
+        function handleSpotlightKeydown(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                submitSpotlightTask();
+            } else if (e.key === 'Escape') {
+                closeSpotlightHud();
+            }
+        }
+
+        function submitSpotlightTask() {
+            const input = document.getElementById('spotlightInput');
+            if (!input) return;
+            const val = input.value.trim();
+            if (!val) return;
+
+            const p = parseShorthand(val);
+            const newTask = sanitizeTask({
+                id: "task-" + Date.now(),
+                column: p.column,
+                text: p.title || 'Untitled Task',
+                priority: p.priority,
+                dueDate: p.dueDate,
+                tags: p.tags,
+                desc: "",
+                startDate: null,
+                completedDate: null,
+                checklist: [
+                    { text: "Started", done: false },
+                    { text: "Finished", done: false }
+                ],
+                activityLog: [
+                    { timestamp: Date.now(), text: "Quick-captured via Spotlight HUD" }
+                ],
+                attachments: [],
+                createdAt: Date.now(),
+                updatedAt: Date.now()
+            });
+
+            data.tasks.push(newTask);
+            closeSpotlightHud();
+            saveData();
+            playUiSound('pop');
+            showUndoToast(`Added task "${newTask.text}"`, () => {
+                data.tasks = data.tasks.filter(t => t.id !== newTask.id);
+                saveData();
+            });
+        }
+
+        // --- Interactive Calendar View ---
+        let calendarYear = new Date().getFullYear();
+        let calendarMonth = new Date().getMonth();
+        let activeViewMode = 'board';
+
+        function capitalize(str) {
+            if (!str) return '';
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        function switchViewMode(mode) {
+            activeViewMode = mode;
+            ['Board', 'Calendar', 'Timeline'].forEach(v => {
+                const pill = document.getElementById(`viewPill${v}`);
+                if (pill) {
+                    if (v.toLowerCase() === mode) pill.classList.add('active');
+                    else pill.classList.remove('active');
+                }
+            });
+
+            const bCont = document.getElementById('boardContainer');
+            const cCont = document.getElementById('calendarViewContainer');
+            const tCont = document.getElementById('timelineViewContainer');
+
+            if (bCont) bCont.style.display = mode === 'board' ? 'flex' : 'none';
+            if (cCont) cCont.style.display = mode === 'calendar' ? 'flex' : 'none';
+            if (tCont) tCont.style.display = mode === 'timeline' ? 'flex' : 'none';
+
+            if (mode === 'board') renderBoard();
+            else if (mode === 'calendar') renderCalendar();
+            else if (mode === 'timeline') renderTimeline();
+        }
+
+        function prevCalendarMonth() {
+            calendarMonth--;
+            if (calendarMonth < 0) {
+                calendarMonth = 11;
+                calendarYear--;
+            }
+            renderCalendar();
+        }
+
+        function nextCalendarMonth() {
+            calendarMonth++;
+            if (calendarMonth > 11) {
+                calendarMonth = 0;
+                calendarYear++;
+            }
+            renderCalendar();
+        }
+
+        function jumpCalendarToday() {
+            calendarYear = new Date().getFullYear();
+            calendarMonth = new Date().getMonth();
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            const titleEl = document.getElementById('calendarMonthTitle');
+            if (!grid || !titleEl) return;
+
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            titleEl.innerText = `${monthNames[calendarMonth]} ${calendarYear}`;
+
+            const firstDayIndex = new Date(calendarYear, calendarMonth, 1).getDay();
+            const totalDays = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+            const prevMonthTotalDays = new Date(calendarYear, calendarMonth, 0).getDate();
+
+            const today = new Date();
+            const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+            const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => `<div class="calendar-day-header">${d}</div>`).join('');
+
+            let cellsHtml = '';
+
+            // Prev month padding
+            for (let i = firstDayIndex - 1; i >= 0; i--) {
+                const d = prevMonthTotalDays - i;
+                cellsHtml += `<div class="calendar-day-cell other-month"><div class="calendar-day-top"><span>${d}</span></div></div>`;
+            }
+
+            // Active month days
+            for (let day = 1; day <= totalDays; day++) {
+                const dateStr = `${calendarYear}-${String(calendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isToday = dateStr === todayStr;
+
+                const dayTasks = (data.tasks || []).filter(t => t.dueDate === dateStr);
+
+                const tasksHtml = dayTasks.map(t => {
+                    const completed = isTaskCompleted(t);
+                    const priColor = getPriorityColor(t.priority);
+                    return `
+                        <div class="calendar-task-pill ${completed ? 'completed' : ''}" draggable="true" ondragstart="cardDragStart(event, '${t.id}')" onclick="openTaskModal('${t.id}')" title="${escapeHtml(t.text)} (${t.column})">
+                            <span style="width: 7px; height: 7px; border-radius: 50%; background: ${priColor}; flex-shrink: 0;"></span>
+                            <span style="flex-grow: 1; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(t.text)}</span>
+                        </div>
+                    `;
+                }).join('');
+
+                cellsHtml += `
+                    <div class="calendar-day-cell ${isToday ? 'today' : ''}" ondragover="event.preventDefault();" ondrop="handleCalendarDrop(event, '${dateStr}')">
+                        <div class="calendar-day-top">
+                            <span>${day}</span>
+                            <button class="icon-btn" style="padding: 1px 4px; font-size: 10px;" onclick="quickAddTaskForDate('${dateStr}')" title="Add task due on this date">＋</button>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 4px; overflow-y: auto; max-height: 90px;">
+                            ${tasksHtml}
+                        </div>
+                    </div>
+                `;
+            }
+
+            grid.innerHTML = dayHeaders + cellsHtml;
+        }
+
+        function handleCalendarDrop(e, dateStr) {
+            e.preventDefault();
+            const taskId = e.dataTransfer.getData('text/plain');
+            if (!taskId) return;
+            const task = data.tasks.find(t => t.id === taskId);
+            if (task) {
+                task.dueDate = dateStr;
+                task.updatedAt = Date.now();
+                logTaskActivity(task, `Rescheduled due date to ${dateStr} via Calendar`);
+                saveData();
+                playUiSound('pop');
+                renderCalendar();
+                showUndoToast(`Rescheduled to ${formatShortDate(dateStr)}`);
+            }
+        }
+
+        function quickAddTaskForDate(dateStr) {
+            const col = (data.columns && data.columns[0]) ? data.columns[0] : 'To Do';
+            const newTask = sanitizeTask({
+                id: "task-" + Date.now(),
+                column: col,
+                text: "New Task",
+                priority: "None",
+                dueDate: dateStr,
+                tags: [],
+                desc: "",
+                startDate: null,
+                completedDate: null,
+                checklist: [
+                    { text: "Started", done: false },
+                    { text: "Finished", done: false }
+                ],
+                activityLog: [
+                    { timestamp: Date.now(), text: `Created for due date ${dateStr}` }
+                ],
+                attachments: [],
+                createdAt: Date.now(),
+                updatedAt: Date.now()
+            });
+            data.tasks.push(newTask);
+            saveData();
+            playUiSound('pop');
+            renderCalendar();
+            openTaskModal(newTask.id);
+        }
+
+        // --- Timeline View ---
+        function renderTimeline() {
+            const list = document.getElementById('timelineList');
+            if (!list) return;
+
+            if (!data.tasks || data.tasks.length === 0) {
+                list.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 30px;">No tasks found on active board.</div>`;
+                return;
+            }
+
+            list.innerHTML = data.columns.map(col => {
+                const colTasks = data.tasks.filter(t => t.column === col);
+                if (colTasks.length === 0) return '';
+
+                const rows = colTasks.map(t => {
+                    const completed = isTaskCompleted(t);
+                    const priColor = getPriorityColor(t.priority);
+                    const dueLabel = t.dueDate ? `Due: ${formatShortDate(t.dueDate)}` : 'No due date';
+                    return `
+                        <div class="timeline-task-row">
+                            <div style="font-size: 12px; font-weight: 600; color: #FFF; display: flex; align-items: center; gap: 6px; cursor: pointer;" onclick="openTaskModal('${t.id}')">
+                                <span style="width: 8px; height: 8px; border-radius: 50%; background: ${priColor};"></span>
+                                <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(t.text)}</span>
+                            </div>
+                            <div class="timeline-bar-track">
+                                <div class="timeline-bar-fill" style="width: ${completed ? '100%' : '65%'}; background: ${completed ? 'var(--success)' : 'var(--accent)'};"></div>
+                                <span style="position: relative; z-index: 2; font-size: 11px; font-weight: 600; color: #FFF;">${dueLabel}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="timeline-col-group">
+                        <span style="font-size: 13px; font-weight: 800; color: var(--accent);">${escapeHtml(col)} (${colTasks.length})</span>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            ${rows}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // --- File & Link Attachments Manager ---
+        let modalWorkingAttachments = [];
+
+        function renderModalAttachments() {
+            const list = document.getElementById('modalAttachmentList');
+            const countEl = document.getElementById('modalAttachmentCount');
+            if (!list) return;
+
+            modalWorkingAttachments = modalWorkingAttachments || [];
+            if (countEl) countEl.innerText = modalWorkingAttachments.length;
+
+            if (modalWorkingAttachments.length === 0) {
+                list.innerHTML = `<div style="font-size: 11px; color: var(--text-muted); grid-column: 1/-1; padding: 4px;">No attachments added yet.</div>`;
+                return;
+            }
+
+            list.innerHTML = modalWorkingAttachments.map((att, i) => {
+                let iconHtml = '📄';
+                if (att.type === 'url') iconHtml = '🔗';
+                else if (att.isImage) iconHtml = '🖼️';
+
+                const sizeStr = att.size ? ` (${Math.round(att.size / 1024)} KB)` : '';
+
+                return `
+                    <div class="attachment-card">
+                        <div class="attachment-thumb">${iconHtml}</div>
+                        <div class="attachment-info">
+                            <div class="attachment-title" title="${escapeHtml(att.name || att.url)}">${escapeHtml(att.name || att.url)}</div>
+                            <div class="attachment-meta">${att.type === 'url' ? 'Web Link' : 'Local File'}${sizeStr}</div>
+                        </div>
+                        <div style="display: flex; gap: 3px;">
+                            <button type="button" class="icon-btn" onclick="openAttachment(${i})" title="Open">↗</button>
+                            <button type="button" class="icon-btn del" onclick="removeModalAttachment(${i})" title="Remove">✕</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function pickModalLocalFile() {
+            if (window.electronAPI && window.electronAPI.pickAttachmentFile) {
+                const res = await window.electronAPI.pickAttachmentFile();
+                if (res && res.success) {
+                    modalWorkingAttachments.push({
+                        id: "att-" + Date.now(),
+                        type: 'file',
+                        name: res.fileName,
+                        path: res.filePath,
+                        size: res.fileSize,
+                        isImage: res.isImage,
+                        addedAt: Date.now()
+                    });
+                    renderModalAttachments();
+                    playUiSound('pop');
+                }
+            } else {
+                alert("Local file picking is supported in the desktop app.");
+            }
+        }
+
+        function addModalWebLink() {
+            const input = document.getElementById('modalLinkInput');
+            if (!input) return;
+            let url = input.value.trim();
+            if (!url) return;
+
+            if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+
+            modalWorkingAttachments.push({
+                id: "att-" + Date.now(),
+                type: 'url',
+                name: url.replace(/^https?:\/\//i, ''),
+                url: url,
+                addedAt: Date.now()
+            });
+            input.value = '';
+            renderModalAttachments();
+            playUiSound('pop');
+        }
+
+        function removeModalAttachment(idx) {
+            if (modalWorkingAttachments[idx]) {
+                modalWorkingAttachments.splice(idx, 1);
+                renderModalAttachments();
+            }
+        }
+
+        function openAttachment(idx) {
+            const att = modalWorkingAttachments[idx];
+            if (!att) return;
+            if (att.type === 'url') {
+                window.open(att.url, '_blank');
+            } else if (att.path && window.electronAPI && window.electronAPI.openAttachmentPath) {
+                window.electronAPI.openAttachmentPath(att.path);
+            }
+        }
+
+        function handleAttachmentDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const el = document.getElementById('modalAttachmentDropzone');
+            if (el) el.classList.add('drag-over');
+        }
+
+        function handleAttachmentDragLeave(e) {
+            const el = document.getElementById('modalAttachmentDropzone');
+            if (el) el.classList.remove('drag-over');
+        }
+
+        function handleAttachmentDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const el = document.getElementById('modalAttachmentDropzone');
+            if (el) el.classList.remove('drag-over');
+
+            if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                for (let i = 0; i < e.dataTransfer.files.length; i++) {
+                    const f = e.dataTransfer.files[i];
+                    modalWorkingAttachments.push({
+                        id: "att-" + Date.now() + "-" + i,
+                        type: 'file',
+                        name: f.name,
+                        path: f.path || f.name,
+                        size: f.size,
+                        isImage: f.type.startsWith('image/'),
+                        addedAt: Date.now()
+                    });
+                }
+                renderModalAttachments();
+                playUiSound('pop');
+            }
+        }
+
+        // --- Workspace Manager ---
+        function toggleWorkspaceDropdown(e) {
+            if (e) e.stopPropagation();
+            const menu = document.getElementById('workspaceDropdownMenu');
+            if (!menu) return;
+            const isVisible = menu.style.display === 'flex';
+            menu.style.display = isVisible ? 'none' : 'flex';
+            if (!isVisible) renderWorkspaceDropdownItems();
+        }
+
+        function renderWorkspaceDropdownItems() {
+            const cont = document.getElementById('workspaceListItems');
+            if (!cont) return;
+            cont.innerHTML = Object.keys(boards).map((bId, idx) => {
+                const b = boards[bId];
+                const isActive = bId === activeBoardId;
+                const total = (b.tasks || []).length;
+                const done = (b.tasks || []).filter(isTaskCompleted).length;
+                return `
+                    <div class="workspace-menu-item ${isActive ? 'active' : ''}" onclick="switchBoard('${bId}'); document.getElementById('workspaceDropdownMenu').style.display='none';">
+                        <span style="display: flex; align-items: center; gap: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            <span>📁</span>
+                            <span>${escapeHtml(b.boardTitle || 'Untitled')}</span>
+                        </span>
+                        <span style="display: flex; align-items: center; gap: 6px;">
+                            <span style="font-size: 10px; opacity: 0.8;">${done}/${total}</span>
+                            <kbd style="font-size: 9px; opacity: 0.5;">Ctrl+${idx + 1}</kbd>
+                        </span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function duplicateCurrentBoard() {
+            document.getElementById('workspaceDropdownMenu').style.display = 'none';
+            const id = "board-" + Date.now();
+            const clone = JSON.parse(JSON.stringify(data));
+            clone.boardTitle = `${data.boardTitle || 'Board'} (Copy)`;
+            boards[id] = clone;
+            activeBoardId = id;
+            saveData();
+            switchBoard(id);
+            showUndoToast(`Duplicated workspace!`);
+        }
+
+        // Close workspace menu when clicking outside
+        window.addEventListener('click', (e) => {
+            const menu = document.getElementById('workspaceDropdownMenu');
+            const btn = document.getElementById('workspaceDropdownBtn');
+            if (menu && menu.style.display === 'flex' && !menu.contains(e.target) && (!btn || !btn.contains(e.target))) {
+                menu.style.display = 'none';
+            }
+        });
+
+        // --- In-App Update Checker ---
+        let latestReleaseData = null;
+
+        async function checkForAppUpdates() {
+            if (!window.electronAPI || !window.electronAPI.checkForUpdates) {
+                return alert("Update checker is supported in the desktop app.");
+            }
+            showUndoToast("Checking for updates...");
+            const res = await window.electronAPI.checkForUpdates();
+            if (res && res.success) {
+                if (res.isUpdateAvailable) {
+                    latestReleaseData = res;
+                    document.getElementById('updateModalVersionBadge').innerText = `v${res.latestVersion}`;
+                    document.getElementById('updateCurrentVersionLabel').innerText = `Current: v${res.currentVersion}`;
+                    document.getElementById('updateModalNotes').innerHTML = parseMarkdown(res.releaseNotes);
+                    document.getElementById('updateModal').classList.add('active');
+                } else {
+                    showUndoToast(`✓ You are running the latest version (v${res.currentVersion})`);
+                }
+            } else {
+                showUndoToast(`Could not check updates: ${res ? res.error : 'Network error'}`);
+            }
+        }
+
+        function closeUpdateModal() {
+            document.getElementById('updateModal').classList.remove('active');
+        }
+
+        function openUpdateDownloadUrl() {
+            if (latestReleaseData && latestReleaseData.releaseUrl) {
+                window.open(latestReleaseData.releaseUrl, '_blank');
+            }
+            closeUpdateModal();
+        }
+
         // Theme Definitions with visual palettes and descriptions
         const THEME_DEFINITIONS = [
             {
@@ -1486,6 +2767,7 @@
                 checklist: checklist,
                 checklistOpen: t.checklistOpen !== false,
                 activityLog: Array.isArray(t.activityLog) && t.activityLog.length > 0 ? t.activityLog : [{ timestamp: t.createdAt || Date.now(), text: "Task created" }],
+                attachments: Array.isArray(t.attachments) ? t.attachments : [],
                 archivedAt: t.archivedAt || null,
                 createdAt: t.createdAt || Date.now(),
                 updatedAt: t.updatedAt || Date.now()
@@ -1547,23 +2829,41 @@
             if (!data.archivedTasks) data.archivedTasks = [];
             if (!data.columns) data.columns = ["To Do", "In Progress", "Done"];
             if (data.pinnedCol && !data.columns.includes(data.pinnedCol)) data.pinnedCol = null;
+            if (data.settings && data.settings.soundEnabled !== undefined) {
+                soundEnabled = data.settings.soundEnabled;
+            }
+            const soundBtn = document.getElementById('soundToggleBtn');
+            if (soundBtn) soundBtn.innerText = soundEnabled ? '🔊' : '🔇';
 
             data.tasks = data.tasks.map(sanitizeTask);
             data.archivedTasks = data.archivedTasks.map(sanitizeTask);
 
             applyThemeToUI(data.theme);
             document.getElementById('board-title').innerText = data.boardTitle;
+            const wsName = document.getElementById('currentWorkspaceName');
+            if (wsName) wsName.innerText = data.boardTitle;
+            const wsBadge = document.getElementById('currentWorkspaceCountBadge');
+            if (wsBadge) wsBadge.innerText = data.tasks.length;
 
             updateArchiveHeaderCount();
             renderBoardSelector();
+            renderWorkspaceDropdownItems();
             renderBoard();
             checkUpcomingDueDates();
             startLiveTimerTick();
+            updatePomodoroUI();
 
             // Tray IPC Listener for Quick Task
             if (window.electronAPI && window.electronAPI.onQuickTask) {
                 window.electronAPI.onQuickTask(() => {
                     if (data.columns.length > 0) quickAddTask(0);
+                });
+            }
+
+            // Global Shortcut Listener for Spotlight Capture
+            if (window.electronAPI && window.electronAPI.onSpotlightCapture) {
+                window.electronAPI.onSpotlightCapture(() => {
+                    openSpotlightHud();
                 });
             }
         })();
@@ -1578,15 +2878,27 @@
             localStorage.setItem("todoBoardsStudio", jsonStr);
             updateArchiveHeaderCount();
             renderBoardSelector();
-            renderBoard();
+            renderWorkspaceDropdownItems();
+
+            const wsName = document.getElementById('currentWorkspaceName');
+            if (wsName) wsName.innerText = data.boardTitle;
+            const wsBadge = document.getElementById('currentWorkspaceCountBadge');
+            if (wsBadge) wsBadge.innerText = (data.tasks || []).length;
+
+            if (activeViewMode === 'calendar') renderCalendar();
+            else if (activeViewMode === 'timeline') renderTimeline();
+            else renderBoard();
         }
 
         // --- Board Operations ---
         function renderBoardSelector() {
             const sel = document.getElementById("boardSelect");
-            sel.innerHTML = Object.keys(boards).map(id =>
-                `<option value="${id}" ${id === activeBoardId ? 'selected' : ''}>${escapeHtml(boards[id].boardTitle || 'Untitled Board')}</option>`
-            ).join('');
+            if (sel) {
+                sel.innerHTML = Object.keys(boards).map(id =>
+                    `<option value="${id}" ${id === activeBoardId ? 'selected' : ''}>${escapeHtml(boards[id].boardTitle || 'Untitled Board')}</option>`
+                ).join('');
+            }
+            renderWorkspaceDropdownItems();
         }
 
         function switchBoard(id) {
@@ -1607,9 +2919,16 @@
 
             applyThemeToUI(data.theme);
             document.getElementById('board-title').innerText = data.boardTitle;
+            const wsName = document.getElementById('currentWorkspaceName');
+            if (wsName) wsName.innerText = data.boardTitle;
+            const wsBadge = document.getElementById('currentWorkspaceCountBadge');
+            if (wsBadge) wsBadge.innerText = data.tasks.length;
+
             updateArchiveHeaderCount();
             renderBoardSelector();
-            renderBoard();
+            if (activeViewMode === 'calendar') renderCalendar();
+            else if (activeViewMode === 'timeline') renderTimeline();
+            else renderBoard();
         }
 
         function addBoard() {
@@ -2270,6 +3589,10 @@
             task.column = colName;
             if (colName.toLowerCase().includes('done') || colName.toLowerCase().includes('complete')) {
                 if (!task.completedDate) task.completedDate = getLocalDateTimeString();
+                playUiSound('complete');
+                fireConfetti(ev.clientX, ev.clientY);
+            } else {
+                playUiSound('pop');
             }
             if (oldCol !== colName) {
                 logTaskActivity(task, `Moved to column "${colName}"`);
@@ -2851,6 +4174,16 @@
                 logTaskActivity(task, `${isChecked ? 'Checked' : 'Unchecked'} subtask "${task.checklist[chkIndex].text}"`);
                 syncTaskChecklistTimers(task);
                 task.updatedAt = Date.now();
+
+                const total = task.checklist.length;
+                const done = task.checklist.filter(c => c.done).length;
+                if (isChecked && done === total) {
+                    playUiSound('complete');
+                    fireConfetti();
+                } else if (isChecked) {
+                    playUiSound('tick');
+                }
+
                 saveData();
             }
         }
@@ -2981,10 +4314,12 @@
             modalWorkingTags = [...(task.tags || [])];
             modalWorkingChecklist = (task.checklist || []).map(c => ({ ...c }));
             ensureFinishedAtBottom(modalWorkingChecklist);
+            modalWorkingAttachments = (task.attachments || []).map(a => ({ ...a }));
 
             switchDescTab('edit');
             renderModalTags();
             renderModalChecklist();
+            renderModalAttachments();
             renderModalActivityLog(task);
 
             document.getElementById('taskModal').classList.add('active');
@@ -3061,6 +4396,7 @@
             }
             syncModalInputsFromChecklist();
             renderModalChecklist();
+            if (isChecked) playUiSound('tick');
         }
 
         function handleModalChecklistDelete(idx) {
@@ -3142,12 +4478,14 @@
             task.desc = newDesc;
             task.tags = [...modalWorkingTags];
             task.checklist = [...modalWorkingChecklist];
+            task.attachments = [...modalWorkingAttachments];
             ensureFinishedAtBottom(task.checklist);
             syncTaskChecklistTimers(task);
             task.updatedAt = Date.now();
 
             closeTaskModal();
             saveData();
+            playUiSound('pop');
         }
 
         function deleteTaskFromModal() {
@@ -3343,8 +4681,40 @@
                 closeThemeModal();
                 closeStatsModal();
                 closeArchiveModal();
+                closeSpotlightHud();
+                closeUpdateModal();
                 if (searchQuery) clearSearch();
                 return;
+            }
+
+            // Quick-Capture Spotlight HUD (Ctrl+K or Ctrl+Shift+Space)
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                openSpotlightHud();
+                return;
+            }
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.code === 'Space') {
+                e.preventDefault();
+                openSpotlightHud();
+                return;
+            }
+
+            // Pomodoro Toggle (Ctrl+P)
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
+                e.preventDefault();
+                togglePomodoroTimer();
+                return;
+            }
+
+            // Switch Workspace by number (Ctrl+1 ... Ctrl+9)
+            if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key >= '1' && e.key <= '9') {
+                const bKeys = Object.keys(boards);
+                const idx = parseInt(e.key, 10) - 1;
+                if (bKeys[idx]) {
+                    e.preventDefault();
+                    switchBoard(bKeys[idx]);
+                    return;
+                }
             }
 
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
