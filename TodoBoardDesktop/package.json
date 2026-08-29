@@ -1,6 +1,6 @@
 {
   "name": "todoboarddesktop",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Todo Board Studio - Sleek Kanban Board & Project Management Desktop App",
   "author": "zViiX123",
   "license": "AGPL-3.0",
@@ -18,10 +18,12 @@
   "build": {
     "appId": "com.todoboard.desktop",
     "productName": "Todo Board Studio",
+    "icon": "icon.ico",
     "directories": {
       "output": "dist"
     },
     "win": {
+      "icon": "icon.ico",
       "target": [
         {
           "target": "nsis",

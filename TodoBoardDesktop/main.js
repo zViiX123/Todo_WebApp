@@ -39,8 +39,13 @@ function saveWindowState() {
     }
 }
 
-// Create a simple tray icon if asset not present
+// Create a tray icon from custom asset or fallback
 function createTrayIcon() {
+    const iconPngPath = path.join(__dirname, 'icon.png');
+    if (fs.existsSync(iconPngPath)) {
+        return nativeImage.createFromPath(iconPngPath).resize({ width: 16, height: 16 });
+    }
+
     // 16x16 standard tray icon (purple/white themed dot pattern)
     const size = 16;
     const canvasBuffer = Buffer.alloc(size * size * 4);
@@ -69,6 +74,7 @@ function createTrayIcon() {
 
 function createWindow() {
     const state = loadWindowState();
+    const iconPath = path.join(__dirname, 'icon.png');
 
     mainWindow = new BrowserWindow({
         width: state.width || 1360,
@@ -79,6 +85,7 @@ function createWindow() {
         minHeight: 500,
         autoHideMenuBar: true,
         backgroundColor: '#241735',
+        icon: fs.existsSync(iconPath) ? iconPath : undefined,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
