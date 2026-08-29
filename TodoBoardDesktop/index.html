@@ -3264,6 +3264,9 @@
         function updateBoardTitle(newTitle) {
             data.boardTitle = newTitle.trim() || "✦ Todo Board Studio";
             document.getElementById('board-title').innerText = data.boardTitle;
+            const wsName = document.getElementById('currentWorkspaceName');
+            if (wsName) wsName.innerText = data.boardTitle;
+            renderBoardSelector();
             saveData();
         }
 
@@ -3828,9 +3831,19 @@
             }
         }
 
-        function isLightColor(hex) {
-            if (!hex) return false;
-            hex = hex.replace('#', '');
+        function isLightColor(col) {
+            if (!col) return false;
+            col = String(col).trim();
+            if (col.startsWith('rgb')) {
+                const parts = col.match(/\d+/g);
+                if (parts && parts.length >= 3) {
+                    const r = parseInt(parts[0], 10);
+                    const g = parseInt(parts[1], 10);
+                    const b = parseInt(parts[2], 10);
+                    return ((0.2126 * r + 0.7152 * g + 0.0722 * b) / 255) > 0.45;
+                }
+            }
+            let hex = col.replace('#', '');
             if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
             const r = parseInt(hex.substr(0, 2), 16) || 0;
             const g = parseInt(hex.substr(2, 2), 16) || 0;

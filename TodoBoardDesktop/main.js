@@ -379,7 +379,7 @@ ipcMain.handle('open-attachment-path', async (event, filePath) => {
 
 // Check for App Updates via GitHub Releases API (Secure, Sandboxed, and Validated)
 ipcMain.handle('check-for-updates', async () => {
-    let currentVersion = '2.2.0';
+    let currentVersion = '3.0.0';
     try {
         const currentPkg = require('./package.json');
         if (currentPkg && currentPkg.version) currentVersion = currentPkg.version;
