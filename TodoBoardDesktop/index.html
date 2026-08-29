@@ -310,14 +310,16 @@
             width: 8px; height: 8px; border-radius: 50%;
         }
 
-        /* Board Area - Dynamic Flexbox */
+        /* Board Area - Dynamic Vertical Scrolling */
         #board {
             display: flex; gap: 16px; padding: 18px; flex-grow: 1;
-            align-items: stretch;
-            flex-wrap: nowrap;
-            overflow-x: auto; overflow-y: hidden;
+            align-items: flex-start; align-content: flex-start;
+            flex-wrap: wrap;
+            overflow-y: auto; overflow-x: hidden;
             scroll-behavior: smooth;
             transition: all 0.2s ease;
+            box-sizing: border-box;
+            width: 100%;
         }
 
         /* Column */
@@ -326,14 +328,17 @@
             backdrop-filter: blur(10px);
             border-radius: 10px;
             display: flex; flex-direction: column;
-            height: calc(100vh - 138px); max-height: calc(100vh - 138px);
+            min-height: 110px;
+            max-height: calc(100vh - 140px);
             border: 1px solid var(--border-glass);
             transition: flex 0.25s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.25s ease, max-width 0.25s ease, background-color 0.2s ease, opacity 0.2s, box-shadow 0.2s;
             box-shadow: 0 4px 20px rgba(0,0,0,0.18);
             position: relative;
-            flex: 1 1 280px;
-            min-width: 260px;
-            max-width: 480px;
+            box-sizing: border-box;
+            max-width: 100%;
+        }
+        .column.col-empty {
+            min-height: 110px;
         }
         .column.pinned {
             border: 1px solid var(--accent);
@@ -343,6 +348,23 @@
             opacity: 0.35 !important;
             transform: scale(0.98) !important;
             border: 2px dashed var(--accent) !important;
+        }
+
+        .empty-col-hint {
+            padding: 14px 10px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 11px;
+            border: 1px dashed rgba(255, 255, 255, 0.12);
+            border-radius: 6px;
+            margin: 2px 0;
+            pointer-events: none;
+            user-select: none;
+            line-height: 1.4;
+        }
+        .column.col-light .empty-col-hint {
+            border-color: rgba(0, 0, 0, 0.12);
+            color: #64748B;
         }
 
         /* Light & Dark Column Theme Adaptations */
@@ -393,8 +415,10 @@
         }
 
         .col-drop-placeholder {
-            min-width: 280px;
-            height: calc(100vh - 138px); max-height: calc(100vh - 138px);
+            min-width: 180px;
+            max-width: 500px;
+            min-height: 110px;
+            max-height: calc(100vh - 140px);
             border-radius: 10px;
             border: 2px dashed var(--accent);
             background: color-mix(in srgb, var(--accent) 12%, transparent);
@@ -402,7 +426,8 @@
             pointer-events: none;
             transition: all 0.15s ease;
             animation: pulsePlaceholder 1.5s infinite alternate ease-in-out;
-            flex: 1 1 280px;
+            flex: 1 1 220px;
+            box-sizing: border-box;
         }
 
         .col-header {
@@ -559,13 +584,13 @@
 
         .add-list-btn {
             background: rgba(0, 0, 0, 0.15); color: var(--text-muted); border: 2px dashed rgba(255, 255, 255, 0.15); 
-            border-radius: 10px; width: 300px; min-width: 300px; height: calc(100vh - 128px);
-            display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 40px; font-weight: 300;
-            cursor: pointer; transition: all 0.2s ease; gap: 8px;
+            border-radius: 10px; flex: 0 1 180px; min-width: 160px; max-width: 220px; height: 160px; min-height: 120px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 32px; font-weight: 300;
+            cursor: pointer; transition: all 0.2s ease; gap: 8px; box-sizing: border-box;
         }
-        .add-list-btn span { font-size: 14px; font-weight: 500; }
+        .add-list-btn span { font-size: 13px; font-weight: 600; }
         .add-list-btn:hover { 
-            background: rgba(0, 0, 0, 0.3); border-color: var(--accent); color: var(--text-light); 
+            background: rgba(0, 0, 0, 0.3); border-color: var(--accent); color: var(--text-light); transform: translateY(-2px);
         }
 
         /* Form Inputs */
@@ -4018,16 +4043,39 @@
 
                 // Dynamic Flexbox sizing based on task count
                 const taskCount = colTasks.length;
-                const flexGrow = (1 + Math.min(taskCount, 10) * 0.12).toFixed(2);
-                const baseWidth = Math.min(270 + taskCount * 14, 440);
+                let flexGrow, baseWidth, minWidth, maxWidth;
+
+                if (taskCount === 0) {
+                    // Empty column: Much smaller!
+                    flexGrow = '0.35';
+                    baseWidth = 190;
+                    minWidth = 170;
+                    maxWidth = 230;
+                } else if (taskCount <= 3) {
+                    flexGrow = '1.0';
+                    baseWidth = 260;
+                    minWidth = 220;
+                    maxWidth = 330;
+                } else if (taskCount <= 8) {
+                    flexGrow = '1.6';
+                    baseWidth = 320;
+                    minWidth = 260;
+                    maxWidth = 420;
+                } else {
+                    // Heavy column (9+ tasks)
+                    flexGrow = '2.2';
+                    baseWidth = 380;
+                    minWidth = 290;
+                    maxWidth = 520;
+                }
 
                 const colEl = document.createElement("div");
-                colEl.className = `column ${isPinned ? 'pinned' : ''} ${isLight ? 'col-light' : 'col-dark'}`;
+                colEl.className = `column ${isPinned ? 'pinned' : ''} ${isLight ? 'col-light' : 'col-dark'} ${taskCount === 0 ? 'col-empty' : ''}`;
                 colEl.setAttribute('data-col-name', colName);
                 colEl.style.backgroundColor = colBg;
                 colEl.style.flex = `${flexGrow} 1 ${baseWidth}px`;
-                colEl.style.minWidth = '260px';
-                colEl.style.maxWidth = '480px';
+                colEl.style.minWidth = `${minWidth}px`;
+                colEl.style.maxWidth = `min(${maxWidth}px, calc(100% - 8px))`;
                 colEl.ondragover = (e) => {
                     if (draggedColName) boardDragOver(e);
                     else if (draggedCardId) cardListDragOver(e, colName);
@@ -4056,6 +4104,14 @@
                 `;
 
                 const listEl = colEl.querySelector(".card-list");
+                if (colTasks.length === 0) {
+                    listEl.innerHTML = `
+                        <div class="empty-col-hint">
+                            <span style="font-weight:600;">Empty Column</span><br>
+                            <span style="font-size:10px;opacity:0.65;">Drop cards or click +</span>
+                        </div>
+                    `;
+                }
                 colTasks.forEach(task => {
                     const card = document.createElement("div");
                     card.className = "card";
