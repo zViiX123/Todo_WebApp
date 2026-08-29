@@ -126,15 +126,39 @@ Switch between 13 themes with high-contrast, theme-adapted green `+` (Add) and r
 
 ---
 
-## 📦 Packaging & Building Portable Executable
+## 📦 Windows Installer & Executable Builds
 
-To build a standalone Windows portable executable (`.exe`):
+### ☁️ Automated GitHub Builds & Releases (Recommended)
+This repository includes an automated **GitHub Actions CI/CD workflow** (`.github/workflows/build-installer.yml`):
+* **Automatic Releases**: Pushing a version tag (e.g. `v1.0.0`) automatically compiles and publishes a new **GitHub Release** with both the NSIS Setup Installer (`.exe`) and Portable standalone (`.exe`).
+* **Workflow Artifacts**: Every commit to `main` builds and attaches the Windows binaries to the GitHub Actions run summary under **Artifacts** (`Todo-Board-Studio-Windows-Binaries`).
+* **Manual Trigger**: Go to the **Actions** tab on GitHub, select **Build Windows Installer & Release**, and click **Run workflow**.
 
-```bash
-npm run build
-```
+---
 
-The output executable will be generated in `TodoBoardDesktop/dist/`.
+### 💻 Local Building & Packaging
+
+To compile binaries locally on your machine:
+
+1. **Build Both Installer & Portable Executable**:
+   ```bash
+   cd TodoBoardDesktop
+   npm run build
+   ```
+
+2. **Build NSIS Setup Installer Only**:
+   ```bash
+   npm run build:installer
+   ```
+
+3. **Build Portable Executable Only**:
+   ```bash
+   npm run build:portable
+   ```
+
+The compiled binaries will be output to `TodoBoardDesktop/dist/`:
+* **`Todo Board Studio Setup 1.0.0.exe`**: Full Windows installer with desktop & start menu shortcut support and clean uninstaller.
+* **`Todo Board Studio 1.0.0.exe`**: Zero-install standalone portable executable.
 
 ---
 
@@ -142,6 +166,9 @@ The output executable will be generated in `TodoBoardDesktop/dist/`.
 
 ```text
 Todo_WebApp/
+├── .github/
+│   └── workflows/
+│       └── build-installer.yml  # Automated GitHub Actions Windows build & release pipeline
 ├── TodoBoardDesktop/
 │   ├── index.html       # Single-page UI, components, modals & client logic
 │   ├── main.js          # Electron main process (IPC, tray, window state, notifications)
