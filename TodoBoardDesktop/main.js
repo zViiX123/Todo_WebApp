@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, dialog, Notification } = require('electron');
+const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, dialog, Notification, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -91,6 +91,25 @@ function createWindow() {
     }
 
     mainWindow.loadFile('index.html');
+
+    // Securely handle external links (e.g. from Markdown descriptions) in default system browser
+    mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+        if (url.startsWith('https://') || url.startsWith('http://')) {
+            shell.openExternal(url);
+        }
+        return { action: 'deny' };
+    });
+
+    mainWindow.webContents.on('will-navigate', (event, navigationUrl) => {
+        try {
+            const parsedUrl = new URL(navigationUrl);
+            if (parsedUrl.protocol === 'file:') return;
+        } catch (e) {}
+        event.preventDefault();
+        if (navigationUrl.startsWith('https://') || navigationUrl.startsWith('http://')) {
+            shell.openExternal(navigationUrl);
+        }
+    });
 
     mainWindow.on('close', (event) => {
         saveWindowState();
