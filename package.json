@@ -1,0 +1,14 @@
+{
+  "name": "todo-board-studio-root",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Todo Board Studio - Desktop Kanban & Productivity Application",
+  "scripts": {
+    "start": "npm --prefix TodoBoardDesktop start",
+    "build": "npm --prefix TodoBoardDesktop run build",
+    "build:installer": "npm --prefix TodoBoardDesktop run build:installer",
+    "build:portable": "npm --prefix TodoBoardDesktop run build:portable"
+  },
+  "author": "zViiX123",
+  "license": "AGPL-3.0"
+}
