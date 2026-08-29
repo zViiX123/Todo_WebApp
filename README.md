@@ -19,16 +19,33 @@ Organize tasks across multiple boards, track time automatically with checklist-d
 * **Column Folding**: Collapse / fold columns (`◀`) to keep your workspace focused and decluttered.
 * **Quick Sort**: Instantly sort tasks in a specific column alphabetically (`⇅`).
 
-### ⏱️ Checklist-Driven Time Tracking
+### ⏱️ Checklist-Driven Time Tracking & Live Ticking
 * **Automatic Timers**: Check the **`Started`** subtask to start the timer (`startDate` stamped).
+* **🟢 Real-Time Ticking**: In-progress timers tick automatically in real-time on board cards and in task detail views every 10 seconds without needing manual refreshes.
 * **Progress Tracking**: Intermediate subtasks keep track of progress (`1/3`, `2/3`).
 * **Completion Timestamp**: Check **`Finished`** to stop the timer (`completedDate` stamped) and lock in total duration taken.
 * **Persistent Duration**: Calculates elapsed time against real-world wall-clock timestamps—duration is maintained accurately even when closing and reopening the app.
 * **Protected Anchor Subtasks**: Every task initializes with **`Started`** and **`Finished`** subtasks. `Finished` remains anchored at the bottom, and both steps are protected from deletion or accidental renaming.
 
-### 📝 Rich Task Details Modal
+### 📦 Dedicated Task Archive Vault
+* **Separate Archive Storage**: Keep completed boards and columns clean by archiving finished tasks into a dedicated vault.
+* **Vault Management**: View archived tasks with duration, column origin, priority, and tags.
+* **Restore & Permanent Delete**: Restore tasks back to any active board or delete individual/all archived records permanently.
+* **Batch Archiving**: 1-click **Archive All Completed** button to archive all completed tasks from the active board.
+
+### 📊 Productivity & Metrics Dashboard
+* Click **📊 Stats** in the header to view an analytics dashboard:
+* **Key Metrics**: Total Tasks, Completion Rate %, Average Duration per task, and Total Tracked Work Hours.
+* **Priority Distribution**: Visual color-coded percentage bar across High, Medium, Low, and None priorities.
+* **Stage & Column Breakdown**: Real-time breakdown of tasks across workflow stages.
+* **Momentum & Velocity**: Tasks completed today counter and total subtask progress metrics.
+
+### 📝 Rich Task Details & Markdown Editor
 Click on any task card (or click `✏️`) to open the Task Detail Modal:
-* **Title & Description**: Detailed notes and requirements area.
+* **🖋️ Markdown Support**: Write rich descriptions with headings (`#`), bold/italic (`**`, `*`), bullet/task lists (`- [x]`), blockquotes (`>`), code blocks, inline code, and links.
+* **Live Tab Switcher**: Seamlessly toggle between **`✏️ Edit`** and **`👁️ Preview (MD)`**.
+* **📋 Activity & History Log**: View an audit timeline of all modifications (renames, column moves, priority changes, subtasks toggled, archive/restore).
+* **Quick Task Actions**: One-click buttons to **Duplicate / Clone (`📋`)**, **Archive (`📦`)**, or **Move (`▶`)** tasks.
 * **Priority Levels**: `🔴 High`, `🟡 Medium`, `🔵 Low`, and `⚪ None`.
 * **Due Date & Quick Presets**: Date picker with quick buttons (`Today`, `Tomorrow`, `+1 Week`, `Clear`).
 * **Start & End Date/Time**: Precise `datetime-local` pickers with **Now** and **Clear** controls and live duration calculation.
