@@ -2441,7 +2441,7 @@
             showUndoToast(`Pinned "${colName}" at 1st position`);
         }
 
-        // --- Column Folding into Dedicated Dock & Unfolding to 1st Position ---
+        // --- Column Folding into Dedicated Dock & Unfolding to Last Position ---
         function foldColumn(colName) {
             if (data.pinnedCol === colName) {
                 data.pinnedCol = null;
@@ -2465,12 +2465,11 @@
                 data.columns.splice(fromIdx, 1);
             }
 
-            // If a column is pinned and is not this column, insert at index 1 so pinned column is never bypassed
-            const targetIdx = (data.pinnedCol && data.pinnedCol !== colName && data.columns.includes(data.pinnedCol)) ? 1 : 0;
-            data.columns.splice(targetIdx, 0, colName);
+            // Unfolding a column places it at the last position
+            data.columns.push(colName);
 
             saveData();
-            showUndoToast(`Unfolded "${colName}"`);
+            showUndoToast(`Unfolded "${colName}" to last position`);
         }
 
         // --- Rendering ---
@@ -2493,7 +2492,7 @@
                     const count = data.tasks.filter(t => t.column === colName).length;
                     const colBg = data.columnColors[colName] || getComputedStyle(document.documentElement).getPropertyValue('--bg-col').trim() || '#31224A';
                     return `
-                        <div class="folded-col-chip" onclick="unfoldColumn('${escapeHtml(colName)}')" title="Click to unfold '${escapeHtml(colName)}' (restores to front)">
+                        <div class="folded-col-chip" onclick="unfoldColumn('${escapeHtml(colName)}')" title="Click to unfold '${escapeHtml(colName)}' to last position">
                             <span class="folded-col-dot" style="background: ${colBg}; border: 1px solid rgba(255,255,255,0.4);"></span>
                             <span class="folded-col-title">${escapeHtml(colName)}</span>
                             <span class="col-count" style="margin-left: 0;">${count}</span>

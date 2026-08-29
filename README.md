@@ -16,7 +16,7 @@ Organize tasks across multiple boards, track time automatically with checklist-d
 * **Dynamic Columns**: Add, rename directly in place, or delete with an automatic 5-second undo toast.
 * **✨ Smooth Drag & Drop Reordering**: Fluidly drag and drop columns or cards with live transparent preview placeholders showing exact drop positions.
 * **📌 Single Pinned Column with Swapping**: Pin any column (`📌`) to highlight and lock it at the front. Pinning a second column cleanly swaps places with the previously pinned column.
-* **📁 Dedicated Folded Columns Dock**: Folding a column (`◀`) moves it smoothly to a compact dedicated left rail shelf with color dots and task counts. **Unfolding any column automatically places it back at the first position (`index 0`)**.
+* **📁 Dedicated Folded Columns Dock**: Folding a column (`◀`) moves it smoothly to a compact dedicated left rail shelf with color dots and task counts. **Unfolding any column automatically places it at the last position**.
 * **Color Customization**: Pick custom background colors per column with automatic font brightness contrast calculation.
 * **Quick Sort**: Instantly sort tasks in a specific column alphabetically (`⇅`).
 
