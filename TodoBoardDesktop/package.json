@@ -1,6 +1,6 @@
 {
   "name": "todoboarddesktop",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Todo Board Studio - Sleek Kanban Board & Project Management Desktop App",
   "author": "zViiX123",
   "license": "AGPL-3.0",
@@ -18,12 +18,12 @@
   "build": {
     "appId": "com.todoboard.desktop",
     "productName": "Todo Board Studio",
-    "icon": "icon.ico",
+    "icon": "build/icon.ico",
     "directories": {
       "output": "dist"
     },
     "win": {
-      "icon": "icon.ico",
+      "icon": "build/icon.ico",
       "target": [
         {
           "target": "nsis",
@@ -45,6 +45,8 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "Todo Board Studio",
+      "installerIcon": "build/installerIcon.ico",
+      "uninstallerIcon": "build/uninstallerIcon.ico",
       "uninstallDisplayName": "Todo Board Studio"
     }
   },

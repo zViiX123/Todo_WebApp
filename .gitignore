@@ -1,10 +1,12 @@
-﻿# Dependencies
+# Dependencies
 node_modules/
 **/node_modules/
 
 # Production / Distribution builds
 dist/
 build/
+!TodoBoardDesktop/build/
+!TodoBoardDesktop/build/**
 out/
 bin/
 
