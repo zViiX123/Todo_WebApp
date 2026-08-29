@@ -169,7 +169,8 @@
         header {
             background: color-mix(in srgb, var(--bg-col-head) 85%, transparent);
             backdrop-filter: blur(12px);
-            padding: 10px 18px;
+            padding: 0 16px;
+            height: 52px;
             display: flex; justify-content: space-between; align-items: center; gap: 12px;
             border-bottom: 1px solid var(--border-glass);
             z-index: 100;
@@ -180,7 +181,38 @@
         }
 
         .header-center {
-            display: flex; align-items: center; gap: 10px; justify-content: center; flex-grow: 1;
+            display: flex; align-items: center; gap: 10px; justify-content: center; flex-grow: 1; min-width: 0;
+        }
+
+        .header-cluster {
+            display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+        }
+
+        .header-divider {
+            height: 20px; width: 1px; background: var(--border-glass); margin: 0 3px; flex-shrink: 0;
+        }
+
+        .header-btn {
+            height: 32px; padding: 0 11px; border-radius: 8px; font-size: 12px; font-weight: 600;
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            background: var(--entry-bg); color: var(--text-light); border: 1px solid var(--border-glass);
+            cursor: pointer; transition: all 0.15s ease; white-space: nowrap; user-select: none;
+            line-height: 1; box-sizing: border-box; text-decoration: none;
+        }
+        .header-btn:hover {
+            background: var(--btn-hover); border-color: rgba(255, 255, 255, 0.28);
+            transform: translateY(-1px); box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+        }
+        .header-btn:active { transform: translateY(0); }
+        .header-btn.icon-only {
+            width: 32px; min-width: 32px; padding: 0; font-size: 14px;
+        }
+        .header-select {
+            appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 14px; outline: none;
+        }
+        .header-badge {
+            background: rgba(255,255,255,0.16); padding: 1px 6px; border-radius: 10px;
+            font-size: 10px; font-weight: 700; margin-left: 2px;
         }
 
         /* Filter & Search Bar */
@@ -228,7 +260,7 @@
         /* Board & Folded Dock Container */
         #boardContainer {
             display: flex; flex-grow: 1; overflow: hidden; position: relative;
-            height: calc(100vh - 100px);
+            height: calc(100vh - 104px);
         }
 
         /* Folded Columns Dedicated Space (Left Rail / Shelf) */
@@ -278,26 +310,30 @@
             width: 8px; height: 8px; border-radius: 50%;
         }
 
-        /* Board Area */
+        /* Board Area - Dynamic Flexbox */
         #board {
             display: flex; gap: 16px; padding: 18px; flex-grow: 1;
-            align-items: flex-start; align-content: flex-start;
-            flex-wrap: wrap;
-            overflow-y: auto; overflow-x: hidden;
-            transition: all 0.2s;
+            align-items: stretch;
+            flex-wrap: nowrap;
+            overflow-x: auto; overflow-y: hidden;
+            scroll-behavior: smooth;
+            transition: all 0.2s ease;
         }
 
         /* Column */
         .column {
             background: color-mix(in srgb, var(--bg-col) 85%, transparent);
             backdrop-filter: blur(10px);
-            border-radius: 10px; width: 300px; min-width: 300px;
+            border-radius: 10px;
             display: flex; flex-direction: column;
-            height: calc(100vh - 128px); max-height: calc(100vh - 128px);
+            height: calc(100vh - 138px); max-height: calc(100vh - 138px);
             border: 1px solid var(--border-glass);
-            transition: width 0.2s ease, min-width 0.2s ease, opacity 0.2s, box-shadow 0.2s;
+            transition: flex 0.25s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.25s ease, max-width 0.25s ease, background-color 0.2s ease, opacity 0.2s, box-shadow 0.2s;
             box-shadow: 0 4px 20px rgba(0,0,0,0.18);
             position: relative;
+            flex: 1 1 280px;
+            min-width: 260px;
+            max-width: 480px;
         }
         .column.pinned {
             border: 1px solid var(--accent);
@@ -309,9 +345,56 @@
             border: 2px dashed var(--accent) !important;
         }
 
+        /* Light & Dark Column Theme Adaptations */
+        .column.col-light {
+            color: #0F172A;
+            border-color: rgba(0,0,0,0.14);
+            box-shadow: 0 4px 18px rgba(0,0,0,0.12);
+        }
+        .column.col-light .col-header {
+            background: rgba(255, 255, 255, 0.45);
+            border-bottom: 1px solid rgba(0,0,0,0.12);
+        }
+        .column.col-light .col-count {
+            background: rgba(0, 0, 0, 0.12);
+            color: #0F172A;
+        }
+        .column.col-light .icon-btn {
+            color: #334155;
+        }
+        .column.col-light .icon-btn:hover {
+            background: rgba(0,0,0,0.1);
+            color: #0F172A;
+        }
+        .column.col-light .card {
+            background: rgba(255, 255, 255, 0.88);
+            color: #0F172A;
+            border: 1px solid rgba(0,0,0,0.12);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .column.col-light .card-title {
+            color: #0F172A;
+        }
+        .column.col-light .card-desc-preview,
+        .column.col-light .card-meta-row {
+            color: #475569;
+        }
+        .column.col-light .tag-chip {
+            background: rgba(0,0,0,0.08);
+            color: #1E293B;
+            border-color: rgba(0,0,0,0.12);
+        }
+        .column.col-light .chk-item {
+            background: rgba(0,0,0,0.04);
+            color: #1E293B;
+        }
+        .column.col-light .chk-title {
+            color: #1E293B;
+        }
+
         .col-drop-placeholder {
-            width: 300px; min-width: 300px;
-            height: calc(100vh - 128px); max-height: calc(100vh - 128px);
+            min-width: 280px;
+            height: calc(100vh - 138px); max-height: calc(100vh - 138px);
             border-radius: 10px;
             border: 2px dashed var(--accent);
             background: color-mix(in srgb, var(--accent) 12%, transparent);
@@ -319,6 +402,7 @@
             pointer-events: none;
             transition: all 0.15s ease;
             animation: pulsePlaceholder 1.5s infinite alternate ease-in-out;
+            flex: 1 1 280px;
         }
 
         .col-header {
@@ -330,7 +414,7 @@
         .col-header:active { cursor: grabbing; }
 
         .col-count {
-            background: rgba(255,255,255,0.12); padding: 2px 7px; border-radius: 12px;
+            background: rgba(255,255,255,0.15); padding: 2px 7px; border-radius: 12px;
             font-size: 11px; font-weight: 700; margin-left: 6px;
         }
         
@@ -339,17 +423,17 @@
         .icon-btn {
             background: transparent; border: none; font-weight: bold;
             cursor: pointer;
-            width: 22px; height: 22px; min-width: 22px; min-height: 22px;
+            width: 24px; height: 24px; min-width: 24px; min-height: 24px;
             display: inline-flex; align-items: center; justify-content: center;
-            border-radius: 4px; transition: all 0.15s ease;
+            border-radius: 6px; transition: all 0.15s ease;
             color: var(--text-muted); font-size: 12px; line-height: 1; padding: 0;
             box-sizing: border-box;
         }
-        .icon-btn:hover { background: rgba(255,255,255,0.12); color: var(--text-light); }
+        .icon-btn:hover { background: rgba(255,255,255,0.14); color: var(--text-light); }
         
         .icon-btn.pin-btn {
             color: var(--text-muted);
-            font-size: 11px;
+            font-size: 12px;
         }
         .icon-btn.pin-btn:hover { color: #FCD34D; }
         .icon-btn.pin-btn.active {
@@ -358,30 +442,32 @@
         }
 
         .icon-btn.add {
-            color: var(--color-add); font-size: 15px; font-weight: 700;
+            color: var(--color-add); font-size: 16px; font-weight: 800;
+            background: var(--color-add-bg); border: 1px solid var(--color-add);
         }
         .icon-btn.add:hover {
-            color: var(--color-add-hover); background: var(--color-add-bg);
-            text-shadow: 0 0 6px var(--color-add);
+            color: #FFFFFF; background: var(--color-add);
+            box-shadow: 0 0 8px var(--color-add);
         }
         
         .icon-btn.del {
-            color: var(--color-del); font-size: 12px; font-weight: 700;
+            color: var(--color-del); font-size: 12px; font-weight: 800;
+            background: var(--color-del-bg); border: 1px solid var(--color-del);
         }
         .icon-btn.del:hover {
-            color: var(--color-del-hover); background: var(--color-del-bg);
-            text-shadow: 0 0 6px var(--color-del);
+            color: #FFFFFF; background: var(--color-del);
+            box-shadow: 0 0 8px var(--color-del);
         }
 
         .tiny-color-picker {
-            width: 22px; height: 22px; min-width: 22px; min-height: 22px;
-            border-radius: 4px; border: 1px solid rgba(255,255,255,0.25);
+            width: 24px; height: 24px; min-width: 24px; min-height: 24px;
+            border-radius: 6px; border: 1px solid rgba(255,255,255,0.25);
             overflow: hidden; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
-            position: relative; box-sizing: border-box; transition: border-color 0.15s;
+            position: relative; box-sizing: border-box; transition: border-color 0.15s, transform 0.15s;
         }
-        .tiny-color-picker:hover { border-color: rgba(255,255,255,0.5); }
+        .tiny-color-picker:hover { border-color: rgba(255,255,255,0.6); transform: scale(1.05); }
         .tiny-color-picker input[type="color"] {
-            position: absolute; top: -5px; left: -5px; width: 32px; height: 32px; cursor: pointer; border: none; opacity: 0;
+            position: absolute; top: -5px; left: -5px; width: 34px; height: 34px; cursor: pointer; border: none; opacity: 0;
         }
         
         .card-list {
@@ -980,47 +1066,55 @@
         </div>
 
         <div class="header-right">
-            <!-- Pomodoro Header Button -->
-            <div class="pomodoro-header-badge" id="headerPomodoroBtn" onclick="togglePomodoroTimer()" title="Pomodoro Focus Mode (Click to start/pause)">
-                <span>🍅</span>
-                <span id="headerPomodoroTime">Focus 25:00</span>
+            <!-- Productivity Cluster -->
+            <div class="header-cluster">
+                <div class="pomodoro-header-badge" id="headerPomodoroBtn" onclick="togglePomodoroTimer()" title="Pomodoro Focus Mode (Ctrl+P)">
+                    <span>🍅</span>
+                    <span id="headerPomodoroTime">Focus 25:00</span>
+                </div>
+                <button class="header-btn" onclick="openSpotlightHud()" title="Global Quick Capture (Ctrl+K / Ctrl+Shift+Space)">
+                    <span>⚡</span> Quick Add
+                </button>
             </div>
 
-            <!-- Spotlight Quick-Capture Trigger -->
-            <button class="btn" onclick="openSpotlightHud()" title="Global Quick Capture (Ctrl+K or Ctrl+Shift+Space)" style="display: inline-flex; align-items: center; gap: 5px;">
-                <span>⚡</span> Quick Add
-            </button>
+            <div class="header-divider"></div>
 
-            <!-- Stats Dashboard Button -->
-            <button class="btn" onclick="openStatsModal()" title="Productivity & Metrics Dashboard">📊 Stats</button>
+            <!-- Analytics & Archive Cluster -->
+            <div class="header-cluster">
+                <button class="header-btn" onclick="openStatsModal()" title="Productivity & Metrics Dashboard">
+                    <span>📊</span> Stats
+                </button>
+                <button class="header-btn" id="headerArchiveBtn" onclick="openArchiveModal()" title="View Archived Tasks">
+                    <span>📦</span> Archive <span id="headerArchiveCount" class="header-badge">0</span>
+                </button>
+            </div>
 
-            <!-- Archive Drawer Button -->
-            <button class="btn" id="headerArchiveBtn" onclick="openArchiveModal()" title="View Archived Tasks">📦 Archive <span id="headerArchiveCount" style="background: rgba(255,255,255,0.15); padding: 1px 6px; border-radius: 10px; font-size: 11px; margin-left: 2px;">0</span></button>
+            <div class="header-divider"></div>
 
-            <!-- Export dropdown -->
-            <select id="exportAction" onchange="handleExportAction(this.value)" title="Export options">
-                <option value="" disabled selected>💾 Export</option>
-                <option value="json">Export JSON Backup</option>
-                <option value="csv">Export CSV Tasks</option>
-            </select>
+            <!-- Data Hub Cluster -->
+            <div class="header-cluster">
+                <select id="exportAction" class="header-btn header-select" onchange="handleExportAction(this.value)" title="Export options">
+                    <option value="" disabled selected>💾 Export ▾</option>
+                    <option value="json">Export JSON Backup</option>
+                    <option value="csv">Export CSV Tasks</option>
+                </select>
+                <button class="header-btn" onclick="triggerImport()" title="Import board data">
+                    <span>📂</span> Import
+                </button>
+            </div>
 
-            <!-- Import -->
-            <button class="btn" onclick="triggerImport()" title="Import board data">📂 Import</button>
+            <div class="header-divider"></div>
 
-            <!-- Sound Effects Toggle -->
-            <button class="btn" id="soundToggleBtn" onclick="toggleSoundEffects()" title="Toggle Sound Effects" style="font-size: 13px;">🔊</button>
-
-            <!-- Theme Picker Button -->
-            <button class="btn" id="themeModalBtn" onclick="openThemeModal()" title="Customize Color Theme" style="display: inline-flex; align-items: center; gap: 7px;">
-                <span id="headerThemeDot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent); display: inline-block; box-shadow: 0 0 6px var(--accent-glow);"></span>
-                <span id="headerThemeLabel">🎨 Themes</span>
-            </button>
-
-            <!-- In-App Update Checker -->
-            <button class="btn" onclick="checkForAppUpdates()" title="Check for Updates">🔄 Updates</button>
-
-            <!-- Shortcuts Help -->
-            <button class="btn" onclick="openShortcutsModal()" title="Keyboard Shortcuts (?)">⌨️</button>
+            <!-- Utilities Cluster -->
+            <div class="header-cluster">
+                <button class="header-btn" id="themeModalBtn" onclick="openThemeModal()" title="Customize Color Theme">
+                    <span id="headerThemeDot" style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent); display: inline-block; box-shadow: 0 0 6px var(--accent-glow);"></span>
+                    <span id="headerThemeLabel">🎨 Themes</span>
+                </button>
+                <button class="header-btn icon-only" id="soundToggleBtn" onclick="toggleSoundEffects()" title="Toggle Sound Effects">🔊</button>
+                <button class="header-btn icon-only" onclick="checkForAppUpdates()" title="Check for Updates">🔄</button>
+                <button class="header-btn icon-only" onclick="openShortcutsModal()" title="Keyboard Shortcuts (?)">⌨️</button>
+            </div>
         </div>
     </header>
 
@@ -1186,7 +1280,7 @@
     <!-- Undo Toast Notification -->
     <div id="undoToast">
         <span id="undoToastMsg"></span>
-        <button class="btn" onclick="undoDelete()">Undo</button>
+        <button class="btn" id="undoToastBtn" onclick="triggerUndo()" style="display: none; padding: 4px 12px; font-size: 12px; font-weight: 600;">Undo</button>
     </div>
 
     <!-- Task Detail & Edit Modal -->
@@ -1501,8 +1595,9 @@
         let modalWorkingTags = [];
         let modalWorkingChecklist = [];
 
-        let pendingDelete = null;
-        let undoTimeoutId = null;
+        // --- Multi-Action Undo Stack System ---
+        const undoStack = [];
+        let undoToastTimeoutId = null;
 
         // Activity Logging Helper
         function logTaskActivity(task, text) {
@@ -3170,16 +3265,17 @@
             logTaskActivity(task, "Task archived");
             if (!data.archivedTasks) data.archivedTasks = [];
             data.archivedTasks.unshift(task);
+            saveData();
 
-            showUndoToast(`Archived "${task.text}"`, () => {
+            pushUndoAction(`Archived "${task.text}"`, () => {
                 const aIdx = data.archivedTasks.findIndex(t => t.id === task.id);
                 if (aIdx !== -1) data.archivedTasks.splice(aIdx, 1);
+                task.archivedAt = null;
                 data.tasks.splice(idx, 0, task);
                 logTaskActivity(task, "Restored from archive (Undo)");
                 saveData();
+                renderArchiveList();
             });
-
-            saveData();
         }
 
         function archiveTaskFromModal() {
@@ -3202,7 +3298,16 @@
             data.tasks.push(task);
             saveData();
             renderArchiveList();
-            showUndoToast(`Restored "${task.text}"`);
+            pushUndoAction(`Restored "${task.text}"`, () => {
+                const tIdx = data.tasks.findIndex(t => t.id === taskId);
+                if (tIdx !== -1) {
+                    const [t] = data.tasks.splice(tIdx, 1);
+                    t.archivedAt = Date.now();
+                    data.archivedTasks.unshift(t);
+                    saveData();
+                    renderArchiveList();
+                }
+            });
         }
 
         function deleteArchivedTask(taskId) {
@@ -3212,25 +3317,37 @@
             const [task] = data.archivedTasks.splice(idx, 1);
             saveData();
             renderArchiveList();
-            showUndoToast(`Deleted "${task.text}" permanently`);
+            pushUndoAction(`Deleted "${task.text}" from archive`, () => {
+                data.archivedTasks.splice(idx, 0, task);
+                saveData();
+                renderArchiveList();
+            });
         }
 
         function archiveAllCompletedTasks() {
             const completed = data.tasks.filter(isTaskCompleted);
             if (completed.length === 0) {
-                return alert("No completed tasks found on the board.");
+                return showUndoToast("No completed tasks found on the board.", false);
             }
+            const originalTasks = [...data.tasks];
+            const originalArchived = [...(data.archivedTasks || [])];
+
+            data.tasks = data.tasks.filter(t => !isTaskCompleted(t));
+            if (!data.archivedTasks) data.archivedTasks = [];
             completed.forEach(t => {
-                const idx = data.tasks.findIndex(x => x.id === t.id);
-                if (idx !== -1) data.tasks.splice(idx, 1);
                 t.archivedAt = Date.now();
                 logTaskActivity(t, "Batch archived");
-                if (!data.archivedTasks) data.archivedTasks = [];
                 data.archivedTasks.unshift(t);
             });
             saveData();
             renderArchiveList();
-            showUndoToast(`Archived ${completed.length} completed tasks`);
+
+            pushUndoAction(`Archived ${completed.length} completed tasks`, () => {
+                data.tasks = [...originalTasks];
+                data.archivedTasks = [...originalArchived];
+                saveData();
+                renderArchiveList();
+            });
         }
 
         function clearAllArchivedTasks() {
@@ -3517,7 +3634,8 @@
             const r = parseInt(hex.substr(0, 2), 16) || 0;
             const g = parseInt(hex.substr(2, 2), 16) || 0;
             const b = parseInt(hex.substr(4, 2), 16) || 0;
-            return ((0.299 * r + 0.587 * g + 0.114 * b) / 255) > 0.5;
+            // WCAG 2.1 relative luminance calculation
+            return ((0.2126 * r + 0.7152 * g + 0.0722 * b) / 255) > 0.45;
         }
 
         // --- Drag & Drop and Rearranging State ---
@@ -3835,6 +3953,8 @@
 
             // 2. Render Active (Unfolded) Columns on Board
             const activeCols = data.columns.filter(c => !data.collapsedCols.includes(c));
+            const isFiltering = !!(searchQuery || activePriorityFilter !== 'all' || activeStatusFilter !== 'all');
+            let renderedColsCount = 0;
 
             activeCols.forEach((colName, activeIdx) => {
                 const colIdx = data.columns.indexOf(colName);
@@ -3872,6 +3992,12 @@
                     });
                 }
 
+                // If active filtering and no tasks match in this column, hide column
+                if (isFiltering && colTasks.length === 0) {
+                    return;
+                }
+                renderedColsCount++;
+
                 // Apply Sorting
                 if (currentSort === 'dueDate') {
                     colTasks.sort((a, b) => (a.dueDate || '9999') > (b.dueDate || '9999') ? 1 : -1);
@@ -3886,13 +4012,22 @@
                 }
 
                 const colBg = data.columnColors[colName] || getComputedStyle(document.documentElement).getPropertyValue('--bg-col').trim() || '#31224A';
-                const textColor = isLightColor(colBg) ? '#111111' : '#F1E9FF';
+                const isLight = isLightColor(colBg);
+                const textColor = isLight ? '#0F172A' : '#F1E9FF';
                 const isPinned = data.pinnedCol === colName;
 
+                // Dynamic Flexbox sizing based on task count
+                const taskCount = colTasks.length;
+                const flexGrow = (1 + Math.min(taskCount, 10) * 0.12).toFixed(2);
+                const baseWidth = Math.min(270 + taskCount * 14, 440);
+
                 const colEl = document.createElement("div");
-                colEl.className = `column ${isPinned ? 'pinned' : ''}`;
+                colEl.className = `column ${isPinned ? 'pinned' : ''} ${isLight ? 'col-light' : 'col-dark'}`;
                 colEl.setAttribute('data-col-name', colName);
                 colEl.style.backgroundColor = colBg;
+                colEl.style.flex = `${flexGrow} 1 ${baseWidth}px`;
+                colEl.style.minWidth = '260px';
+                colEl.style.maxWidth = '480px';
                 colEl.ondragover = (e) => {
                     if (draggedColName) boardDragOver(e);
                     else if (draggedCardId) cardListDragOver(e, colName);
@@ -3907,8 +4042,8 @@
                         <span id="col-title-${colIdx}" contenteditable="true" onblur="updateColName(${colIdx}, this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="flex-grow: 1; outline: none; cursor: text; color: ${textColor};">${escapeHtml(colName)}</span>
                         <div class="col-btn-group" onclick="event.stopPropagation()">
                             <button class="icon-btn pin-btn ${isPinned ? 'active' : ''}" title="${isPinned ? 'Unpin column' : 'Pin column (locks to 1st position)'}" onclick="togglePinColumn('${escapeHtml(colName)}')">📌</button>
-                            <div class="tiny-color-picker" title="Change Color">
-                                <input type="color" value="${data.columnColors[colName] || '#31224A'}" onchange="updateColColor(${colIdx}, this.value)">
+                            <div class="tiny-color-picker" title="Change Color" style="background: ${data.columnColors[colName] || colBg};">
+                                <input type="color" value="${data.columnColors[colName] || '#31224A'}" oninput="previewColColor(${colIdx}, this.value)" onchange="updateColColor(${colIdx}, this.value)">
                             </div>
                             <button class="icon-btn" title="Sort Column Alphabetically" onclick="sortSingleColumn('${escapeHtml(colName)}')">⇅</button>
                             <button class="icon-btn" title="Fold column to dedicated dock" onclick="foldColumn('${escapeHtml(colName)}')">◀</button>
@@ -3935,7 +4070,7 @@
                     };
 
                     card.style.backgroundColor = colBg;
-                    card.style.backgroundImage = 'linear-gradient(rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.16))';
+                    card.style.backgroundImage = isLight ? 'none' : 'linear-gradient(rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.16))';
 
                     // Priority color
                     if (task.priority === "High") card.style.borderLeftColor = "var(--pri-high)";
@@ -4006,7 +4141,6 @@
                         `;
                     }).join('');
 
-                    // NOTE: Removed ▶ button as requested!
                     card.innerHTML = `
                         <div class="card-top-row">
                             <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
@@ -4054,6 +4188,20 @@
                 board.appendChild(colEl);
             });
 
+            // Empty Search State Banner if no columns matched filters
+            if (isFiltering && renderedColsCount === 0) {
+                const emptyEl = document.createElement("div");
+                emptyEl.className = "empty-search-state";
+                emptyEl.style.cssText = "margin: 40px auto; text-align: center; padding: 36px 28px; color: var(--text-muted); background: color-mix(in srgb, var(--bg-col-head) 70%, transparent); border: 1px dashed var(--border-glass); border-radius: 12px; max-width: 420px;";
+                emptyEl.innerHTML = `
+                    <div style="font-size: 38px; margin-bottom: 10px;">🔍</div>
+                    <div style="font-size: 16px; font-weight: 700; color: var(--text-light); margin-bottom: 6px;">No Matching Tasks Found</div>
+                    <div style="font-size: 13px; margin-bottom: 18px; line-height: 1.4;">No tasks matched your active search query or filter criteria.</div>
+                    <button class="header-btn" onclick="clearAllFilters()" style="margin: 0 auto;">Clear Search & Filters</button>
+                `;
+                board.appendChild(emptyEl);
+            }
+
             // Add Column Button
             const addColBtn = document.createElement("button");
             addColBtn.className = "add-list-btn";
@@ -4073,6 +4221,43 @@
             board.appendChild(addColBtn);
         }
 
+        function previewColColor(colIdx, color) {
+            const colName = data.columns[colIdx];
+            if (!colName) return;
+            const colEl = document.querySelector(`.column[data-col-name="${colName}"]`);
+            if (colEl) {
+                colEl.style.backgroundColor = color;
+                const isLight = isLightColor(color);
+                colEl.classList.toggle('col-light', isLight);
+                colEl.classList.toggle('col-dark', !isLight);
+                const titleSpan = document.getElementById(`col-title-${colIdx}`);
+                if (titleSpan) {
+                    titleSpan.style.color = isLight ? '#0F172A' : '#F1E9FF';
+                }
+                const picker = colEl.querySelector('.tiny-color-picker');
+                if (picker) {
+                    picker.style.backgroundColor = color;
+                }
+            }
+        }
+
+        function clearAllFilters() {
+            searchQuery = '';
+            const inp = document.getElementById('searchInput');
+            if (inp) inp.value = '';
+            const clearBtn = document.getElementById('searchClearBtn');
+            if (clearBtn) clearBtn.style.display = 'none';
+            activePriorityFilter = 'all';
+            activeStatusFilter = 'all';
+            document.querySelectorAll('[data-filter-type="priority"]').forEach(p => {
+                p.classList.toggle('active', p.getAttribute('data-value') === 'all');
+            });
+            document.querySelectorAll('[data-filter-type="status"]').forEach(p => {
+                p.classList.toggle('active', p.getAttribute('data-value') === 'all');
+            });
+            renderBoard();
+        }
+
         function sortSingleColumn(colName) {
             const colTasks = data.tasks.filter(t => t.column === colName);
             colTasks.sort((a, b) => a.text.localeCompare(b.text));
@@ -4082,8 +4267,15 @@
 
         function updateColColor(idx, color) {
             const name = data.columns[idx];
+            if (!name) return;
+            const oldColor = data.columnColors[name];
             data.columnColors[name] = color;
             saveData();
+            pushUndoAction(`Changed "${name}" color`, () => {
+                if (oldColor) data.columnColors[name] = oldColor;
+                else delete data.columnColors[name];
+                saveData();
+            });
         }
 
         function deleteCol(idx) {
@@ -4103,7 +4295,9 @@
             }
             if (wasPinned) data.pinnedCol = null;
 
-            showUndoToast(`Deleted column "${name}"`, () => {
+            saveData();
+
+            pushUndoAction(`Deleted column "${name}"`, () => {
                 data.columns.splice(idx, 0, name);
                 data.tasks.push(...removedTasks);
                 if (color) data.columnColors[name] = color;
@@ -4113,7 +4307,6 @@
                 if (wasPinned) data.pinnedCol = name;
                 saveData();
             });
-            saveData();
         }
 
         function updateColName(idx, newName) {
@@ -4132,23 +4325,6 @@
             }
             if (data.pinnedCol === oldName) {
                 data.pinnedCol = newName;
-            }
-            saveData();
-        }
-
-        function updateColName(idx, newName) {
-            const oldName = data.columns[idx];
-            newName = newName.trim();
-            if (!newName || newName === oldName || data.columns.includes(newName)) return renderBoard();
-
-            data.columns[idx] = newName;
-            data.tasks.forEach(t => { if (t.column === oldName) t.column = newName; });
-            if (data.columnColors[oldName]) {
-                data.columnColors[newName] = data.columnColors[oldName];
-                delete data.columnColors[oldName];
-            }
-            if (data.collapsedCols && data.collapsedCols.includes(oldName)) {
-                data.collapsedCols = data.collapsedCols.map(c => c === oldName ? newName : c);
             }
             saveData();
         }
@@ -4229,11 +4405,11 @@
             const idx = data.tasks.findIndex(t => t.id === id);
             if (idx === -1) return;
             const [removed] = data.tasks.splice(idx, 1);
-            showUndoToast(`Deleted "${removed.text}"`, () => {
+            saveData();
+            pushUndoAction(`Deleted "${removed.text}"`, () => {
                 data.tasks.splice(idx, 0, removed);
                 saveData();
             });
-            saveData();
         }
 
         function quickAddCheck(taskId) {
@@ -4500,26 +4676,53 @@
             quickDeleteTask(id);
         }
 
-        // --- Undo System ---
-        function showUndoToast(message, restoreFn) {
-            pendingDelete = restoreFn;
-            clearTimeout(undoTimeoutId);
+        // --- Multi-Action Undo System ---
+        function pushUndoAction(message, restoreFn) {
+            if (typeof restoreFn === 'function') {
+                undoStack.push({ message, restoreFn, timestamp: Date.now() });
+                if (undoStack.length > 25) undoStack.shift();
+            }
+            showUndoToast(message, typeof restoreFn === 'function');
+        }
+
+        function showUndoToast(message, hasUndoAction = false) {
+            clearTimeout(undoToastTimeoutId);
             const toast = document.getElementById("undoToast");
-            document.getElementById("undoToastMsg").innerText = message;
+            const msgEl = document.getElementById("undoToastMsg");
+            const btnEl = document.getElementById("undoToastBtn");
+            if (!toast || !msgEl) return;
+
+            msgEl.innerText = message;
+            if (btnEl) {
+                btnEl.style.display = hasUndoAction ? 'inline-flex' : 'none';
+            }
             toast.classList.add("show");
-            undoTimeoutId = setTimeout(() => {
+
+            undoToastTimeoutId = setTimeout(() => {
                 toast.classList.remove("show");
-                pendingDelete = null;
-            }, 5000);
+            }, 6000);
+        }
+
+        function triggerUndo() {
+            if (undoStack.length === 0) return;
+            clearTimeout(undoToastTimeoutId);
+            const action = undoStack.pop();
+            const toast = document.getElementById("undoToast");
+            if (toast) toast.classList.remove("show");
+
+            if (action && typeof action.restoreFn === 'function') {
+                try {
+                    action.restoreFn();
+                    playUiSound('pop');
+                    showUndoToast(`Undone: ${action.message}`, false);
+                } catch (err) {
+                    console.error("Error executing undo action:", err);
+                }
+            }
         }
 
         function undoDelete() {
-            if (!pendingDelete) return;
-            clearTimeout(undoTimeoutId);
-            document.getElementById("undoToast").classList.remove("show");
-            const restore = pendingDelete;
-            pendingDelete = null;
-            restore();
+            triggerUndo();
         }
 
         // --- Export & Import Actions ---
@@ -4734,7 +4937,7 @@
             } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
                 if (!isTyping) {
                     e.preventDefault();
-                    undoDelete();
+                    triggerUndo();
                 }
             } else if (e.key === '?' && !isTyping) {
                 e.preventDefault();
