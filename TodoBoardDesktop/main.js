@@ -1,6 +1,7 @@
-const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, dialog, Notification, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, dialog, Notification, shell, globalShortcut } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const https = require('https');
 
 const userDataPath = app.getPath('userData');
 const dataPath = path.join(userDataPath, 'todo_board_data.json');
@@ -177,13 +178,35 @@ function setupTray() {
     }
 }
 
+function setupGlobalShortcuts() {
+    try {
+        globalShortcut.register('CommandOrControl+Shift+Space', () => {
+            if (mainWindow) {
+                if (mainWindow.isMinimized()) mainWindow.restore();
+                mainWindow.show();
+                mainWindow.focus();
+                mainWindow.webContents.send('spotlight-quick-capture');
+            }
+        });
+    } catch (e) {
+        console.error('Failed to register global shortcut:', e);
+    }
+}
+
 app.whenReady().then(() => {
     createWindow();
     setupTray();
+    setupGlobalShortcuts();
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) createWindow();
     });
+});
+
+app.on('will-quit', () => {
+    try {
+        globalShortcut.unregisterAll();
+    } catch (e) {}
 });
 
 app.on('before-quit', () => {
@@ -280,3 +303,115 @@ ipcMain.handle('import-file-dialog', async (event, { filters }) => {
         return { success: false, error: e.message };
     }
 });
+
+// Native File Picker for Task Attachments
+ipcMain.handle('pick-attachment-file', async () => {
+    if (!mainWindow) return { success: false, cancelled: true };
+    const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
+        title: 'Attach File to Task',
+        properties: ['openFile']
+    });
+
+    if (canceled || !filePaths || filePaths.length === 0) {
+        return { success: false, cancelled: true };
+    }
+
+    try {
+        const filePath = filePaths[0];
+        const fileName = path.basename(filePath);
+        let fileSize = 0;
+        try {
+            const stat = fs.statSync(filePath);
+            fileSize = stat.size;
+        } catch (e) {}
+        const ext = path.extname(filePath).toLowerCase();
+        const isImage = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.bmp'].includes(ext);
+        return { success: true, filePath, fileName, fileSize, isImage, ext };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+});
+
+// Open File in OS Default Application
+ipcMain.handle('open-attachment-path', async (event, filePath) => {
+    if (!filePath || typeof filePath !== 'string') return { success: false, error: 'Invalid path' };
+    try {
+        const result = await shell.openPath(filePath);
+        return { success: !result, error: result || null };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+});
+
+// Check for App Updates via GitHub Releases API
+ipcMain.handle('check-for-updates', async () => {
+    let currentVersion = '1.0.3';
+    try {
+        const currentPkg = require('./package.json');
+        if (currentPkg && currentPkg.version) currentVersion = currentPkg.version;
+    } catch (e) {}
+
+    return new Promise((resolve) => {
+        const options = {
+            hostname: 'api.github.com',
+            path: '/repos/zViiX123/Todo_WebApp/releases/latest',
+            headers: {
+                'User-Agent': 'TodoBoardStudio-DesktopApp'
+            }
+        };
+
+        const req = https.get(options, (res) => {
+            let rawData = '';
+            res.on('data', (chunk) => rawData += chunk);
+            res.on('end', () => {
+                try {
+                    if (res.statusCode !== 200) {
+                        return resolve({
+                            success: false,
+                            currentVersion,
+                            error: `GitHub API returned HTTP ${res.statusCode}`
+                        });
+                    }
+                    const release = JSON.parse(rawData);
+                    const rawTag = release.tag_name || '';
+                    const latestVersion = rawTag.replace(/^v/, '');
+                    const isUpdateAvailable = compareSemver(latestVersion, currentVersion) > 0;
+                    resolve({
+                        success: true,
+                        currentVersion,
+                        latestVersion: latestVersion || currentVersion,
+                        isUpdateAvailable,
+                        releaseName: release.name || rawTag || 'Latest Release',
+                        releaseNotes: release.body || 'No release notes provided.',
+                        releaseUrl: release.html_url || 'https://github.com/zViiX123/Todo_WebApp/releases',
+                        publishedAt: release.published_at
+                    });
+                } catch (e) {
+                    resolve({ success: false, currentVersion, error: e.message });
+                }
+            });
+        });
+
+        req.on('error', (err) => {
+            resolve({ success: false, currentVersion, error: err.message });
+        });
+
+        req.setTimeout(8000, () => {
+            req.destroy();
+            resolve({ success: false, currentVersion, error: 'Connection timed out' });
+        });
+    });
+});
+
+function compareSemver(v1, v2) {
+    if (!v1 || !v2) return 0;
+    const p1 = v1.split('.').map(n => parseInt(n) || 0);
+    const p2 = v2.split('.').map(n => parseInt(n) || 0);
+    for (let i = 0; i < Math.max(p1.length, p2.length); i++) {
+        const num1 = p1[i] || 0;
+        const num2 = p2[i] || 0;
+        if (num1 > num2) return 1;
+        if (num1 < num2) return -1;
+    }
+    return 0;
+}
