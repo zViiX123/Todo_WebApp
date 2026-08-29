@@ -367,6 +367,7 @@
         .due-badge.overdue { background: rgba(224, 108, 117, 0.25); color: #E06C75; border: 1px solid #E06C75; }
         .due-badge.today { background: rgba(229, 166, 111, 0.25); color: #E5A66F; border: 1px solid #E5A66F; }
         .due-badge.future { background: rgba(255,255,255,0.1); color: var(--text-muted); }
+        .due-badge.completed { background: rgba(255,255,255,0.06); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.12); }
 
         .progress-bg { background: rgba(0,0,0,0.3); height: 5px; border-radius: 3px; margin-top: 8px; overflow: hidden;}
         .progress-fill { height: 100%; background: var(--pri-med); transition: width 0.3s ease; }
@@ -462,6 +463,93 @@
             font-family: monospace; font-size: 11px; border: 1px solid var(--border-glass); font-weight: bold;
         }
 
+        /* Theme Gallery Modal */
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+            gap: 10px;
+            max-height: 60vh;
+            overflow-y: auto;
+            padding: 4px;
+        }
+
+        .theme-card {
+            background: rgba(0, 0, 0, 0.22);
+            border: 1px solid var(--border-glass);
+            border-radius: 8px;
+            padding: 10px 12px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            transition: all 0.15s ease;
+            position: relative;
+        }
+
+        .theme-card:hover {
+            border-color: rgba(255, 255, 255, 0.35);
+            transform: translateY(-2px);
+            background: rgba(0, 0, 0, 0.35);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+        }
+
+        .theme-card.active {
+            border-color: var(--accent);
+            box-shadow: 0 0 12px var(--accent-glow);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .theme-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .theme-card-title {
+            font-weight: 700;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .theme-card-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.3;
+        }
+
+        .theme-palette-bar {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 4px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .theme-swatch {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            flex-shrink: 0;
+        }
+
+        .theme-active-tag {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: var(--accent);
+            color: #FFF;
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+        }
+
         /* Animations */
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
@@ -498,25 +586,14 @@
             <!-- Import -->
             <button class="btn" onclick="triggerImport()" title="Import board data">📂 Import</button>
 
+            <!-- Theme Picker Button -->
+            <button class="btn" id="themeModalBtn" onclick="openThemeModal()" title="Customize Color Theme" style="display: inline-flex; align-items: center; gap: 7px;">
+                <span id="headerThemeDot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent); display: inline-block; box-shadow: 0 0 6px var(--accent-glow);"></span>
+                <span id="headerThemeLabel">🎨 Themes</span>
+            </button>
+
             <!-- Shortcuts Help -->
             <button class="btn" onclick="openShortcutsModal()" title="Keyboard Shortcuts (?)">⌨️</button>
-
-            <!-- Theme selector -->
-            <select id="themeSelect" onchange="changeTheme(this.value)" title="Switch Color Theme">
-                <option value="purple">Midnight Purple</option>
-                <option value="dark">Classic Dark</option>
-                <option value="blue">Slate Blue</option>
-                <option value="forest">Forest Green</option>
-                <option value="crimson">Crimson Red</option>
-                <option value="mocha">Coffee Mocha</option>
-                <option value="teal">Ocean Teal</option>
-                <option value="sunset">Sunset Orange</option>
-                <option value="nord">Nordic Frost</option>
-                <option value="dracula">Dracula</option>
-                <option value="viewport">3D Viewport Dark</option>
-                <option value="engine">Game Engine Graphite</option>
-                <option value="retro">Retro Console Boot</option>
-            </select>
         </div>
     </header>
 
@@ -703,6 +780,28 @@
         </div>
     </div>
 
+    <!-- Theme Palette Gallery Modal -->
+    <div class="modal-overlay" id="themeModal" onclick="if(event.target===this) closeThemeModal()">
+        <div class="modal-card" style="width: 720px; max-width: 95vw;">
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-weight: 700; font-size: 16px;">🎨 Color Themes & Palettes</span>
+                    <span id="currentThemeBadge" class="theme-active-tag"></span>
+                </div>
+                <button class="icon-btn del" onclick="closeThemeModal()" title="Close">✕</button>
+            </div>
+            <div class="modal-body" style="padding: 16px 20px;">
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">
+                    Choose a color theme below with live palette previews, high-contrast action buttons, and glassmorphism styling.
+                </div>
+                <div class="theme-grid" id="themeGridContainer"></div>
+            </div>
+            <div class="modal-footer" style="justify-content: flex-end;">
+                <button class="btn" onclick="closeThemeModal()">Done</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // --- State Management ---
         const DEFAULT_DATA = {
@@ -728,6 +827,166 @@
 
         let pendingDelete = null;
         let undoTimeoutId = null;
+
+        // Theme Definitions with visual palettes and descriptions
+        const THEME_DEFINITIONS = [
+            {
+                id: "purple",
+                name: "Midnight Purple",
+                icon: "🔮",
+                desc: "Deep royal purple with violet glow & vibrant neon accents",
+                bg: "#241735",
+                col: "#31224A",
+                card: "#4A3570",
+                accent: "#8E5BE8",
+                add: "#4ADE80",
+                del: "#F87171"
+            },
+            {
+                id: "dark",
+                name: "Classic Dark",
+                icon: "🌑",
+                desc: "Neutral charcoal & graphite layers for modern dark mode",
+                bg: "#161719",
+                col: "#222326",
+                card: "#35363B",
+                accent: "#525660",
+                add: "#4ADE80",
+                del: "#F87171"
+            },
+            {
+                id: "blue",
+                name: "Slate Blue",
+                icon: "🌌",
+                desc: "Deep oceanic navy with sapphire cards and bright blue glow",
+                bg: "#0B1325",
+                col: "#152238",
+                card: "#273E63",
+                accent: "#4569A5",
+                add: "#4ADE80",
+                del: "#FB7185"
+            },
+            {
+                id: "forest",
+                name: "Forest Green",
+                icon: "🌲",
+                desc: "Organic evergreen woodland foliage and calming earth tones",
+                bg: "#0F170F",
+                col: "#172417",
+                card: "#2C422C",
+                accent: "#406840",
+                add: "#6EE7B7",
+                del: "#FCA5A5"
+            },
+            {
+                id: "crimson",
+                name: "Crimson Red",
+                icon: "🍷",
+                desc: "Velvet burgundy & deep ruby tones for high-energy focus",
+                bg: "#1D0D0D",
+                col: "#2A1313",
+                card: "#4E2525",
+                accent: "#6E3434",
+                add: "#4ADE80",
+                del: "#FFA4A4"
+            },
+            {
+                id: "mocha",
+                name: "Coffee Mocha",
+                icon: "☕",
+                desc: "Warm espresso roast, roasted cocoa, and cozy caramel undertones",
+                bg: "#1D1510",
+                col: "#2B1F17",
+                card: "#4D392C",
+                accent: "#6B513F",
+                add: "#6EE7B7",
+                del: "#FCA5A5"
+            },
+            {
+                id: "teal",
+                name: "Ocean Teal",
+                icon: "🌊",
+                desc: "Deep sea trench with vibrant cyan-teal and turquoise highlights",
+                bg: "#0B1717",
+                col: "#122424",
+                card: "#254747",
+                accent: "#366767",
+                add: "#5EEAD4",
+                del: "#FDA4AF"
+            },
+            {
+                id: "sunset",
+                name: "Sunset Orange",
+                icon: "🌅",
+                desc: "Dusk twilight, warm terracotta, and fiery amber horizon glow",
+                bg: "#1E0E0B",
+                col: "#2D1611",
+                card: "#522B22",
+                accent: "#753F32",
+                add: "#4ADE80",
+                del: "#F87171"
+            },
+            {
+                id: "nord",
+                name: "Nordic Frost",
+                icon: "❄️",
+                desc: "Arctic palette inspired by polar ice, glacial calm, and clean air",
+                bg: "#242933",
+                col: "#2E3440",
+                card: "#434C5E",
+                accent: "#5E6A80",
+                add: "#A3BE8C",
+                del: "#BF616A"
+            },
+            {
+                id: "dracula",
+                name: "Dracula",
+                icon: "🧛",
+                desc: "Legendary high-contrast vampire palette with neon pastel pop",
+                bg: "#1E1F29",
+                col: "#282A36",
+                card: "#44475A",
+                accent: "#6272A4",
+                add: "#50FA7B",
+                del: "#FF5555"
+            },
+            {
+                id: "viewport",
+                name: "3D Viewport Dark",
+                icon: "🖥️",
+                desc: "Blender & Maya-inspired 3D workstation dark gray interface",
+                bg: "#141414",
+                col: "#1F1F1F",
+                card: "#333333",
+                accent: "#4A4A4A",
+                add: "#4ADE80",
+                del: "#F87171"
+            },
+            {
+                id: "engine",
+                name: "Game Engine Graphite",
+                icon: "⚙️",
+                desc: "Unreal & Unity developer environment with crisp technical contrast",
+                bg: "#181818",
+                col: "#222222",
+                card: "#383838",
+                accent: "#505050",
+                add: "#4ADE80",
+                del: "#F87171"
+            },
+            {
+                id: "retro",
+                name: "Retro Console Boot",
+                icon: "📟",
+                desc: "Classic BIOS boot screen, terminal cyan, and glowing phosphor green",
+                bg: "#00040A",
+                col: "#070D1A",
+                card: "#15264B",
+                accent: "#1A3161",
+                add: "#33FF77",
+                del: "#FF3366"
+            }
+        ];
 
         // Escape HTML for safety
         function escapeHtml(str) {
@@ -845,8 +1104,7 @@
 
             data.tasks = data.tasks.map(sanitizeTask);
 
-            document.documentElement.setAttribute('data-theme', data.theme);
-            document.getElementById('themeSelect').value = data.theme;
+            applyThemeToUI(data.theme);
             document.getElementById('board-title').innerText = data.boardTitle;
 
             renderBoardSelector();
@@ -894,8 +1152,7 @@
 
             data.tasks = data.tasks.map(sanitizeTask);
 
-            document.documentElement.setAttribute('data-theme', data.theme);
-            document.getElementById('themeSelect').value = data.theme;
+            applyThemeToUI(data.theme);
             document.getElementById('board-title').innerText = data.boardTitle;
             renderBoardSelector();
             renderBoard();
@@ -934,10 +1191,70 @@
             saveData();
         }
 
+        // --- Theme Management & Gallery ---
+        function applyThemeToUI(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            const themeDef = THEME_DEFINITIONS.find(t => t.id === theme) || THEME_DEFINITIONS[0];
+            const lbl = document.getElementById('headerThemeLabel');
+            if (lbl) lbl.innerText = `${themeDef.icon} ${themeDef.name}`;
+            const dot = document.getElementById('headerThemeDot');
+            if (dot) {
+                dot.style.background = themeDef.accent;
+                dot.style.boxShadow = `0 0 6px ${themeDef.accent}`;
+            }
+        }
+
         function changeTheme(theme) {
             data.theme = theme;
-            document.documentElement.setAttribute('data-theme', theme);
+            applyThemeToUI(theme);
             saveData();
+        }
+
+        function openThemeModal() {
+            renderThemeGrid();
+            document.getElementById('themeModal').classList.add('active');
+        }
+
+        function closeThemeModal() {
+            document.getElementById('themeModal').classList.remove('active');
+        }
+
+        function selectTheme(themeId) {
+            changeTheme(themeId);
+            renderThemeGrid();
+        }
+
+        function renderThemeGrid() {
+            const cont = document.getElementById('themeGridContainer');
+            if (!cont) return;
+            const currentTheme = data.theme || 'purple';
+            const activeDef = THEME_DEFINITIONS.find(t => t.id === currentTheme) || THEME_DEFINITIONS[0];
+            const currentBadge = document.getElementById('currentThemeBadge');
+            if (currentBadge) {
+                currentBadge.innerText = `${activeDef.icon} ${activeDef.name}`;
+            }
+
+            cont.innerHTML = THEME_DEFINITIONS.map(t => {
+                const isActive = t.id === currentTheme;
+                return `
+                    <div class="theme-card ${isActive ? 'active' : ''}" onclick="selectTheme('${t.id}')">
+                        <div class="theme-card-header">
+                            <div class="theme-card-title">${t.icon} ${escapeHtml(t.name)}</div>
+                            ${isActive ? '<span class="theme-active-tag">✓ Active</span>' : ''}
+                        </div>
+                        <div class="theme-card-desc">${escapeHtml(t.desc)}</div>
+                        <div class="theme-palette-bar">
+                            <div class="theme-swatch" style="background: ${t.bg};" title="Background: ${t.bg}"></div>
+                            <div class="theme-swatch" style="background: ${t.col};" title="Column: ${t.col}"></div>
+                            <div class="theme-swatch" style="background: ${t.card};" title="Card: ${t.card}"></div>
+                            <div class="theme-swatch" style="background: ${t.accent};" title="Accent: ${t.accent}"></div>
+                            <div style="height: 14px; width: 1px; background: rgba(255,255,255,0.2); margin: 0 2px;"></div>
+                            <div class="theme-swatch" style="background: ${t.add}; border-radius: 50%; width: 14px; height: 14px;" title="Add (+): ${t.add}"></div>
+                            <div class="theme-swatch" style="background: ${t.del}; border-radius: 50%; width: 14px; height: 14px;" title="Delete (✕): ${t.del}"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         // --- Search & Filters ---
@@ -1054,8 +1371,26 @@
             }
         }
 
-        function getDueDateStatus(dueDateStr) {
+        function isTaskCompleted(task) {
+            if (!task) return false;
+            const total = task.checklist ? task.checklist.length : 0;
+            const done = total ? task.checklist.filter(c => c.done).length : 0;
+            if (total > 0) return done === total;
+            return !!task.completedDate;
+        }
+
+        function formatShortDate(dtStr) {
+            if (!dtStr) return '';
+            const d = new Date(dtStr + 'T00:00:00');
+            if (isNaN(d.getTime())) return dtStr;
+            return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        }
+
+        function getDueDateStatus(dueDateStr, isCompleted = false) {
             if (!dueDateStr) return null;
+            if (isCompleted) {
+                return { type: 'completed', label: `Due: ${formatShortDate(dueDateStr)}` };
+            }
             const now = new Date();
             now.setHours(0, 0, 0, 0);
             const due = new Date(dueDateStr);
@@ -1078,14 +1413,15 @@
         function checkUpcomingDueDates() {
             if (!window.electronAPI || !window.electronAPI.showNotification) return;
             const todayOrOverdue = data.tasks.filter(t => {
-                const status = getDueDateStatus(t.dueDate);
+                if (isTaskCompleted(t)) return false;
+                const status = getDueDateStatus(t.dueDate, false);
                 return status && (status.type === 'today' || status.type === 'overdue');
             });
 
             if (todayOrOverdue.length > 0) {
                 window.electronAPI.showNotification({
                     title: `Todo Board: ${todayOrOverdue.length} Tasks Need Attention`,
-                    body: `You have ${todayOrOverdue.length} tasks due today or overdue.`
+                    body: `You have ${todayOrOverdue.length} active tasks due today or overdue.`
                 });
             }
         }
@@ -1127,14 +1463,15 @@
                 // Apply Status Filter
                 if (activeStatusFilter !== 'all') {
                     colTasks = colTasks.filter(t => {
+                        const isDone = isTaskCompleted(t);
                         const total = t.checklist ? t.checklist.length : 0;
                         const done = total ? t.checklist.filter(c => c.done).length : 0;
                         const pct = total ? (done / total) * 100 : 0;
-                        const dueStatus = getDueDateStatus(t.dueDate);
+                        const dueStatus = getDueDateStatus(t.dueDate, isDone);
 
-                        if (activeStatusFilter === 'overdue') return dueStatus && dueStatus.type === 'overdue';
-                        if (activeStatusFilter === 'done') return pct === 100 && total > 0;
-                        if (activeStatusFilter === 'in-progress') return pct > 0 && pct < 100;
+                        if (activeStatusFilter === 'overdue') return !isDone && dueStatus && dueStatus.type === 'overdue';
+                        if (activeStatusFilter === 'done') return isDone;
+                        if (activeStatusFilter === 'in-progress') return !isDone && (pct > 0 || !!t.startDate);
                         return true;
                     });
                 }
@@ -1223,10 +1560,11 @@
                         const pct = total ? (done / total) * 100 : 0;
 
                         // Due date badge
-                        const dueStatus = getDueDateStatus(task.dueDate);
+                        const isDone = isTaskCompleted(task);
+                        const dueStatus = getDueDateStatus(task.dueDate, isDone);
                         let dueHtml = '';
                         if (dueStatus) {
-                            dueHtml = `<span class="due-badge ${dueStatus.type}">📅 ${dueStatus.label}</span>`;
+                            dueHtml = `<span class="due-badge ${dueStatus.type}" title="${isDone ? 'Completed' : ''}">📅 ${dueStatus.label}</span>`;
                         }
 
                         // Time tracking badges based on checklist state
@@ -1977,6 +2315,7 @@
             if (e.key === 'Escape') {
                 closeTaskModal();
                 closeShortcutsModal();
+                closeThemeModal();
                 if (searchQuery) clearSearch();
                 return;
             }
