@@ -1,0 +1,40 @@
+﻿# Dependencies
+node_modules/
+**/node_modules/
+
+# Production / Distribution builds
+dist/
+build/
+out/
+bin/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# User Data and Local Cache
+todo_board_data.json
+window_state.json
+*.tmp
+*.bak
+
+# Environment / OS files
+.env
+.env.local
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE / Editor configuration
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.sublime-project
+*.sublime-workspace

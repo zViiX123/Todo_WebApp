@@ -1,6 +1,13 @@
 {
   "name": "todoboarddesktop",
   "version": "1.0.0",
+  "description": "Todo Board Studio - Sleek Kanban Board & Project Management Desktop App",
+  "author": "zViiX123",
+  "license": "AGPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zViiX123/Todo_WebApp.git"
+  },
   "main": "main.js",
   "scripts": {
     "start": "electron .",

@@ -148,8 +148,9 @@ Todo_WebApp/
 │   ├── preload.js       # Secure contextBridge API bindings
 │   ├── package.json     # App metadata, dependencies & build scripts
 │   └── package-lock.json
+├── .gitignore           # Git ignore rules for node_modules, build & cache files
 ├── LICENSE              # AGPL-3.0 License
-└── README.md            # Documentation
+└── README.md            # Comprehensive documentation & shortcuts guide
 ```
 
 ---
