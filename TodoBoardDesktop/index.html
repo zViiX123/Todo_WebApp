@@ -4603,6 +4603,9 @@
             if (data.columns.length <= 1) return alert("You need at least one column.");
             const name = data.columns[idx];
             const removedTasks = data.tasks.filter(t => t.column === name);
+            if (removedTasks.length > 0) {
+                if (!confirm(`Delete column "${name}" and its ${removedTasks.length} task(s)?`)) return;
+            }
             const color = data.columnColors[name];
             const wasCollapsed = data.collapsedCols ? data.collapsedCols.includes(name) : false;
             const wasPinned = data.pinnedCol === name;
