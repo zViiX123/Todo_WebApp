@@ -2762,24 +2762,45 @@
         // --- In-App Update Checker ---
         let latestReleaseData = null;
 
-        async function checkForAppUpdates() {
+        async function checkForAppUpdates(silent = false) {
             if (!window.electronAPI || !window.electronAPI.checkForUpdates) {
-                return alert("Update checker is supported in the desktop app.");
+                if (!silent) alert("Update checker is supported in the desktop app.");
+                return;
             }
-            showUndoToast("Checking for updates...");
-            const res = await window.electronAPI.checkForUpdates();
-            if (res && res.success) {
-                if (res.isUpdateAvailable) {
-                    latestReleaseData = res;
-                    document.getElementById('updateModalVersionBadge').innerText = `v${res.latestVersion}`;
-                    document.getElementById('updateCurrentVersionLabel').innerText = `Current: v${res.currentVersion}`;
-                    document.getElementById('updateModalNotes').innerHTML = parseMarkdown(res.releaseNotes);
-                    document.getElementById('updateModal').classList.add('active');
+            if (!silent) {
+                showUndoToast("Checking for updates...");
+            }
+            try {
+                const res = await window.electronAPI.checkForUpdates();
+                if (res && res.success) {
+                    if (res.isUpdateAvailable) {
+                        latestReleaseData = res;
+                        document.getElementById('updateModalVersionBadge').innerText = `v${res.latestVersion}`;
+                        document.getElementById('updateCurrentVersionLabel').innerText = `Current: v${res.currentVersion}`;
+                        document.getElementById('updateModalNotes').innerHTML = parseMarkdown(res.releaseNotes);
+                        document.getElementById('updateModal').classList.add('active');
+
+                        // Send native desktop notification
+                        if (window.electronAPI.showNotification) {
+                            window.electronAPI.showNotification({
+                                title: `Todo Board Studio: Update v${res.latestVersion} Available!`,
+                                body: `A new version (v${res.latestVersion}) is ready to download.`
+                            });
+                        }
+                    } else {
+                        if (!silent) {
+                            showUndoToast(`✓ You are running the latest version (v${res.currentVersion})`);
+                        }
+                    }
                 } else {
-                    showUndoToast(`✓ You are running the latest version (v${res.currentVersion})`);
+                    if (!silent) {
+                        showUndoToast(`Could not check updates: ${res ? res.error : 'Network error'}`);
+                    }
                 }
-            } else {
-                showUndoToast(`Could not check updates: ${res ? res.error : 'Network error'}`);
+            } catch (err) {
+                if (!silent) {
+                    showUndoToast(`Update check error: ${err.message}`);
+                }
             }
         }
 
@@ -3206,6 +3227,11 @@
                     openSpotlightHud();
                 });
             }
+
+            // Auto-check once for updates on launch
+            setTimeout(() => {
+                checkForAppUpdates(true);
+            }, 1800);
         })();
 
         // --- Persistence ---
