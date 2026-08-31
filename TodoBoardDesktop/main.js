@@ -692,7 +692,7 @@ function compareSemver(v1, v2) {
 
 // Check for App Updates via GitHub Releases API with seamless fallback for rate-limiting (HTTP 403)
 ipcMain.handle('check-for-updates', async () => {
-    let currentVersion = '4.1.1';
+    let currentVersion = '4.1.2';
     try {
         const currentPkg = require('./package.json');
         if (currentPkg && currentPkg.version) currentVersion = currentPkg.version;

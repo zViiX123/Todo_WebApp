@@ -6310,10 +6310,11 @@
 
                 if (currentAuthTab === 'signin') {
                     if (!password) throw new Error('Password is required.');
+                    window._showSyncToastOnLogin = true;
                     await window.cloudSyncManager.signInWithEmail(email, password);
                     closeAuthModal();
                     playUiSound('pop');
-                    showUndoToast(`Welcome back, ${email}!`);
+                    showUndoToast('☁️ Synced changes from your other device');
                 } else if (currentAuthTab === 'signup') {
                     if (!password || password.length < 6) throw new Error('Password must be at least 6 characters.');
                     await window.cloudSyncManager.signUpWithEmail(email, password, displayName);
@@ -6352,11 +6353,12 @@
             }
 
             try {
+                window._showSyncToastOnLogin = true;
                 const user = await window.cloudSyncManager.signInWithGoogle();
                 if (user) {
                     closeAuthModal();
                     playUiSound('pop');
-                    showUndoToast(`Signed in as ${user.displayName || user.email}`);
+                    showUndoToast('☁️ Synced changes from your other device');
                     if (Object.keys(boards).length > 0) {
                         window.cloudSyncManager.pushLocalStateToCloud(boards, 300);
                     }
@@ -6593,11 +6595,6 @@
                 localStorage.setItem("todoBoardsStudio", JSON.stringify(boards));
                 if (typeof saveDailyBackupWeb === 'function') saveDailyBackupWeb();
                 switchBoard(activeBoardId, true);
-
-                // Only show toast if user is actively signed in and receiving a live update from another device
-                if (isLiveUpdate && window.cloudSyncManager && window.cloudSyncManager.currentUser) {
-                    showUndoToast('☁️ Synced changes from your other device');
-                }
 
                 // If cloud data was missing columns, repair the cloud document immediately
                 if (didFixColumns && window.cloudSyncManager) {

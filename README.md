@@ -1,7 +1,7 @@
 # ✦ Todo Board Studio
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-purple.svg)](https://www.gnu.org/licenses/agpl-3.0)
-[![Version: 4.1.1](https://img.shields.io/badge/Version-4.1.1-brightgreen.svg)](https://github.com/zViiX123/Todo_WebApp/releases)
+[![Version: 4.1.2](https://img.shields.io/badge/Version-4.1.2-brightgreen.svg)](https://github.com/zViiX123/Todo_WebApp/releases)
 [![Web App](https://img.shields.io/badge/Live_Web_App-todoboard--studio.web.app-blue.svg)](https://todoboard-studio.web.app/)
 [![Platform](https://img.shields.io/badge/Platform-Web%20%7C%20Windows%20%7C%20PWA-orange.svg)]()
 
