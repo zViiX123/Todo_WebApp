@@ -6333,6 +6333,7 @@
             // Remote data updates from cloud
             window.cloudSyncManager.onRemoteDataReceived((remoteBoards, updatedAt) => {
                 if (!remoteBoards || typeof remoteBoards !== 'object' || Object.keys(remoteBoards).length === 0) return;
+                if (JSON.stringify(boards) === JSON.stringify(remoteBoards)) return;
                 console.log('Received remote cloud update:', updatedAt);
 
                 let didFixColumns = false;

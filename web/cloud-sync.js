@@ -208,9 +208,15 @@
                 const docRef = this.db.collection('users').doc(uid).collection('data').doc('workspaces');
 
                 this.unsubscribeSnapshot = docRef.onSnapshot(
+                    { includeMetadataChanges: true },
                     doc => {
                         if (!doc.exists) {
                             this.setStatus('synced');
+                            return;
+                        }
+
+                        // Ignore local in-flight writes that have not been committed to server yet
+                        if (doc.metadata && doc.metadata.hasPendingWrites) {
                             return;
                         }
 
@@ -222,12 +228,14 @@
 
                         // Check if this update came from another client
                         const remoteHash = this.computeHash(data.boards);
-                        if (remoteHash !== this.lastSyncedHash) {
-                            this.lastSyncedHash = remoteHash;
-                            this.lastCloudUpdatedAt = data.updatedAt;
-                            this.notifyRemoteDataListeners(data.boards, data.updatedAt);
+                        if (remoteHash === this.lastSyncedHash || (this.pendingBoards && remoteHash === this.computeHash(this.pendingBoards))) {
+                            this.setStatus('synced');
+                            return;
                         }
 
+                        this.lastSyncedHash = remoteHash;
+                        this.lastCloudUpdatedAt = data.updatedAt;
+                        this.notifyRemoteDataListeners(data.boards, data.updatedAt);
                         this.setStatus('synced');
                     },
                     err => {
@@ -252,40 +260,48 @@
             }
         }
 
-        // Push local boards to cloud (Debounced)
-        pushLocalStateToCloud(boards, delayMs = 600) {
-            if (!this.currentUser || !this.db) return;
+        // Push local boards to cloud (Debounced with immediate hash registration)
+        pushLocalStateToCloud(boards, delayMs = 300) {
+            if (!this.currentUser || !this.db || !boards) return;
+
+            // Deep clone local boards to isolate snapshot
+            try {
+                this.pendingBoards = JSON.parse(JSON.stringify(boards));
+                this.lastSyncedHash = this.computeHash(this.pendingBoards);
+            } catch (e) {
+                this.pendingBoards = boards;
+            }
 
             if (this.pushTimer) {
                 clearTimeout(this.pushTimer);
             }
 
             this.pushTimer = setTimeout(() => {
-                this.executePush(boards);
+                this.executePush(this.pendingBoards);
             }, delayMs);
         }
 
         async executePush(boards) {
-            if (!this.currentUser || !this.db || this.isPushing) return;
+            if (!this.currentUser || !this.db) return;
             if (!navigator.onLine) {
                 this.setStatus('offline');
                 return;
             }
 
+            const payloadBoards = boards || this.pendingBoards;
+            if (!payloadBoards) return;
+
             // Ensure every board has columns before saving to cloud
-            if (boards && typeof boards === 'object') {
-                Object.keys(boards).forEach(k => {
-                    if (boards[k] && (!boards[k].columns || !Array.isArray(boards[k].columns) || boards[k].columns.length === 0)) {
-                        boards[k].columns = ["To Do", "In Progress", "Done"];
+            if (payloadBoards && typeof payloadBoards === 'object') {
+                Object.keys(payloadBoards).forEach(k => {
+                    if (payloadBoards[k] && (!payloadBoards[k].columns || !Array.isArray(payloadBoards[k].columns) || payloadBoards[k].columns.length === 0)) {
+                        payloadBoards[k].columns = ["To Do", "In Progress", "Done"];
                     }
                 });
             }
 
-            const currentHash = this.computeHash(boards);
-            if (currentHash === this.lastSyncedHash) {
-                this.setStatus('synced');
-                return;
-            }
+            const currentHash = this.computeHash(payloadBoards);
+            this.lastSyncedHash = currentHash;
 
             this.isPushing = true;
             this.setStatus('syncing');
@@ -295,9 +311,9 @@
                 const docRef = this.db.collection('users').doc(uid).collection('data').doc('workspaces');
 
                 const payload = {
-                    boards: boards,
+                    boards: payloadBoards,
                     updatedAt: new Date().toISOString(),
-                    clientVersion: '4.0.2',
+                    clientVersion: '4.0.3',
                     userId: uid,
                     email: this.currentUser.email || ''
                 };
@@ -305,6 +321,7 @@
                 await docRef.set(payload, { merge: true });
                 this.lastSyncedHash = currentHash;
                 this.lastCloudUpdatedAt = payload.updatedAt;
+                this.pendingBoards = null;
                 this.setStatus('synced');
             } catch (err) {
                 console.error('Cloud push failed:', err);

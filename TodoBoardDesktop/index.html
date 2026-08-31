@@ -6217,6 +6217,7 @@
             // Remote data updates from cloud
             window.cloudSyncManager.onRemoteDataReceived((remoteBoards, updatedAt) => {
                 if (!remoteBoards || typeof remoteBoards !== 'object' || Object.keys(remoteBoards).length === 0) return;
+                if (JSON.stringify(boards) === JSON.stringify(remoteBoards)) return;
                 console.log('Received remote cloud update:', updatedAt);
 
                 let didFixColumns = false;
@@ -6244,7 +6245,11 @@
                 }
 
                 // Update local storage without pushing back to cloud immediately
-                localStorage.setItem("todoBoardsStudio", JSON.stringify(boards));
+                const jsonStr = JSON.stringify(boards);
+                localStorage.setItem("todoBoardsStudio", jsonStr);
+                if (window.electronAPI && window.electronAPI.saveData) {
+                    window.electronAPI.saveData(jsonStr);
+                }
                 if (typeof saveDailyBackupWeb === 'function') saveDailyBackupWeb();
                 switchBoard(activeBoardId);
                 showUndoToast('☁️ Synced changes from your other device');
