@@ -6,6 +6,15 @@
     'use strict';
 
     const DEFAULT_CONFIG_STORAGE_KEY = 'todo_cloud_firebase_config';
+    const DEFAULT_FIREBASE_CONFIG = {
+        apiKey: "AIzaSyBr2CQhDsZALwwX4s4KSsbPEAFh2ucPwOk",
+        authDomain: "todoboard-studio.firebaseapp.com",
+        projectId: "todoboard-studio",
+        storageBucket: "todoboard-studio.firebasestorage.app",
+        messagingSenderId: "390031122905",
+        appId: "1:390031122905:web:ad988b67a4e84274b2f9c8",
+        measurementId: "G-D98FQLQ93K"
+    };
 
     class CloudSyncManager {
         constructor() {
@@ -42,7 +51,7 @@
             } catch (e) {
                 console.warn('Error reading saved cloud config:', e);
             }
-            return null;
+            return DEFAULT_FIREBASE_CONFIG;
         }
 
         saveConfig(configObj) {
