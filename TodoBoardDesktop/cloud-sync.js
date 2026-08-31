@@ -297,7 +297,7 @@
                 const payload = {
                     boards: boards,
                     updatedAt: new Date().toISOString(),
-                    clientVersion: '4.0.1',
+                    clientVersion: '4.0.2',
                     userId: uid,
                     email: this.currentUser.email || ''
                 };

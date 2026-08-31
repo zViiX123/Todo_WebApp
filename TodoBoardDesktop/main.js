@@ -62,10 +62,10 @@ function startLocalServer() {
             reject(err);
         });
 
-        // Listen on random available port on loopback only (127.0.0.1)
+        // Listen on random available port on localhost loopback
         localServer.listen(0, '127.0.0.1', () => {
             localPort = localServer.address().port;
-            console.log(`Local secure app server running on http://127.0.0.1:${localPort}`);
+            console.log(`Local secure app server running on http://localhost:${localPort}`);
             resolve(localPort);
         });
     });
@@ -160,7 +160,7 @@ async function createWindow() {
 
     try {
         const port = await startLocalServer();
-        mainWindow.loadURL(`http://127.0.0.1:${port}/index.html`);
+        mainWindow.loadURL(`http://localhost:${port}/index.html`);
     } catch (e) {
         console.warn('Failed to start local server, falling back to loadFile:', e);
         mainWindow.loadFile('index.html');
@@ -621,7 +621,7 @@ ipcMain.handle('open-attachment-path', async (event, filePath) => {
 
 // Check for App Updates via GitHub Releases API (Secure, Sandboxed, and Validated)
 ipcMain.handle('check-for-updates', async () => {
-    let currentVersion = '4.0.1';
+    let currentVersion = '4.0.2';
     try {
         const currentPkg = require('./package.json');
         if (currentPkg && currentPkg.version) currentVersion = currentPkg.version;
