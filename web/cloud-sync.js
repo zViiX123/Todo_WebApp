@@ -7,8 +7,7 @@
 
     const DEFAULT_CONFIG_STORAGE_KEY = 'todo_cloud_firebase_config';
     const DEFAULT_FIREBASE_CONFIG = {
-        // Public client-side Firebase identifier (base64 decoded at runtime to prevent automated scanner false-positives)
-        apiKey: typeof atob === 'function' ? atob("QUl6YVN5QnIyQ1FoRHNaTHd3WDRzNEtTc2JQRUFGaDJ1Y1B3T2s=") : "AIza" + "SyBr2CQhDsZALwwX4s4KSsbPEAFh2ucPwOk",
+        apiKey: "AIzaSyBr2CQhDsZALwwX4s4KSsbPEAFh2ucPwOk",
         authDomain: "todoboard-studio.firebaseapp.com",
         projectId: "todoboard-studio",
         storageBucket: "todoboard-studio.firebasestorage.app",
@@ -47,7 +46,10 @@
             try {
                 const saved = localStorage.getItem(DEFAULT_CONFIG_STORAGE_KEY);
                 if (saved) {
-                    return JSON.parse(saved);
+                    const parsed = JSON.parse(saved);
+                    if (parsed && typeof parsed === 'object' && parsed.apiKey && parsed.apiKey.startsWith('AIza') && parsed.projectId) {
+                        return parsed;
+                    }
                 }
             } catch (e) {
                 console.warn('Error reading saved cloud config:', e);
@@ -61,6 +63,10 @@
                     throw new Error('Invalid Firebase configuration object.');
                 }
                 localStorage.setItem(DEFAULT_CONFIG_STORAGE_KEY, JSON.stringify(configObj));
+                if (this.app) {
+                    try { this.app.delete(); } catch (e) {}
+                    this.app = null;
+                }
                 return this.init();
             } catch (e) {
                 console.error('Failed to save cloud config:', e);
@@ -68,16 +74,17 @@
             }
         }
 
-        clearConfig() {
+        async clearConfig() {
             localStorage.removeItem(DEFAULT_CONFIG_STORAGE_KEY);
             if (this.auth) {
-                this.auth.signOut().catch(() => {});
+                try { await this.auth.signOut(); } catch (e) {}
             }
-            this.app = null;
-            this.auth = null;
-            this.db = null;
-            this.currentUser = null;
+            if (this.app) {
+                try { await this.app.delete(); } catch (e) {}
+                this.app = null;
+            }
             this.setStatus('guest');
+            this.init();
         }
 
         // Initialize Firebase
@@ -95,45 +102,54 @@
             }
 
             try {
-                // Initialize or retrieve app
-                if (!firebase.apps || firebase.apps.length === 0) {
-                    this.app = firebase.initializeApp(config);
-                } else {
+                // If existing app is already initialized, reuse or re-create if config changed
+                if (firebase.apps && firebase.apps.length > 0) {
                     this.app = firebase.app();
+                    if (this.app.options && (this.app.options.apiKey !== config.apiKey || this.app.options.projectId !== config.projectId)) {
+                        this.app.delete().then(() => {
+                            this.app = firebase.initializeApp(config);
+                            this.setupAuthAndDb();
+                        }).catch(() => {
+                            this.setupAuthAndDb();
+                        });
+                        return true;
+                    }
+                } else {
+                    this.app = firebase.initializeApp(config);
                 }
 
-                this.auth = firebase.auth();
-                this.db = firebase.firestore();
-
-                // Enable Firestore offline persistence if available
-                try {
-                    this.db.enablePersistence({ synchronizeTabs: true }).catch(err => {
-                        if (err.code === 'failed-precondition' || err.code === 'unimplemented') {
-                            // Persistence already enabled or multiple tabs
-                        }
-                    });
-                } catch (e) {}
-
-                // Auth state listener
-                this.auth.onAuthStateChanged(user => {
-                    this.currentUser = user;
-                    this.notifyAuthListeners(user);
-
-                    if (user) {
-                        this.setStatus('syncing');
-                        this.startRealtimeListener(user.uid);
-                    } else {
-                        this.stopRealtimeListener();
-                        this.setStatus('guest');
-                    }
-                });
-
+                this.setupAuthAndDb();
                 return true;
             } catch (err) {
                 console.error('Firebase init error:', err);
                 this.setStatus('error', err.message);
                 return false;
             }
+        }
+
+        setupAuthAndDb() {
+            if (!this.app) return;
+            this.auth = this.app.auth();
+            this.db = this.app.firestore();
+
+            // Enable Firestore offline persistence if available
+            try {
+                this.db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+            } catch (e) {}
+
+            // Auth state listener
+            this.auth.onAuthStateChanged(user => {
+                this.currentUser = user;
+                this.notifyAuthListeners(user);
+
+                if (user) {
+                    this.setStatus('syncing');
+                    this.startRealtimeListener(user.uid);
+                } else {
+                    this.stopRealtimeListener();
+                    this.setStatus('guest');
+                }
+            });
         }
 
         // --- Authentication Operations ---
@@ -281,7 +297,7 @@
                 const payload = {
                     boards: boards,
                     updatedAt: new Date().toISOString(),
-                    clientVersion: '4.0.0',
+                    clientVersion: '4.0.1',
                     userId: uid,
                     email: this.currentUser.email || ''
                 };
