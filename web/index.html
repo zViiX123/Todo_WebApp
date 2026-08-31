@@ -2693,17 +2693,17 @@
                 now.setHours(0, 0, 0, 0);
 
                 if (dVal === 'today') {
-                    dueDate = now.toISOString().split('T')[0];
+                    dueDate = formatDateLocal(now);
                 } else if (dVal === 'tomorrow') {
                     now.setDate(now.getDate() + 1);
-                    dueDate = now.toISOString().split('T')[0];
+                    dueDate = formatDateLocal(now);
                 } else if (dVal === 'yesterday') {
                     now.setDate(now.getDate() - 1);
-                    dueDate = now.toISOString().split('T')[0];
+                    dueDate = formatDateLocal(now);
                 } else if (/^\+\d+d$/.test(dVal)) {
                     const days = parseInt(dVal.replace('+', '').replace('d', ''), 10);
                     now.setDate(now.getDate() + days);
-                    dueDate = now.toISOString().split('T')[0];
+                    dueDate = formatDateLocal(now);
                 } else if (/^\d{4}-\d{2}-\d{2}$/.test(dVal)) {
                     dueDate = dVal;
                 } else {
@@ -2714,7 +2714,7 @@
                         let diff = targetDay - currentDay;
                         if (diff <= 0) diff += 7;
                         now.setDate(now.getDate() + diff);
-                        dueDate = now.toISOString().split('T')[0];
+                        dueDate = formatDateLocal(now);
                     }
                 }
                 text = text.replace(dateRegex, '').trim();
@@ -3084,7 +3084,46 @@
                     playUiSound('pop');
                 }
             } else {
-                alert("Local file picking is supported in the desktop app.");
+                const fileInp = document.createElement('input');
+                fileInp.type = 'file';
+                fileInp.multiple = true;
+                fileInp.onchange = (e) => {
+                    if (e.target.files && e.target.files.length > 0) {
+                        for (let i = 0; i < e.target.files.length; i++) {
+                            const f = e.target.files[i];
+                            const isImg = f.type.startsWith('image/');
+                            if (isImg && f.size < 500000) {
+                                const reader = new FileReader();
+                                reader.onload = (ev) => {
+                                    modalWorkingAttachments.push({
+                                        id: "att-" + Date.now() + "-" + i,
+                                        type: 'file',
+                                        name: f.name,
+                                        dataUrl: ev.target.result,
+                                        size: f.size,
+                                        isImage: true,
+                                        addedAt: Date.now()
+                                    });
+                                    renderModalAttachments();
+                                };
+                                reader.readAsDataURL(f);
+                            } else {
+                                modalWorkingAttachments.push({
+                                    id: "att-" + Date.now() + "-" + i,
+                                    type: 'file',
+                                    name: f.name,
+                                    path: f.name,
+                                    size: f.size,
+                                    isImage: isImg,
+                                    addedAt: Date.now()
+                                });
+                                renderModalAttachments();
+                            }
+                        }
+                        playUiSound('pop');
+                    }
+                };
+                fileInp.click();
             }
         }
 
@@ -3122,6 +3161,10 @@
                 window.open(att.url, '_blank');
             } else if (att.path && window.electronAPI && window.electronAPI.openAttachmentPath) {
                 window.electronAPI.openAttachmentPath(att.path);
+            } else if (att.dataUrl) {
+                window.open(att.dataUrl, '_blank');
+            } else {
+                showUndoToast('ℹ️ Local file paths can be launched directly in the Windows Desktop App.');
             }
         }
 
@@ -3146,15 +3189,34 @@
             if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
                 for (let i = 0; i < e.dataTransfer.files.length; i++) {
                     const f = e.dataTransfer.files[i];
-                    modalWorkingAttachments.push({
-                        id: "att-" + Date.now() + "-" + i,
-                        type: 'file',
-                        name: f.name,
-                        path: f.path || f.name,
-                        size: f.size,
-                        isImage: f.type.startsWith('image/'),
-                        addedAt: Date.now()
-                    });
+                    const isImg = f.type.startsWith('image/');
+                    if (isImg && f.size < 500000) {
+                        const reader = new FileReader();
+                        reader.onload = (ev) => {
+                            modalWorkingAttachments.push({
+                                id: "att-" + Date.now() + "-" + i,
+                                type: 'file',
+                                name: f.name,
+                                dataUrl: ev.target.result,
+                                path: f.path || f.name,
+                                size: f.size,
+                                isImage: true,
+                                addedAt: Date.now()
+                            });
+                            renderModalAttachments();
+                        };
+                        reader.readAsDataURL(f);
+                    } else {
+                        modalWorkingAttachments.push({
+                            id: "att-" + Date.now() + "-" + i,
+                            type: 'file',
+                            name: f.name,
+                            path: f.path || f.name,
+                            size: f.size,
+                            isImage: isImg,
+                            addedAt: Date.now()
+                        });
+                    }
                 }
                 renderModalAttachments();
                 playUiSound('pop');
@@ -4260,6 +4322,14 @@
         }
 
         // --- Helper: Date & Time calculations ---
+        function formatDateLocal(date = new Date()) {
+            const pad = (n) => String(n).padStart(2, '0');
+            const y = date.getFullYear();
+            const m = pad(date.getMonth() + 1);
+            const d = pad(date.getDate());
+            return `${y}-${m}-${d}`;
+        }
+
         function getLocalDateTimeString(date = new Date()) {
             const pad = (n) => String(n).padStart(2, '0');
             const y = date.getFullYear();
@@ -4360,7 +4430,7 @@
             }
             const now = new Date();
             now.setHours(0, 0, 0, 0);
-            const due = new Date(dueDateStr);
+            const due = new Date(dueDateStr + 'T00:00:00');
             due.setHours(0, 0, 0, 0);
 
             const diffTime = due.getTime() - now.getTime();
@@ -4942,7 +5012,7 @@
                     card.ondragstart = (e) => cardDragStart(e, task.id);
                     card.ondragend = (e) => cardDragEnd(e);
                     card.onclick = (e) => {
-                        if (!e.target.closest('button') && !e.target.closest('input') && !e.target.closest('select') && !e.target.isContentEditable) {
+                        if (!e.target.closest('button') && !e.target.closest('input') && !e.target.closest('select') && !e.target.closest('details') && !e.target.closest('summary') && !e.target.closest('.card-checklist-details') && !e.target.isContentEditable) {
                             openTaskModal(task.id);
                         }
                     };
@@ -5041,16 +5111,16 @@
                         
                         <div id="card-title-${task.id}" class="card-title" contenteditable="true" onblur="updateCardName('${task.id}', this.innerText)" onkeydown="if(event.key==='Enter'){this.blur(); event.preventDefault();}" onclick="event.stopPropagation()" style="outline: none; cursor: text; min-height: 18px;">${escapeHtml(task.text)}</div>
                         
-                        ${task.desc ? `<div class="card-desc">${escapeHtml(task.desc)}</div>` : ''}
+                        ${task.desc ? `<div class="card-desc-preview">${escapeHtml(task.desc)}</div>` : ''}
                         ${tagsHtml}
 
                         <!-- Inline Subtasks Dropdown Details -->
-                        <details class="card-checklist-details" ${task.checklistOpen ? 'open' : ''} ontoggle="toggleDetails('${task.id}', this.open)">
-                            <summary style="font-size: 11px; opacity: 0.85; cursor: pointer; outline: none; display: flex; justify-content: space-between; align-items: center; user-select: none;">
+                        <details class="card-checklist-details" ${task.checklistOpen ? 'open' : ''} onclick="event.stopPropagation()" ontoggle="toggleDetails('${task.id}', this.open)">
+                            <summary onclick="event.stopPropagation()" style="font-size: 11px; opacity: 0.85; cursor: pointer; outline: none; display: flex; justify-content: space-between; align-items: center; user-select: none;">
                                 <span>Checklist (${done}/${total})</span>
                                 <button class="icon-btn add" title="Add Subtask" onclick="event.stopPropagation(); event.preventDefault(); quickAddCheck('${task.id}')">+</button>
                             </summary>
-                            <div style="margin-top: 4px; padding-left: 2px;">
+                            <div class="card-checklist-content" onclick="event.stopPropagation()" style="margin-top: 4px; padding-left: 2px;">
                                 ${chkHtml}
                             </div>
                         </details>
@@ -5467,8 +5537,7 @@
         function setModalQuickDate(daysToAdd) {
             const d = new Date();
             d.setDate(d.getDate() + daysToAdd);
-            const iso = d.toISOString().split('T')[0];
-            document.getElementById('modalTaskDueDate').value = iso;
+            document.getElementById('modalTaskDueDate').value = formatDateLocal(d);
         }
 
         function clearModalDueDate() {
@@ -5957,7 +6026,7 @@
                 const parts = dateStr.split('-');
                 if (parts.length === 3) {
                     const date = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
-                    const todayStr = new Date().toISOString().split('T')[0];
+                    const todayStr = formatDateLocal();
                     const isToday = dateStr === todayStr;
                     const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
                     const formatted = date.toLocaleDateString(undefined, options);

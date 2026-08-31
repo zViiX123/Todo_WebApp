@@ -2536,17 +2536,17 @@
                 now.setHours(0, 0, 0, 0);
 
                 if (dVal === 'today') {
-                    dueDate = now.toISOString().split('T')[0];
+                    dueDate = formatDateLocal(now);
                 } else if (dVal === 'tomorrow') {
                     now.setDate(now.getDate() + 1);
-                    dueDate = now.toISOString().split('T')[0];
+                    dueDate = formatDateLocal(now);
                 } else if (dVal === 'yesterday') {
                     now.setDate(now.getDate() - 1);
-                    dueDate = now.toISOString().split('T')[0];
+                    dueDate = formatDateLocal(now);
                 } else if (/^\+\d+d$/.test(dVal)) {
                     const days = parseInt(dVal.replace('+', '').replace('d', ''), 10);
                     now.setDate(now.getDate() + days);
-                    dueDate = now.toISOString().split('T')[0];
+                    dueDate = formatDateLocal(now);
                 } else if (/^\d{4}-\d{2}-\d{2}$/.test(dVal)) {
                     dueDate = dVal;
                 } else {
@@ -2557,7 +2557,7 @@
                         let diff = targetDay - currentDay;
                         if (diff <= 0) diff += 7;
                         now.setDate(now.getDate() + diff);
-                        dueDate = now.toISOString().split('T')[0];
+                        dueDate = formatDateLocal(now);
                     }
                 }
                 text = text.replace(dateRegex, '').trim();
@@ -2965,6 +2965,10 @@
                 window.open(att.url, '_blank');
             } else if (att.path && window.electronAPI && window.electronAPI.openAttachmentPath) {
                 window.electronAPI.openAttachmentPath(att.path);
+            } else if (att.dataUrl) {
+                window.open(att.dataUrl, '_blank');
+            } else {
+                showUndoToast('ℹ️ Local file paths can be launched directly in the Windows Desktop App.');
             }
         }
 
@@ -4103,6 +4107,14 @@
         }
 
         // --- Helper: Date & Time calculations ---
+        function formatDateLocal(date = new Date()) {
+            const pad = (n) => String(n).padStart(2, '0');
+            const y = date.getFullYear();
+            const m = pad(date.getMonth() + 1);
+            const d = pad(date.getDate());
+            return `${y}-${m}-${d}`;
+        }
+
         function getLocalDateTimeString(date = new Date()) {
             const pad = (n) => String(n).padStart(2, '0');
             const y = date.getFullYear();
@@ -4203,7 +4215,7 @@
             }
             const now = new Date();
             now.setHours(0, 0, 0, 0);
-            const due = new Date(dueDateStr);
+            const due = new Date(dueDateStr + 'T00:00:00');
             due.setHours(0, 0, 0, 0);
 
             const diffTime = due.getTime() - now.getTime();
@@ -4785,7 +4797,7 @@
                     card.ondragstart = (e) => cardDragStart(e, task.id);
                     card.ondragend = (e) => cardDragEnd(e);
                     card.onclick = (e) => {
-                        if (!e.target.closest('button') && !e.target.closest('input') && !e.target.closest('select') && !e.target.isContentEditable) {
+                        if (!e.target.closest('button') && !e.target.closest('input') && !e.target.closest('select') && !e.target.closest('details') && !e.target.closest('summary') && !e.target.closest('.card-checklist-details') && !e.target.isContentEditable) {
                             openTaskModal(task.id);
                         }
                     };
@@ -4886,13 +4898,13 @@
                         
                         ${task.desc ? `<div class="card-desc-preview">${escapeHtml(task.desc)}</div>` : ''}
                         ${tagsHtml}
-
-                        <details ${task.checklistOpen ? 'open' : ''} onclick="event.stopPropagation()" ontoggle="toggleDetails('${task.id}', this.open)" style="margin-top: 8px;">
-                            <summary style="font-size: 11px; opacity: 0.85; cursor: pointer; outline: none; display: flex; justify-content: space-between; align-items: center; user-select: none;">
+                        <!-- Inline Subtasks Dropdown Details -->
+                        <details class="card-checklist-details" ${task.checklistOpen ? 'open' : ''} onclick="event.stopPropagation()" ontoggle="toggleDetails('${task.id}', this.open)" style="margin-top: 8px;">
+                            <summary onclick="event.stopPropagation()" style="font-size: 11px; opacity: 0.85; cursor: pointer; outline: none; display: flex; justify-content: space-between; align-items: center; user-select: none;">
                                 <span>Checklist (${done}/${total})</span>
                                 <button class="icon-btn add" title="Add Subtask" onclick="event.stopPropagation(); event.preventDefault(); quickAddCheck('${task.id}')">+</button>
                             </summary>
-                            <div style="margin-top: 4px; padding-left: 2px;">
+                            <div class="card-checklist-content" onclick="event.stopPropagation()" style="margin-top: 4px; padding-left: 2px;">
                                 ${chkHtml}
                             </div>
                         </details>
@@ -5309,8 +5321,7 @@
         function setModalQuickDate(daysToAdd) {
             const d = new Date();
             d.setDate(d.getDate() + daysToAdd);
-            const iso = d.toISOString().split('T')[0];
-            document.getElementById('modalTaskDueDate').value = iso;
+            document.getElementById('modalTaskDueDate').value = formatDateLocal(d);
         }
 
         function clearModalDueDate() {
@@ -5799,7 +5810,7 @@
                 const parts = dateStr.split('-');
                 if (parts.length === 3) {
                     const date = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
-                    const todayStr = new Date().toISOString().split('T')[0];
+                    const todayStr = formatDateLocal();
                     const isToday = dateStr === todayStr;
                     const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
                     const formatted = date.toLocaleDateString(undefined, options);
