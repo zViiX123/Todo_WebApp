@@ -313,7 +313,7 @@
                 const payload = {
                     boards: payloadBoards,
                     updatedAt: new Date().toISOString(),
-                    clientVersion: '4.0.4',
+                    clientVersion: '4.1.0',
                     userId: uid,
                     email: this.currentUser.email || ''
                 };

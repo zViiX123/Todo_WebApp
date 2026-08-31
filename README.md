@@ -1,7 +1,7 @@
 # ✦ Todo Board Studio
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-purple.svg)](https://www.gnu.org/licenses/agpl-3.0)
-[![Version: 4.0.4](https://img.shields.io/badge/Version-4.0.4-brightgreen.svg)](https://github.com/zViiX123/Todo_WebApp/releases)
+[![Version: 4.1.0](https://img.shields.io/badge/Version-4.1.0-brightgreen.svg)](https://github.com/zViiX123/Todo_WebApp/releases)
 [![Web App](https://img.shields.io/badge/Live_Web_App-todoboard--studio.web.app-blue.svg)](https://todoboard-studio.web.app/)
 [![Platform](https://img.shields.io/badge/Platform-Web%20%7C%20Windows%20%7C%20PWA-orange.svg)]()
 
@@ -115,8 +115,8 @@ npm run build
 ```
 
 The compiled binaries will be output to `TodoBoardDesktop/dist/`:
-* **`Todo Board Studio Setup 4.0.4.exe`**: Full Windows installer with desktop & start menu shortcuts.
-* **`Todo Board Studio 4.0.4.exe`**: Zero-install standalone portable executable.
+* **`Todo Board Studio Setup 4.1.0.exe`**: Full Windows installer with desktop & start menu shortcuts.
+* **`Todo Board Studio 4.1.0.exe`**: Zero-install standalone portable executable.
 
 ---
 

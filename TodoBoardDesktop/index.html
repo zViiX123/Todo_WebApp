@@ -399,8 +399,6 @@
             display: flex; gap: 16px; padding: 18px; flex-grow: 1;
             align-items: flex-start;
             overflow-y: auto; overflow-x: hidden;
-            scroll-behavior: smooth;
-            transition: all 0.2s ease;
             box-sizing: border-box;
             width: 100%;
         }
@@ -2725,6 +2723,7 @@
             const grid = document.getElementById('calendarGrid');
             const titleEl = document.getElementById('calendarMonthTitle');
             if (!grid || !titleEl) return;
+            const prevScrollTop = grid.scrollTop;
 
             const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
             titleEl.innerText = `${monthNames[calendarMonth]} ${calendarYear}`;
@@ -2778,6 +2777,7 @@
             }
 
             grid.innerHTML = dayHeaders + cellsHtml;
+            grid.scrollTop = prevScrollTop;
         }
 
         function handleCalendarDrop(e, dateStr) {
@@ -2830,6 +2830,7 @@
         function renderTimeline() {
             const list = document.getElementById('timelineList');
             if (!list) return;
+            const prevScrollTop = list.scrollTop;
 
             if (!data.tasks || data.tasks.length === 0) {
                 list.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 30px;">No tasks found on active board.</div>`;
@@ -2867,6 +2868,8 @@
                     </div>
                 `;
             }).join('');
+
+            list.scrollTop = prevScrollTop;
         }
 
         // --- File & Link Attachments Manager ---
@@ -3580,7 +3583,7 @@
 
             if (activeViewMode === 'calendar') renderCalendar();
             else if (activeViewMode === 'timeline') renderTimeline();
-            else renderBoard();
+            else renderBoard(true);
         }
 
         // --- Board Operations ---
@@ -3594,8 +3597,9 @@
             renderWorkspaceDropdownItems();
         }
 
-        function switchBoard(id) {
+        function switchBoard(id, preserveScroll = false) {
             if (!boards[id]) return;
+            const isSameBoard = (activeBoardId === id);
             activeBoardId = id;
             data = boards[activeBoardId];
             if (!data) {
@@ -3625,7 +3629,7 @@
             renderBoardSelector();
             if (activeViewMode === 'calendar') renderCalendar();
             else if (activeViewMode === 'timeline') renderTimeline();
-            else renderBoard();
+            else renderBoard(preserveScroll || isSameBoard);
         }
 
         function addBoard() {
@@ -4571,8 +4575,42 @@
         window.addEventListener('resize', handleWindowResize);
 
         // --- Rendering ---
-        function renderBoard() {
+        function renderBoard(preserveScroll = true) {
             const board = document.getElementById("board");
+            if (!board) return;
+
+            let savedBoardTop = 0;
+            let savedBoardLeft = 0;
+            let savedWindowX = 0;
+            let savedWindowY = 0;
+            let savedContainerTop = 0;
+            let savedContainerLeft = 0;
+            let savedDockTop = 0;
+            const colScrollMap = {};
+
+            if (preserveScroll) {
+                savedBoardTop = board.scrollTop;
+                savedBoardLeft = board.scrollLeft;
+                savedWindowX = window.scrollX || document.documentElement.scrollLeft || 0;
+                savedWindowY = window.scrollY || document.documentElement.scrollTop || 0;
+                const boardContainer = document.getElementById("boardContainer");
+                if (boardContainer) {
+                    savedContainerTop = boardContainer.scrollTop;
+                    savedContainerLeft = boardContainer.scrollLeft;
+                }
+                const foldedDock = document.getElementById('foldedColumnsDock');
+                if (foldedDock) {
+                    savedDockTop = foldedDock.scrollTop;
+                }
+                board.querySelectorAll('.column[data-col-name]').forEach(col => {
+                    const name = col.getAttribute('data-col-name');
+                    const list = col.querySelector('.card-list');
+                    if (name && list) {
+                        colScrollMap[name] = list.scrollTop;
+                    }
+                });
+            }
+
             board.innerHTML = "";
 
             // Guarantee columns always exist and self-heal if corrupted or empty
@@ -4897,6 +4935,60 @@
                 const addLaneIdx = renderedColsCount % numLanes;
                 lanes[addLaneIdx].appendChild(addColBtn);
             }
+
+            // 3. Restore Scroll Positions
+            if (preserveScroll) {
+                // Restore column card lists scroll
+                board.querySelectorAll('.column[data-col-name]').forEach(col => {
+                    const name = col.getAttribute('data-col-name');
+                    const list = col.querySelector('.card-list');
+                    if (name && list && colScrollMap[name] !== undefined) {
+                        list.scrollTop = colScrollMap[name];
+                    }
+                });
+
+                // Restore folded dock scroll
+                const foldedDock = document.getElementById('foldedColumnsDock');
+                if (foldedDock && savedDockTop) {
+                    foldedDock.scrollTop = savedDockTop;
+                }
+
+                // Restore board, container, and window scroll
+                board.scrollTop = savedBoardTop;
+                board.scrollLeft = savedBoardLeft;
+
+                const boardContainer = document.getElementById("boardContainer");
+                if (boardContainer) {
+                    boardContainer.scrollTop = savedContainerTop;
+                    boardContainer.scrollLeft = savedContainerLeft;
+                }
+                if (savedWindowY || savedWindowX) {
+                    window.scrollTo(savedWindowX, savedWindowY);
+                }
+
+                // Secondary frame check for reflows and dynamic height adjustments
+                requestAnimationFrame(() => {
+                    board.querySelectorAll('.column[data-col-name]').forEach(col => {
+                        const name = col.getAttribute('data-col-name');
+                        const list = col.querySelector('.card-list');
+                        if (name && list && colScrollMap[name] !== undefined) {
+                            list.scrollTop = colScrollMap[name];
+                        }
+                    });
+                    if (foldedDock && savedDockTop) {
+                        foldedDock.scrollTop = savedDockTop;
+                    }
+                    board.scrollTop = savedBoardTop;
+                    board.scrollLeft = savedBoardLeft;
+                    if (boardContainer) {
+                        boardContainer.scrollTop = savedContainerTop;
+                        boardContainer.scrollLeft = savedContainerLeft;
+                    }
+                    if (savedWindowY || savedWindowX) {
+                        window.scrollTo(savedWindowX, savedWindowY);
+                    }
+                });
+            }
         }
 
         function addNewColumn() {
@@ -4907,7 +4999,11 @@
             saveData();
             setTimeout(() => {
                 const el = document.getElementById(`col-title-${data.columns.length - 1}`);
-                if (el) { el.focus(); document.execCommand('selectAll', false, null); }
+                if (el) {
+                    el.focus({ preventScroll: true });
+                    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    document.execCommand('selectAll', false, null);
+                }
             }, 50);
             showUndoToast(`Added column "${name}"`);
         }
@@ -5091,8 +5187,12 @@
             saveData();
             setTimeout(() => {
                 const el = document.getElementById(`card-title-${id}`);
-                if (el) { el.focus(); document.execCommand('selectAll', false, null); }
-            }, 10);
+                if (el) {
+                    el.focus({ preventScroll: true });
+                    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    document.execCommand('selectAll', false, null);
+                }
+            }, 50);
         }
 
         function quickDeleteTask(id) {
@@ -5136,10 +5236,11 @@
                 setTimeout(() => {
                     const el = document.getElementById(`chk-title-${taskId}-${insertIdx}`);
                     if (el) {
-                        el.focus();
+                        el.focus({ preventScroll: true });
+                        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                         document.execCommand('selectAll', false, null);
                     }
-                }, 20);
+                }, 50);
             }
         }
 
@@ -6268,7 +6369,7 @@
                     window.electronAPI.saveData(jsonStr);
                 }
                 if (typeof saveDailyBackupWeb === 'function') saveDailyBackupWeb();
-                switchBoard(activeBoardId);
+                switchBoard(activeBoardId, true);
                 showUndoToast('☁️ Synced changes from your other device');
 
                 // If cloud data was missing columns, repair the cloud document immediately

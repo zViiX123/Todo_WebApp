@@ -1,6 +1,6 @@
 {
   "name": "todo-board-studio-root",
-  "version": "4.0.4",
+  "version": "4.1.0",
   "private": true,
   "description": "Todo Board Studio - Desktop Kanban & Productivity Application",
   "scripts": {
