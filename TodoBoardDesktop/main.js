@@ -12,9 +12,10 @@ let mainWindow = null;
 let tray = null;
 let isQuitting = false;
 let localServer = null;
-let localPort = 0;
+const FIXED_DESKTOP_PORT = 47890;
+let localPort = FIXED_DESKTOP_PORT;
 
-// Embedded secure local loopback static file server
+// Embedded secure local loopback static file server with deterministic port for persistent login sessions
 function startLocalServer() {
     return new Promise((resolve, reject) => {
         if (localServer && localPort > 0) return resolve(localPort);
@@ -58,14 +59,20 @@ function startLocalServer() {
         });
 
         localServer.on('error', (err) => {
-            console.error('Local server error:', err);
-            reject(err);
+            if (err.code === 'EADDRINUSE') {
+                console.warn(`Port ${FIXED_DESKTOP_PORT} already in use; reusing...`);
+                localPort = FIXED_DESKTOP_PORT;
+                resolve(FIXED_DESKTOP_PORT);
+            } else {
+                console.error('Local server error:', err);
+                reject(err);
+            }
         });
 
-        // Listen on random available port on localhost loopback
-        localServer.listen(0, '127.0.0.1', () => {
-            localPort = localServer.address().port;
-            console.log(`Local secure app server running on http://localhost:${localPort}`);
+        // Listen on fixed port on 127.0.0.1 loopback for persistent origin and permanent auth sessions
+        localServer.listen(FIXED_DESKTOP_PORT, '127.0.0.1', () => {
+            localPort = FIXED_DESKTOP_PORT;
+            console.log(`Local secure app server running on http://127.0.0.1:${localPort}`);
             resolve(localPort);
         });
     });
@@ -160,7 +167,7 @@ async function createWindow() {
 
     try {
         const port = await startLocalServer();
-        mainWindow.loadURL(`http://localhost:${port}/index.html`);
+        mainWindow.loadURL(`http://127.0.0.1:${port}/index.html`);
     } catch (e) {
         console.warn('Failed to start local server, falling back to loadFile:', e);
         mainWindow.loadFile('index.html');

@@ -6560,10 +6560,10 @@
             });
 
             // Remote data updates from cloud
-            window.cloudSyncManager.onRemoteDataReceived((remoteBoards, updatedAt) => {
+            window.cloudSyncManager.onRemoteDataReceived((remoteBoards, updatedAt, isLiveUpdate) => {
                 if (!remoteBoards || typeof remoteBoards !== 'object' || Object.keys(remoteBoards).length === 0) return;
                 if (JSON.stringify(boards) === JSON.stringify(remoteBoards)) return;
-                console.log('Received remote cloud update:', updatedAt);
+                console.log('Received remote cloud update:', updatedAt, 'isLive:', isLiveUpdate);
 
                 let didFixColumns = false;
 
@@ -6593,7 +6593,11 @@
                 localStorage.setItem("todoBoardsStudio", JSON.stringify(boards));
                 if (typeof saveDailyBackupWeb === 'function') saveDailyBackupWeb();
                 switchBoard(activeBoardId, true);
-                showUndoToast('☁️ Synced changes from your other device');
+
+                // Only show toast if user is actively signed in and receiving a live update from another device
+                if (isLiveUpdate && window.cloudSyncManager && window.cloudSyncManager.currentUser) {
+                    showUndoToast('☁️ Synced changes from your other device');
+                }
 
                 // If cloud data was missing columns, repair the cloud document immediately
                 if (didFixColumns && window.cloudSyncManager) {

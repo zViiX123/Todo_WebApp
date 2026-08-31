@@ -127,10 +127,19 @@
             }
         }
 
-        setupAuthAndDb() {
+        async setupAuthAndDb() {
             if (!this.app) return;
             this.auth = this.app.auth();
             this.db = this.app.firestore();
+
+            // Set explicit local persistence to retain login session permanently
+            try {
+                if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth.Auth && firebase.auth.Auth.Persistence) {
+                    await this.auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+                }
+            } catch (e) {
+                console.warn('Could not set explicit auth persistence:', e);
+            }
 
             // Enable Firestore offline persistence if available
             try {
@@ -207,6 +216,8 @@
             this.stopRealtimeListener();
             if (!this.db || !uid) return;
 
+            let isInitialLoad = true;
+
             try {
                 const docRef = this.db.collection('users').doc(uid).collection('data').doc('workspaces');
 
@@ -215,6 +226,7 @@
                     doc => {
                         if (!doc.exists) {
                             this.setStatus('synced');
+                            isInitialLoad = false;
                             return;
                         }
 
@@ -226,6 +238,7 @@
                         const data = doc.data();
                         if (!data || !data.boards) {
                             this.setStatus('synced');
+                            isInitialLoad = false;
                             return;
                         }
 
@@ -233,12 +246,16 @@
                         const remoteHash = this.computeHash(data.boards);
                         if (remoteHash === this.lastSyncedHash || (this.pendingBoards && remoteHash === this.computeHash(this.pendingBoards))) {
                             this.setStatus('synced');
+                            isInitialLoad = false;
                             return;
                         }
 
+                        const isLiveUpdate = !isInitialLoad;
+                        isInitialLoad = false;
+
                         this.lastSyncedHash = remoteHash;
                         this.lastCloudUpdatedAt = data.updatedAt;
-                        this.notifyRemoteDataListeners(data.boards, data.updatedAt);
+                        this.notifyRemoteDataListeners(data.boards, data.updatedAt, isLiveUpdate);
                         this.setStatus('synced');
                     },
                     err => {
@@ -405,9 +422,9 @@
             });
         }
 
-        notifyRemoteDataListeners(remoteBoards, updatedAt) {
+        notifyRemoteDataListeners(remoteBoards, updatedAt, isLiveUpdate = false) {
             this.listeners.remoteData.forEach(fn => {
-                try { fn(remoteBoards, updatedAt); } catch (e) {}
+                try { fn(remoteBoards, updatedAt, isLiveUpdate); } catch (e) {}
             });
         }
     }
