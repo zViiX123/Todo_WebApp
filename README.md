@@ -1,18 +1,33 @@
-# ✦ Todo Board Studio (Desktop)
+# ✦ Todo Board Studio
 
-A sleek, offline-first Kanban board & project management desktop application built with **Electron**, modern **HTML5/CSS3**, and **JavaScript**.
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-purple.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![Version: 4.0.4](https://img.shields.io/badge/Version-4.0.4-brightgreen.svg)](https://github.com/zViiX123/Todo_WebApp/releases)
+[![Web App](https://img.shields.io/badge/Live_Web_App-todoboard--studio.web.app-blue.svg)](https://todoboard-studio.web.app/)
+[![Platform](https://img.shields.io/badge/Platform-Web%20%7C%20Windows%20%7C%20PWA-orange.svg)]()
 
-Organize tasks across multiple boards, track time automatically with checklist-driven timers, categorize with tags, set due dates, customize themes, and export/backup your data locally.
+A sleek, fast, offline-first Kanban board and project management workspace with **Real-Time Cross-Platform Cloud Sync**, built for modern Web browsers, mobile PWA, and desktop Windows applications via **Electron**, **HTML5/CSS3**, and **Firebase Firestore**.
+
+---
+
+## 🌐 Live Web Application & Mobile PWA
+* **Live App**: [https://todoboard-studio.web.app/](https://todoboard-studio.web.app/)
+* **Installable PWA**: Install directly from Chrome, Edge, Safari, or mobile browsers as a standalone application.
+* **Mobile Ready**: Built with dynamic `safe-area-inset` support for iOS notch/Dynamic Island and Android navigation bars.
 
 ---
 
 ## ✨ Features
 
+### ☁️ Real-Time Cross-Platform Cloud Sync
+* **Instant Sync**: Changes made on desktop instantly reflect on your phone and browser via Firebase Firestore.
+* **Authentication**: Sign in securely with Google 1-Click OAuth or Email & Password.
+* **Offline-First & Conflict-Free**: Continue working completely offline with `localStorage` caching; changes sync up automatically upon reconnecting with metadata in-flight validation.
+
 ### 🍅 Integrated Pomodoro Focus Mode
-* **Focus Timer**: Work in 25-minute focus intervals with automatic 5-minute short breaks and 15-minute long breaks after 4 sessions.
-* **Header & Floating HUD**: Live time display in header (`🍅 Focus 25:00`) and a floating minimizable widget at the bottom-right of the screen.
-* **Task Attachment**: Click **`🍅 Focus on Task`** in any Task Detail modal to anchor your session to that task.
-* **Activity Logging & Sounds**: Plays a resonant singing bowl chime on completion, triggers celebration confetti, and logs the session to the task's activity history.
+* **Focus Timer**: 25-minute focus intervals with automated 5-minute short breaks and 15-minute long breaks after 4 sessions.
+* **Header & Floating HUD**: Live time display in header (`🍅 Focus 25:00`) and minimizable bottom-right widget.
+* **Task Attachment**: Click **`🍅 Focus on Task`** in any Task Detail modal to anchor your timer session to that specific task.
+* **Activity History & Sound**: Resonant singing bowl completion chime, celebratory confetti, and logged task history.
 
 ### ⚡ Global Quick-Capture HUD (Spotlight-Style)
 * **Spotlight Modal**: Press <kbd>Ctrl</kbd> + <kbd>K</kbd> or <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Space</kbd> from anywhere to summon a floating quick-add prompt.
@@ -29,23 +44,26 @@ Organize tasks across multiple boards, track time automatically with checklist-d
 * **Drag-and-Drop Rescheduling**: Drag any task pill onto another day cell to reschedule its due date instantly!
 * **Gantt-Lite Timeline**: Visual horizontal bars plotting task durations and progress grouped by column stages.
 
-### 📁 Enhanced Workspace & Multi-Board Switcher
-* **Modern Workspace Menu**: Elevated dropdown showing active workspace title, folder icon, and active task progress counts.
-* **Fast Switching & Duplication**: 1-click duplication of boards, quick rename, delete, and instant navigation via <kbd>Ctrl</kbd> + <kbd>1</kbd> .. <kbd>9</kbd>.
+### 📁 Multi-Workspace Management
+* **Workspace Menu**: Fast switching between projects with task progress badges (`done/total`).
+* **Complete Workspace Controls**: Create (<kbd>Ctrl</kbd> + <kbd>B</kbd>), Rename, Duplicate, or Delete workspaces with cloud persistence.
+* **Instant Shortcuts**: Switch workspaces directly using <kbd>Ctrl</kbd> + <kbd>1</kbd> through <kbd>9</kbd>.
 
-### 📎 Local File & Web Link Attachments
-* **Local Documents & Images**: Attach files from your computer via native file dialogs or drag-and-drop directly into the Task Modal.
-* **Web Link Cards**: Add URL links with 1-click browser opening.
-* **Direct OS Opening**: Click `↗` to open local attached files or images directly in your operating system's default viewer.
+### ↩️ Multi-Action Undo/Redo Engine
+* Revert task deletions, column deletions, task archives, and color changes in 1 click.
+* High-visibility non-blocking toast notification positioned above navigation bars.
 
-### 🎉 Micro-Celebrations & Procedural Sound Synthesizer
-* **Zero-Asset Web Audio API Engine**: High-fidelity sound effects for clicks (`tick`), drag-and-drop (`pop`), completions (`complete` two-tone chime), fanfare arpeggios, and focus timer bells.
-* **HTML5 Canvas Confetti**: Particle confetti burst upon completing tasks or reaching 100% checklist progress.
-* **Sound Toggle**: Quick toggle button (`🔊 / 🔇`) in the header.
+### 🎨 Custom Themes & Visual Styling
+* Switch between high-contrast dark and light themes (Midnight, Cyberpunk, Monokai, Dracula, Light Mint, Pastel Lavender, Viewport, and more).
+* Column color customization with full palette presets.
 
-### 🔄 1-Click In-App Update Checker
-* Click **🔄 Updates** in the header to check GitHub Releases in real-time.
-* Displays release notes, version comparisons, and direct download links.
+### 📎 File Attachments & Web Links
+* Attach local documents and images or web URLs directly to tasks.
+* Direct OS viewer integration for local desktop attachments.
+
+### 🎉 Procedural Sound Synthesizer & Confetti
+* **Zero-Asset Web Audio API Engine**: High-fidelity sound effects for clicks (`tick`), drag-and-drop (`pop`), completions (`complete` chime), fanfare arpeggios, and focus timer bells.
+* **HTML5 Canvas Confetti**: Particle confetti bursts upon completing tasks or reaching 100% checklist progress.
 
 ---
 
@@ -59,7 +77,7 @@ Organize tasks across multiple boards, track time automatically with checklist-d
 | <kbd>Ctrl</kbd> + <kbd>N</kbd> | Quick Add Task to first column |
 | <kbd>Ctrl</kbd> + <kbd>F</kbd> | Focus Search Bar |
 | <kbd>Ctrl</kbd> + <kbd>B</kbd> | Create New Workspace |
-| <kbd>Ctrl</kbd> + <kbd>Z</kbd> | Undo Last Delete (5s window) |
+| <kbd>Ctrl</kbd> + <kbd>Z</kbd> | Undo Last Action |
 | <kbd>Escape</kbd> | Close Modals / Clear Search |
 | <kbd>?</kbd> | Open Keyboard Shortcuts Help |
 
@@ -68,62 +86,37 @@ Organize tasks across multiple boards, track time automatically with checklist-d
 ## 🚀 Getting Started
 
 ### Prerequisites
-* [Node.js](https://nodejs.org/) (v16 or newer recommended)
+* [Node.js](https://nodejs.org/) (v18 or newer recommended)
 * npm (bundled with Node.js)
 
-### Installation & Running Locally
+### Running Desktop App Locally
+```bash
+git clone https://github.com/zViiX123/Todo_WebApp.git
+cd Todo_WebApp/TodoBoardDesktop
+npm install
+npm start
+```
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/zViiX123/Todo_WebApp.git
-   cd Todo_WebApp/TodoBoardDesktop
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Launch the desktop application:
-   ```bash
-   npm start
-   ```
+### Running Web App Locally
+```bash
+# Serve the web directory using any static HTTP server:
+npx serve web
+```
 
 ---
 
-## 📦 Windows Installer & Executable Builds
+## 📦 Building Windows Binaries
 
-### ☁️ Automated GitHub Builds & Releases (Recommended)
-This repository includes an automated **GitHub Actions CI/CD workflow** (`.github/workflows/build-installer.yml`):
-* **Automatic Releases**: Pushing a version tag (e.g. `v1.0.0`) automatically compiles and publishes a new **GitHub Release** with both the NSIS Setup Installer (`.exe`) and Portable standalone (`.exe`).
-* **Workflow Artifacts**: Every commit to `main` builds and attaches the Windows binaries to the GitHub Actions run summary under **Artifacts** (`Todo-Board-Studio-Windows-Binaries`).
-* **Manual Trigger**: Go to the **Actions** tab on GitHub, select **Build Windows Installer & Release**, and click **Run workflow**.
+Compile setup installers and portable executables locally:
 
----
-
-### 💻 Local Building & Packaging
-
-To compile binaries locally on your machine:
-
-1. **Build Both Installer & Portable Executable**:
-   ```bash
-   cd TodoBoardDesktop
-   npm run build
-   ```
-
-2. **Build NSIS Setup Installer Only**:
-   ```bash
-   npm run build:installer
-   ```
-
-3. **Build Portable Executable Only**:
-   ```bash
-   npm run build:portable
-   ```
+```bash
+# From the repository root
+npm run build
+```
 
 The compiled binaries will be output to `TodoBoardDesktop/dist/`:
-* **`Todo Board Studio Setup 1.0.0.exe`**: Full Windows installer with desktop & start menu shortcut support and clean uninstaller.
-* **`Todo Board Studio 1.0.0.exe`**: Zero-install standalone portable executable.
+* **`Todo Board Studio Setup 4.0.4.exe`**: Full Windows installer with desktop & start menu shortcuts.
+* **`Todo Board Studio 4.0.4.exe`**: Zero-install standalone portable executable.
 
 ---
 
@@ -131,18 +124,21 @@ The compiled binaries will be output to `TodoBoardDesktop/dist/`:
 
 ```text
 Todo_WebApp/
-├── .github/
-│   └── workflows/
-│       └── build-installer.yml  # Automated GitHub Actions Windows build & release pipeline
-├── TodoBoardDesktop/
-│   ├── index.html       # Single-page UI, components, modals & client logic
-│   ├── main.js          # Electron main process (IPC, tray, window state, notifications)
-│   ├── preload.js       # Secure contextBridge API bindings
-│   ├── package.json     # App metadata, dependencies & build scripts
-│   └── package-lock.json
-├── .gitignore           # Git ignore rules for node_modules, build & cache files
-├── LICENSE              # AGPL-3.0 License
-└── README.md            # Comprehensive documentation & shortcuts guide
+├── web/                         # Production Web & PWA App
+│   ├── index.html               # Web app frontend UI and logic
+│   ├── cloud-sync.js            # Firebase Firestore cloud sync manager
+│   ├── sw.js                    # Service Worker caching for offline PWA
+│   ├── manifest.json            # PWA Web App Manifest
+│   └── icon-*.png               # Application icons
+├── TodoBoardDesktop/            # Electron Desktop Application
+│   ├── index.html               # Desktop frontend UI
+│   ├── cloud-sync.js            # Desktop cloud sync client
+│   ├── main.js                  # Electron main process & loopback server
+│   ├── preload.js               # Secure contextBridge API bindings
+│   └── package.json             # Desktop app metadata & build scripts
+├── package.json                 # Root build & scripts configuration
+├── firebase.json                # Firebase hosting configuration
+└── README.md                    # Documentation & user guide
 ```
 
 ---
