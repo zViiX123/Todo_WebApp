@@ -280,7 +280,7 @@
                 const payload = {
                     boards: boards,
                     updatedAt: new Date().toISOString(),
-                    clientVersion: '3.0.2',
+                    clientVersion: '4.0.0',
                     userId: uid,
                     email: this.currentUser.email || ''
                 };

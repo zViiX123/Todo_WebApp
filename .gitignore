@@ -40,3 +40,8 @@ desktop.ini
 .idea/
 *.sublime-project
 *.sublime-workspace
+
+# Firebase CLI cache
+.firebase/
+.firebase
+
