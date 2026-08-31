@@ -3577,33 +3577,43 @@
                 }
             }
 
-            if (!boards || Object.keys(boards).length === 0) {
+            if (!boards || typeof boards !== 'object' || Object.keys(boards).length === 0) {
                 const id = "board-" + Date.now();
                 boards = { [id]: JSON.parse(JSON.stringify(DEFAULT_DATA)) };
                 activeBoardId = id;
             }
 
-            data = boards[activeBoardId];
-            if (!data) {
-                data = JSON.parse(JSON.stringify(DEFAULT_DATA));
-                boards[activeBoardId] = data;
+            // Guarantee complete schema and default columns on EVERY board in the workspace
+            Object.keys(boards).forEach(k => {
+                const b = boards[k];
+                if (b) {
+                    if (!b.columns || !Array.isArray(b.columns) || b.columns.length === 0) {
+                        b.columns = ["To Do", "In Progress", "Done"];
+                    }
+                    if (!b.tasks) b.tasks = [];
+                    if (!b.archivedTasks) b.archivedTasks = [];
+                    if (!b.columnColors) b.columnColors = {};
+                    if (!b.collapsedCols) b.collapsedCols = [];
+                    if (!b.theme) b.theme = "purple";
+                    if (!b.boardTitle) b.boardTitle = "✦ Todo Board Studio";
+                    b.tasks = (b.tasks || []).map(sanitizeTask);
+                    b.archivedTasks = (b.archivedTasks || []).map(sanitizeTask);
+                }
+            });
+
+            if (!activeBoardId || !boards[activeBoardId]) {
+                activeBoardId = Object.keys(boards)[0];
             }
-            if (!data.theme) data.theme = "purple";
-            if (!data.boardTitle) data.boardTitle = "✦ Todo Board Studio";
-            if (!data.columnColors) data.columnColors = {};
-            if (!data.collapsedCols) data.collapsedCols = [];
-            if (!data.tasks) data.tasks = [];
-            if (!data.archivedTasks) data.archivedTasks = [];
-            if (!data.columns || data.columns.length === 0) data.columns = ["To Do", "In Progress", "Done"];
-            if (data.pinnedCol && !data.columns.includes(data.pinnedCol)) data.pinnedCol = null;
+
+            data = boards[activeBoardId];
             if (data.settings && data.settings.soundEnabled !== undefined) {
                 soundEnabled = data.settings.soundEnabled;
             }
             const soundBtn = document.getElementById('soundToggleBtn');
             if (soundBtn) soundBtn.innerText = soundEnabled ? '🔊' : '🔇';
 
-            data.tasks = data.tasks.map(sanitizeTask);
-            data.archivedTasks = data.archivedTasks.map(sanitizeTask);
+            // Save back sanitized boards immediately so local storage is always valid
+            localStorage.setItem("todoBoardsStudio", JSON.stringify(boards));
 
             applyThemeToUI(data.theme);
             document.getElementById('board-title').innerText = data.boardTitle;
@@ -6323,15 +6333,22 @@
                 if (!remoteBoards || typeof remoteBoards !== 'object' || Object.keys(remoteBoards).length === 0) return;
                 console.log('Received remote cloud update:', updatedAt);
 
+                let didFixColumns = false;
+
                 // Sanitize and adopt remote boards
                 Object.keys(remoteBoards).forEach(k => {
-                    if (remoteBoards[k]) {
-                        if (!remoteBoards[k].columns || remoteBoards[k].columns.length === 0) {
-                            remoteBoards[k].columns = ["To Do", "In Progress", "Done"];
+                    const b = remoteBoards[k];
+                    if (b) {
+                        if (!b.columns || !Array.isArray(b.columns) || b.columns.length === 0) {
+                            b.columns = ["To Do", "In Progress", "Done"];
+                            didFixColumns = true;
                         }
-                        if (remoteBoards[k].tasks) {
-                            remoteBoards[k].tasks = (remoteBoards[k].tasks || []).map(sanitizeTask);
-                        }
+                        if (!b.tasks) b.tasks = [];
+                        if (!b.archivedTasks) b.archivedTasks = [];
+                        if (!b.columnColors) b.columnColors = {};
+                        if (!b.collapsedCols) b.collapsedCols = [];
+                        b.tasks = (b.tasks || []).map(sanitizeTask);
+                        b.archivedTasks = (b.archivedTasks || []).map(sanitizeTask);
                     }
                 });
 
@@ -6345,6 +6362,11 @@
                 if (typeof saveDailyBackupWeb === 'function') saveDailyBackupWeb();
                 switchBoard(activeBoardId);
                 showUndoToast('☁️ Synced changes from your other device');
+
+                // If cloud data was missing columns, repair the cloud document immediately
+                if (didFixColumns && window.cloudSyncManager) {
+                    window.cloudSyncManager.pushLocalStateToCloud(boards, 200);
+                }
             });
 
             // Auto-initialize Firebase if configuration is available
@@ -6443,7 +6465,10 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('PWA ServiceWorker registered:', reg.scope))
+                    .then(reg => {
+                        reg.update();
+                        console.log('PWA ServiceWorker registered & updated:', reg.scope);
+                    })
                     .catch(err => console.log('PWA ServiceWorker registration failed:', err));
             });
         }

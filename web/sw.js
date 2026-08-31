@@ -1,4 +1,4 @@
-const CACHE_NAME = 'todoboard-web-v302';
+const CACHE_NAME = 'todoboard-web-v304';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -8,23 +8,26 @@ const ASSETS_TO_CACHE = [
 ];
 
 self.addEventListener('install', event => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       return cache.addAll(ASSETS_TO_CACHE).catch(() => {});
     })
   );
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys => {
       return Promise.all(
-        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+        keys.map(key => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
+          }
+        })
       );
-    })
+    }).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
 self.addEventListener('fetch', event => {

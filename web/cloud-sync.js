@@ -255,6 +255,15 @@
                 return;
             }
 
+            // Ensure every board has columns before saving to cloud
+            if (boards && typeof boards === 'object') {
+                Object.keys(boards).forEach(k => {
+                    if (boards[k] && (!boards[k].columns || !Array.isArray(boards[k].columns) || boards[k].columns.length === 0)) {
+                        boards[k].columns = ["To Do", "In Progress", "Done"];
+                    }
+                });
+            }
+
             const currentHash = this.computeHash(boards);
             if (currentHash === this.lastSyncedHash) {
                 this.setStatus('synced');
