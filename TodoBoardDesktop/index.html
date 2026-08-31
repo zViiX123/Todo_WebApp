@@ -1284,6 +1284,7 @@
                     <div id="workspaceListItems"></div>
                     <div style="height: 1px; background: var(--border-glass); margin: 4px 0;"></div>
                     <div class="workspace-menu-item" onclick="addBoard()"><span style="display:flex;align-items:center;gap:6px;"><span>＋</span> New Workspace</span> <kbd style="font-size:10px;opacity:0.6;">Ctrl+B</kbd></div>
+                    <div class="workspace-menu-item" onclick="promptRenameBoard()"><span style="display:flex;align-items:center;gap:6px;"><span>✏️</span> Rename Workspace</span></div>
                     <div class="workspace-menu-item" onclick="duplicateCurrentBoard()"><span style="display:flex;align-items:center;gap:6px;"><span>📋</span> Duplicate Current</span></div>
                     <div class="workspace-menu-item" onclick="deleteBoard()" style="color: var(--danger);"><span style="display:flex;align-items:center;gap:6px;"><span>🗑</span> Delete Workspace</span></div>
                 </div>
@@ -3031,6 +3032,17 @@
                     </div>
                 `;
             }).join('');
+        }
+
+        function promptRenameBoard() {
+            const menu = document.getElementById('workspaceDropdownMenu');
+            if (menu) menu.style.display = 'none';
+            const currentTitle = data.boardTitle || '';
+            const newTitle = prompt('Enter workspace name:', currentTitle);
+            if (newTitle !== null && newTitle.trim()) {
+                updateBoardTitle(newTitle.trim());
+                showUndoToast(`Renamed to "${newTitle.trim()}"`);
+            }
         }
 
         function duplicateCurrentBoard() {

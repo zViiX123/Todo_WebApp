@@ -1182,18 +1182,23 @@
 
         @media (max-width: 768px) {
             body {
-                padding-bottom: 74px; /* Space for bottom nav */
+                padding-top: 0 !important;
+                padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
             }
 
             header {
                 height: auto !important;
-                min-height: 48px;
-                padding: 8px 10px !important;
+                min-height: calc(52px + env(safe-area-inset-top, 0px)) !important;
+                padding-top: calc(12px + env(safe-area-inset-top, 0px)) !important;
+                padding-bottom: 10px !important;
+                padding-left: calc(12px + env(safe-area-inset-left, 0px)) !important;
+                padding-right: calc(12px + env(safe-area-inset-right, 0px)) !important;
                 display: flex !important;
                 flex-direction: column !important;
-                gap: 8px !important;
+                gap: 10px !important;
                 align-items: stretch !important;
-                background: color-mix(in srgb, var(--bg-col-head) 92%, transparent) !important;
+                background: color-mix(in srgb, var(--bg-col-head) 94%, transparent) !important;
+                border-bottom: 1px solid var(--border-glass) !important;
             }
 
             .header-left {
@@ -1204,15 +1209,41 @@
                 gap: 8px !important;
             }
 
+            .workspace-dropdown-container {
+                flex-grow: 1 !important;
+                min-width: 0 !important;
+                position: relative !important;
+            }
+
             .workspace-trigger-btn {
-                height: 32px !important;
-                padding: 0 8px !important;
-                font-size: 12px !important;
-                max-width: calc(100vw - 120px) !important;
+                height: 38px !important;
+                padding: 0 12px !important;
+                font-size: 13px !important;
+                font-weight: 700 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                justify-content: space-between !important;
+                border-radius: 8px !important;
+                background: var(--entry-bg) !important;
+                border: 1px solid var(--border-glass) !important;
+                touch-action: manipulation !important;
+            }
+
+            .workspace-menu {
+                position: absolute !important;
+                top: calc(100% + 6px) !important;
+                left: 0 !important;
+                width: 100% !important;
+                min-width: 260px !important;
+                max-width: 100% !important;
+                max-height: 65vh !important;
+                overflow-y: auto !important;
+                z-index: 10000 !important;
+                box-shadow: 0 12px 36px rgba(0,0,0,0.6) !important;
             }
 
             .header-center {
-                display: none !important; /* Conceal in main header row; visible in workspace selector */
+                display: none !important; /* Managed via Workspace menu & rename button */
             }
 
             .header-right {
@@ -1237,21 +1268,22 @@
             .header-cluster {
                 display: inline-flex !important;
                 align-items: center !important;
-                gap: 5px !important;
+                gap: 6px !important;
                 flex-shrink: 0 !important;
             }
 
             .header-btn {
-                height: 32px !important;
+                height: 34px !important;
                 font-size: 11px !important;
-                padding: 0 8px !important;
+                padding: 0 10px !important;
                 flex-shrink: 0 !important;
-                border-radius: 6px !important;
+                border-radius: 8px !important;
+                touch-action: manipulation !important;
             }
 
             .header-btn.icon-only {
-                width: 32px !important;
-                min-width: 32px !important;
+                width: 34px !important;
+                min-width: 34px !important;
             }
 
             /* Toolbar on Mobile */
@@ -1339,16 +1371,25 @@
                 bottom: 0 !important;
                 left: 0 !important;
                 right: 0 !important;
-                height: 58px !important;
+                height: calc(60px + env(safe-area-inset-bottom, 0px)) !important;
+                min-height: 60px !important;
                 background: color-mix(in srgb, var(--bg-col-head) 95%, transparent) !important;
                 border-top: 1px solid var(--border-glass) !important;
                 backdrop-filter: blur(16px) !important;
                 -webkit-backdrop-filter: blur(16px) !important;
                 z-index: 9999 !important;
-                align-items: center !important;
+                align-items: flex-start !important;
                 justify-content: space-around !important;
-                padding-bottom: env(safe-area-inset-bottom, 0px) !important;
-                box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.45) !important;
+                padding-top: 6px !important;
+                padding-bottom: max(10px, env(safe-area-inset-bottom, 10px)) !important;
+                padding-left: env(safe-area-inset-left, 0px) !important;
+                padding-right: env(safe-area-inset-right, 0px) !important;
+                box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.5) !important;
+            }
+
+            #undoToast {
+                bottom: calc(78px + env(safe-area-inset-bottom, 0px)) !important;
+                z-index: 100000 !important;
             }
 
             .mobile-nav-btn {
@@ -1400,6 +1441,7 @@
                     <div id="workspaceListItems"></div>
                     <div style="height: 1px; background: var(--border-glass); margin: 4px 0;"></div>
                     <div class="workspace-menu-item" onclick="addBoard()"><span style="display:flex;align-items:center;gap:6px;"><span>＋</span> New Workspace</span> <kbd style="font-size:10px;opacity:0.6;">Ctrl+B</kbd></div>
+                    <div class="workspace-menu-item" onclick="promptRenameBoard()"><span style="display:flex;align-items:center;gap:6px;"><span>✏️</span> Rename Workspace</span></div>
                     <div class="workspace-menu-item" onclick="duplicateCurrentBoard()"><span style="display:flex;align-items:center;gap:6px;"><span>📋</span> Duplicate Current</span></div>
                     <div class="workspace-menu-item" onclick="deleteBoard()" style="color: var(--danger);"><span style="display:flex;align-items:center;gap:6px;"><span>🗑</span> Delete Workspace</span></div>
                 </div>
@@ -3147,6 +3189,17 @@
                     </div>
                 `;
             }).join('');
+        }
+
+        function promptRenameBoard() {
+            const menu = document.getElementById('workspaceDropdownMenu');
+            if (menu) menu.style.display = 'none';
+            const currentTitle = data.boardTitle || '';
+            const newTitle = prompt('Enter workspace name:', currentTitle);
+            if (newTitle !== null && newTitle.trim()) {
+                updateBoardTitle(newTitle.trim());
+                showUndoToast(`Renamed to "${newTitle.trim()}"`);
+            }
         }
 
         function duplicateCurrentBoard() {
