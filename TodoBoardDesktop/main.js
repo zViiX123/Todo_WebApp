@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, dialog, Notification, shell, globalShortcut } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const http = require('http');
 const https = require('https');
 
 const userDataPath = app.getPath('userData');
@@ -10,6 +11,65 @@ const windowStatePath = path.join(userDataPath, 'window_state.json');
 let mainWindow = null;
 let tray = null;
 let isQuitting = false;
+let localServer = null;
+let localPort = 0;
+
+// Embedded secure local loopback static file server
+function startLocalServer() {
+    return new Promise((resolve, reject) => {
+        if (localServer && localPort > 0) return resolve(localPort);
+
+        const mimeTypes = {
+            '.html': 'text/html; charset=utf-8',
+            '.js': 'text/javascript; charset=utf-8',
+            '.css': 'text/css; charset=utf-8',
+            '.json': 'application/json; charset=utf-8',
+            '.png': 'image/png',
+            '.jpg': 'image/jpeg',
+            '.ico': 'image/x-icon',
+            '.svg': 'image/svg+xml'
+        };
+
+        localServer = http.createServer((req, res) => {
+            let reqPath = (req.url || '/').split('?')[0];
+            if (reqPath === '/' || reqPath === '') reqPath = '/index.html';
+
+            const safePath = path.normalize(path.join(__dirname, reqPath));
+            // Prevent directory traversal
+            if (!safePath.startsWith(__dirname)) {
+                res.writeHead(403);
+                return res.end('Forbidden');
+            }
+
+            fs.readFile(safePath, (err, data) => {
+                if (err) {
+                    res.writeHead(404);
+                    return res.end('Not Found');
+                }
+                const ext = path.extname(safePath).toLowerCase();
+                const contentType = mimeTypes[ext] || 'application/octet-stream';
+                res.writeHead(200, {
+                    'Content-Type': contentType,
+                    'Cache-Control': 'no-cache',
+                    'Access-Control-Allow-Origin': '*'
+                });
+                res.end(data);
+            });
+        });
+
+        localServer.on('error', (err) => {
+            console.error('Local server error:', err);
+            reject(err);
+        });
+
+        // Listen on random available port on loopback only (127.0.0.1)
+        localServer.listen(0, '127.0.0.1', () => {
+            localPort = localServer.address().port;
+            console.log(`Local secure app server running on http://127.0.0.1:${localPort}`);
+            resolve(localPort);
+        });
+    });
+}
 
 // Helper to load window state
 function loadWindowState() {
@@ -73,7 +133,7 @@ function createTrayIcon() {
     return nativeImage.createFromBuffer(canvasBuffer, { width: size, height: size });
 }
 
-function createWindow() {
+async function createWindow() {
     const state = loadWindowState();
     const iconPath = path.join(__dirname, 'icon.png');
 
@@ -98,12 +158,21 @@ function createWindow() {
         mainWindow.maximize();
     }
 
-    mainWindow.loadFile('index.html');
+    try {
+        const port = await startLocalServer();
+        mainWindow.loadURL(`http://127.0.0.1:${port}/index.html`);
+    } catch (e) {
+        console.warn('Failed to start local server, falling back to loadFile:', e);
+        mainWindow.loadFile('index.html');
+    }
 
     // Securely handle external links (e.g. from Markdown descriptions) in default system browser
     mainWindow.webContents.setWindowOpenHandler(({ url }) => {
         try {
             const parsed = new URL(url);
+            if (url.includes('accounts.google.com') || url.includes('firebaseapp.com')) {
+                return { action: 'allow' };
+            }
             if (parsed.protocol === 'https:' || parsed.protocol === 'http:') {
                 shell.openExternal(url);
             }
@@ -115,6 +184,7 @@ function createWindow() {
         try {
             const parsedUrl = new URL(navigationUrl);
             if (parsedUrl.protocol === 'file:') return;
+            if (parsedUrl.hostname === '127.0.0.1' || parsedUrl.hostname === 'localhost') return;
         } catch (e) {}
         event.preventDefault();
         try {
@@ -213,6 +283,9 @@ app.on('will-quit', () => {
     try {
         globalShortcut.unregisterAll();
     } catch (e) {}
+    if (localServer) {
+        try { localServer.close(); } catch (e) {}
+    }
 });
 
 app.on('before-quit', () => {
