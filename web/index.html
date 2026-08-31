@@ -3576,18 +3576,22 @@
 
             if (!boards || Object.keys(boards).length === 0) {
                 const id = "board-" + Date.now();
-                boards = { [id]: DEFAULT_DATA };
+                boards = { [id]: JSON.parse(JSON.stringify(DEFAULT_DATA)) };
                 activeBoardId = id;
             }
 
             data = boards[activeBoardId];
+            if (!data) {
+                data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+                boards[activeBoardId] = data;
+            }
             if (!data.theme) data.theme = "purple";
             if (!data.boardTitle) data.boardTitle = "✦ Todo Board Studio";
             if (!data.columnColors) data.columnColors = {};
             if (!data.collapsedCols) data.collapsedCols = [];
             if (!data.tasks) data.tasks = [];
             if (!data.archivedTasks) data.archivedTasks = [];
-            if (!data.columns) data.columns = ["To Do", "In Progress", "Done"];
+            if (!data.columns || data.columns.length === 0) data.columns = ["To Do", "In Progress", "Done"];
             if (data.pinnedCol && !data.columns.includes(data.pinnedCol)) data.pinnedCol = null;
             if (data.settings && data.settings.soundEnabled !== undefined) {
                 soundEnabled = data.settings.soundEnabled;
@@ -3677,13 +3681,17 @@
             if (!boards[id]) return;
             activeBoardId = id;
             data = boards[activeBoardId];
+            if (!data) {
+                data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+                boards[activeBoardId] = data;
+            }
             if (!data.theme) data.theme = "purple";
             if (!data.boardTitle) data.boardTitle = "✦ Todo Board Studio";
             if (!data.columnColors) data.columnColors = {};
             if (!data.collapsedCols) data.collapsedCols = [];
             if (!data.tasks) data.tasks = [];
             if (!data.archivedTasks) data.archivedTasks = [];
-            if (!data.columns) data.columns = ["To Do", "In Progress", "Done"];
+            if (!data.columns || data.columns.length === 0) data.columns = ["To Do", "In Progress", "Done"];
             if (data.pinnedCol && !data.columns.includes(data.pinnedCol)) data.pinnedCol = null;
 
             data.tasks = data.tasks.map(sanitizeTask);
@@ -4681,12 +4689,13 @@
             const activeCols = data.columns.filter(c => !data.collapsedCols.includes(c));
             const isFiltering = !!(searchQuery || activePriorityFilter !== 'all' || activeStatusFilter !== 'all');
 
-            // Calculate dynamic vertical masonry lanes (1 to 6 lanes)
+            // Calculate dynamic vertical masonry lanes (1 to 6 lanes on desktop; 1 lane per column on mobile)
+            const isMobileView = window.innerWidth <= 768;
             const boardWidth = (board.clientWidth || window.innerWidth) - 36;
             const laneMinWidth = 260;
             const gap = 16;
             const maxLanes = 6;
-            const numLanes = Math.max(1, Math.min(maxLanes, Math.floor((boardWidth + gap) / (laneMinWidth + gap))));
+            const numLanes = isMobileView ? Math.max(1, activeCols.length + (isFiltering ? 0 : 1)) : Math.max(1, Math.min(maxLanes, Math.floor((boardWidth + gap) / (laneMinWidth + gap))));
             lastNumLanes = numLanes;
 
             // Create lane elements
@@ -6297,13 +6306,18 @@
 
             // Remote data updates from cloud
             window.cloudSyncManager.onRemoteDataReceived((remoteBoards, updatedAt) => {
-                if (!remoteBoards || typeof remoteBoards !== 'object') return;
+                if (!remoteBoards || typeof remoteBoards !== 'object' || Object.keys(remoteBoards).length === 0) return;
                 console.log('Received remote cloud update:', updatedAt);
 
                 // Sanitize and adopt remote boards
                 Object.keys(remoteBoards).forEach(k => {
-                    if (remoteBoards[k] && remoteBoards[k].tasks) {
-                        remoteBoards[k].tasks = (remoteBoards[k].tasks || []).map(sanitizeTask);
+                    if (remoteBoards[k]) {
+                        if (!remoteBoards[k].columns || remoteBoards[k].columns.length === 0) {
+                            remoteBoards[k].columns = ["To Do", "In Progress", "Done"];
+                        }
+                        if (remoteBoards[k].tasks) {
+                            remoteBoards[k].tasks = (remoteBoards[k].tasks || []).map(sanitizeTask);
+                        }
                     }
                 });
 
@@ -6312,18 +6326,10 @@
                     activeBoardId = Object.keys(boards)[0] || 'default';
                 }
 
-                data = boards[activeBoardId];
-                if (!data) {
-                    data = JSON.parse(JSON.stringify(DEFAULT_DATA));
-                    boards[activeBoardId] = data;
-                }
-
                 // Update local storage without pushing back to cloud immediately
                 localStorage.setItem("todoBoardsStudio", JSON.stringify(boards));
-                saveDailyBackupWeb();
-                renderBoardSelector();
-                renderWorkspaceDropdownItems();
-                renderBoard();
+                if (typeof saveDailyBackupWeb === 'function') saveDailyBackupWeb();
+                switchBoard(activeBoardId);
                 showUndoToast('☁️ Synced changes from your other device');
             });
 
