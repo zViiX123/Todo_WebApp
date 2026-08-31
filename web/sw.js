@@ -1,4 +1,4 @@
-const CACHE_NAME = 'todoboard-web-v403';
+const CACHE_NAME = 'todoboard-web-v404';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

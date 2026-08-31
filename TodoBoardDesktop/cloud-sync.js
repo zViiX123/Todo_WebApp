@@ -313,12 +313,12 @@
                 const payload = {
                     boards: payloadBoards,
                     updatedAt: new Date().toISOString(),
-                    clientVersion: '4.0.3',
+                    clientVersion: '4.0.4',
                     userId: uid,
                     email: this.currentUser.email || ''
                 };
 
-                await docRef.set(payload, { merge: true });
+                await docRef.set(payload);
                 this.lastSyncedHash = currentHash;
                 this.lastCloudUpdatedAt = payload.updatedAt;
                 this.pendingBoards = null;

@@ -3640,9 +3640,14 @@
             const ids = Object.keys(boards);
             if (ids.length <= 1) return alert("You need at least one board.");
             if (!confirm(`Delete the board "${data.boardTitle}"? This cannot be undone.`)) return;
-            delete boards[activeBoardId];
-            switchBoard(Object.keys(boards)[0]);
+            const targetId = activeBoardId;
+            delete boards[targetId];
+            const remainingId = Object.keys(boards)[0] || 'default';
+            switchBoard(remainingId);
             saveData();
+            if (window.cloudSyncManager) {
+                window.cloudSyncManager.pushLocalStateToCloud(boards, 50);
+            }
         }
 
         function updateBoardTitle(newTitle) {
