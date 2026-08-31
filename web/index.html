@@ -3,9 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data:; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://firestore.googleapis.com wss://*.firebaseio.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://api.github.com; frame-src 'self' https://*.firebaseapp.com https://*.google.com; img-src 'self' data: https:;">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Todo Board Studio</title>
     <link rel="icon" type="image/png" href="icon.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#8E5BE8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon.png">
     
     <!-- Firebase SDK (Compat v10) & Cloud Sync -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -1168,6 +1173,121 @@
         }
         .attachment-meta {
             color: var(--text-muted); font-size: 10px;
+        }
+
+        /* --- Mobile Responsive Layout & Bottom Navigation Bar --- */
+        .mobile-bottom-nav {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding-bottom: 72px; /* Space for bottom nav */
+            }
+
+            header {
+                flex-wrap: wrap;
+                gap: 8px;
+                padding: 10px 12px;
+            }
+
+            .header-left, .header-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            #toolbar {
+                padding: 8px 12px;
+                gap: 8px;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .filter-pill-group {
+                display: none; /* Handled by bottom nav on mobile */
+            }
+
+            .board-container {
+                padding: 10px;
+                gap: 12px;
+            }
+
+            .column {
+                min-width: calc(100vw - 28px) !important;
+                max-width: calc(100vw - 28px) !important;
+                scroll-snap-align: center;
+            }
+
+            .masonry-lane {
+                min-width: calc(100vw - 28px) !important;
+                max-width: calc(100vw - 28px) !important;
+                scroll-snap-align: center;
+            }
+
+            #board {
+                scroll-snap-type: x mandatory;
+                -webkit-overflow-scrolling: touch;
+                overflow-x: auto;
+                display: flex;
+                flex-direction: row;
+                gap: 12px;
+            }
+
+            .modal-card {
+                width: 95vw !important;
+                max-height: 88vh;
+                margin: 10px;
+            }
+
+            /* Mobile Bottom Navigation */
+            .mobile-bottom-nav {
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 60px;
+                background: var(--bg-col-head);
+                border-top: 1px solid var(--border-glass);
+                backdrop-filter: blur(16px);
+                -webkit-backdrop-filter: blur(16px);
+                z-index: 9999;
+                align-items: center;
+                justify-content: space-around;
+                padding-bottom: env(safe-area-inset-bottom, 0px);
+                box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+            }
+
+            .mobile-nav-btn {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                background: none;
+                border: none;
+                color: var(--text-muted);
+                font-size: 11px;
+                font-weight: 600;
+                cursor: pointer;
+                gap: 3px;
+                padding: 6px 12px;
+                border-radius: 8px;
+                transition: all 0.2s ease;
+                min-width: 54px;
+            }
+
+            .mobile-nav-btn span:first-child {
+                font-size: 18px;
+            }
+
+            .mobile-nav-btn.active, .mobile-nav-btn:active {
+                color: #FFF;
+                background: rgba(255, 255, 255, 0.08);
+            }
+
+            .mobile-nav-btn.active span:first-child {
+                transform: scale(1.1);
+            }
         }
     </style>
 </head>
@@ -6193,6 +6313,43 @@
                 openShortcutsModal();
             }
         });
+
+        // --- Mobile Bottom Navigation Controller ---
+        function updateMobileNav(activeNavId) {
+            const navIds = ['mobNavBoard', 'mobNavCalendar', 'mobNavTimeline'];
+            navIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.toggle('active', id === activeNavId);
+            });
+        }
+
+        // --- Service Worker Registration for PWA Offline Support ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('PWA ServiceWorker registered:', reg.scope))
+                    .catch(err => console.log('PWA ServiceWorker registration failed:', err));
+            });
+        }
     </script>
+
+    <!-- Mobile Bottom Navigation Bar (Visible on mobile screens) -->
+    <nav id="mobileNavBar" class="mobile-bottom-nav">
+        <button class="mobile-nav-btn active" id="mobNavBoard" onclick="switchViewMode('board'); updateMobileNav('mobNavBoard');">
+            <span>⊞</span><span>Board</span>
+        </button>
+        <button class="mobile-nav-btn" id="mobNavCalendar" onclick="switchViewMode('calendar'); updateMobileNav('mobNavCalendar');">
+            <span>📅</span><span>Calendar</span>
+        </button>
+        <button class="mobile-nav-btn" id="mobNavTimeline" onclick="switchViewMode('timeline'); updateMobileNav('mobNavTimeline');">
+            <span>📈</span><span>Timeline</span>
+        </button>
+        <button class="mobile-nav-btn" id="mobNavBackups" onclick="openBackupsModal();">
+            <span>🛡️</span><span>Vault</span>
+        </button>
+        <button class="mobile-nav-btn" id="mobNavProfile" onclick="handleCloudAuthButtonClick();">
+            <span>👤</span><span>Cloud</span>
+        </button>
+    </nav>
 </body>
 </html>
