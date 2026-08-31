@@ -1296,30 +1296,33 @@
             }
 
             .board-container {
-                padding: 8px !important;
+                padding: 6px !important;
                 gap: 10px !important;
-            }
-
-            .column {
-                min-width: calc(100vw - 20px) !important;
-                max-width: calc(100vw - 20px) !important;
-                scroll-snap-align: center !important;
-            }
-
-            .masonry-lane {
-                min-width: calc(100vw - 20px) !important;
-                max-width: calc(100vw - 20px) !important;
-                scroll-snap-align: center !important;
             }
 
             #board {
-                scroll-snap-type: x mandatory !important;
-                -webkit-overflow-scrolling: touch !important;
-                overflow-x: auto !important;
+                scroll-snap-type: none !important;
+                overflow-x: hidden !important;
+                overflow-y: auto !important;
                 display: flex !important;
-                flex-direction: row !important;
-                gap: 10px !important;
-                padding: 0 4px !important;
+                flex-direction: column !important;
+                gap: 14px !important;
+                padding: 6px !important;
+                width: 100% !important;
+            }
+
+            .board-lane {
+                width: 100% !important;
+                min-width: 0 !important;
+                max-width: 100% !important;
+                gap: 14px !important;
+            }
+
+            .column {
+                width: 100% !important;
+                min-width: 0 !important;
+                max-width: 100% !important;
+                scroll-snap-align: none !important;
             }
 
             .modal-card {
@@ -4659,7 +4662,18 @@
             const board = document.getElementById("board");
             board.innerHTML = "";
 
+            // Guarantee columns always exist and self-heal if corrupted or empty
+            if (!data.columns || !Array.isArray(data.columns) || data.columns.length === 0) {
+                data.columns = ["To Do", "In Progress", "Done"];
+                if (boards && activeBoardId && boards[activeBoardId]) {
+                    boards[activeBoardId].columns = data.columns;
+                    localStorage.setItem("todoBoardsStudio", JSON.stringify(boards));
+                }
+            }
             if (!data.collapsedCols) data.collapsedCols = [];
+            if (!data.columnColors) data.columnColors = {};
+            if (!data.tasks) data.tasks = [];
+            if (!data.archivedTasks) data.archivedTasks = [];
 
             // 1. Render Dedicated Folded Columns Dock
             const dockEl = document.getElementById('foldedColumnsDock');
@@ -4689,13 +4703,13 @@
             const activeCols = data.columns.filter(c => !data.collapsedCols.includes(c));
             const isFiltering = !!(searchQuery || activePriorityFilter !== 'all' || activeStatusFilter !== 'all');
 
-            // Calculate dynamic vertical masonry lanes (1 to 6 lanes on desktop; 1 lane per column on mobile)
+            // Calculate dynamic vertical masonry lanes (1 to 6 lanes on desktop; 1 vertical lane on mobile)
             const isMobileView = window.innerWidth <= 768;
             const boardWidth = (board.clientWidth || window.innerWidth) - 36;
             const laneMinWidth = 260;
             const gap = 16;
             const maxLanes = 6;
-            const numLanes = isMobileView ? Math.max(1, activeCols.length + (isFiltering ? 0 : 1)) : Math.max(1, Math.min(maxLanes, Math.floor((boardWidth + gap) / (laneMinWidth + gap))));
+            const numLanes = isMobileView ? 1 : Math.max(1, Math.min(maxLanes, Math.floor((boardWidth + gap) / (laneMinWidth + gap))));
             lastNumLanes = numLanes;
 
             // Create lane elements
