@@ -9,6 +9,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     pickAttachmentFile: () => ipcRenderer.invoke('pick-attachment-file'),
     openAttachmentPath: (filePath) => ipcRenderer.invoke('open-attachment-path', filePath),
     checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+    listBackups: () => ipcRenderer.invoke('list-backups'),
+    restoreBackup: (filename) => ipcRenderer.invoke('restore-backup', filename),
+    createInstantBackup: () => ipcRenderer.invoke('create-instant-backup'),
+    openBackupsFolder: () => ipcRenderer.invoke('open-backups-folder'),
     onQuickTask: (callback) => {
         ipcRenderer.on('quick-add-task-trigger', () => callback());
     },

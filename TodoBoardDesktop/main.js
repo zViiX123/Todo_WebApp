@@ -226,13 +226,81 @@ app.on('window-all-closed', () => {
     }
 });
 
+// --- Automatic 7-Day Rolling Daily Backup System ---
+const backupsDir = path.join(userDataPath, 'backups');
+const MAX_BACKUPS = 7;
+
+function ensureBackupsDir() {
+    try {
+        if (!fs.existsSync(backupsDir)) {
+            fs.mkdirSync(backupsDir, { recursive: true });
+        }
+    } catch (e) {
+        console.error('Failed to create backups directory:', e);
+    }
+}
+
+function getBackupDateKey(date = new Date()) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+
+function rotateBackups() {
+    try {
+        ensureBackupsDir();
+        if (!fs.existsSync(backupsDir)) return;
+        const files = fs.readdirSync(backupsDir).filter(f => f.startsWith('backup_') && f.endsWith('.json'));
+        // Sort alphabetically ascending by filename (e.g. backup_2026-08-25.json < backup_2026-08-31.json)
+        files.sort((a, b) => a.localeCompare(b));
+        while (files.length > MAX_BACKUPS) {
+            const oldest = files.shift();
+            try {
+                fs.unlinkSync(path.join(backupsDir, oldest));
+                console.log(`Rotated out oldest backup: ${oldest}`);
+            } catch (e) {
+                console.error(`Failed to delete old backup ${oldest}:`, e);
+            }
+        }
+    } catch (err) {
+        console.error('Error rotating backups:', err);
+    }
+}
+
+function performDailyBackup(jsonData, force = false) {
+    try {
+        ensureBackupsDir();
+        const todayKey = getBackupDateKey();
+        const backupFileName = `backup_${todayKey}.json`;
+        const backupFilePath = path.join(backupsDir, backupFileName);
+
+        // If backup for today doesn't exist or if force is true, save snapshot
+        if (!fs.existsSync(backupFilePath) || force) {
+            let dataToWrite = jsonData;
+            if (!dataToWrite && fs.existsSync(dataPath)) {
+                dataToWrite = fs.readFileSync(dataPath, 'utf-8');
+            }
+            if (dataToWrite && dataToWrite.trim().length > 2) {
+                fs.writeFileSync(backupFilePath, dataToWrite, 'utf-8');
+                console.log(`Created daily backup: ${backupFileName}`);
+                rotateBackups();
+            }
+        }
+    } catch (err) {
+        console.error('Error creating daily backup:', err);
+    }
+}
+
 // --- IPC Handlers ---
 
 // Load data
 ipcMain.handle('load-data', () => {
     try {
         if (fs.existsSync(dataPath)) {
-            return fs.readFileSync(dataPath, 'utf-8');
+            const data = fs.readFileSync(dataPath, 'utf-8');
+            performDailyBackup(data);
+            return data;
         }
     } catch (err) {
         console.error('Error loading data:', err);
@@ -244,8 +312,109 @@ ipcMain.handle('load-data', () => {
 ipcMain.on('save-data', (event, jsonData) => {
     try {
         fs.writeFileSync(dataPath, jsonData, 'utf-8');
+        performDailyBackup(jsonData);
     } catch (err) {
         console.error('Error saving data:', err);
+    }
+});
+
+// List Backups (Up to 7 Daily Backups)
+ipcMain.handle('list-backups', async () => {
+    try {
+        ensureBackupsDir();
+        if (!fs.existsSync(backupsDir)) return [];
+        const files = fs.readdirSync(backupsDir).filter(f => f.startsWith('backup_') && f.endsWith('.json'));
+        files.sort((a, b) => b.localeCompare(a)); // Newest first
+
+        const backupList = [];
+        for (const file of files) {
+            const filePath = path.join(backupsDir, file);
+            const stat = fs.statSync(filePath);
+            let boardCount = 1;
+            let taskCount = 0;
+            let title = 'Backup';
+            try {
+                const raw = fs.readFileSync(filePath, 'utf-8');
+                const parsed = JSON.parse(raw);
+                if (parsed && typeof parsed === 'object') {
+                    const keys = Object.keys(parsed);
+                    boardCount = keys.length;
+                    keys.forEach(k => {
+                        if (parsed[k] && parsed[k].tasks) {
+                            taskCount += parsed[k].tasks.length;
+                        }
+                    });
+                    if (keys[0] && parsed[keys[0]].boardTitle) {
+                        title = parsed[keys[0]].boardTitle;
+                    }
+                }
+            } catch (e) {}
+
+            const dateMatch = file.match(/backup_(\d{4}-\d{2}-\d{2})\.json/);
+            const dateStr = dateMatch ? dateMatch[1] : '';
+
+            backupList.push({
+                filename: file,
+                date: dateStr,
+                size: stat.size,
+                mtime: stat.mtimeMs,
+                boardCount,
+                taskCount,
+                title
+            });
+        }
+        return backupList.slice(0, MAX_BACKUPS);
+    } catch (err) {
+        console.error('Error listing backups:', err);
+        return [];
+    }
+});
+
+// Restore from a specific backup
+ipcMain.handle('restore-backup', async (event, filename) => {
+    try {
+        if (!filename || filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+            return { success: false, error: 'Invalid backup filename' };
+        }
+        ensureBackupsDir();
+        const filePath = path.join(backupsDir, filename);
+        if (!fs.existsSync(filePath)) {
+            return { success: false, error: 'Backup file does not exist' };
+        }
+        const content = fs.readFileSync(filePath, 'utf-8');
+        // Save as active data
+        fs.writeFileSync(dataPath, content, 'utf-8');
+        return { success: true, content };
+    } catch (err) {
+        console.error('Error restoring backup:', err);
+        return { success: false, error: err.message };
+    }
+});
+
+// Create Instant Manual Backup
+ipcMain.handle('create-instant-backup', async () => {
+    try {
+        if (fs.existsSync(dataPath)) {
+            const data = fs.readFileSync(dataPath, 'utf-8');
+            performDailyBackup(data, true);
+            return { success: true };
+        }
+        return { success: false, error: 'No data file found to back up' };
+    } catch (err) {
+        console.error('Error creating instant backup:', err);
+        return { success: false, error: err.message };
+    }
+});
+
+// Open Backups Folder in Windows Explorer
+ipcMain.handle('open-backups-folder', async () => {
+    try {
+        ensureBackupsDir();
+        await shell.openPath(backupsDir);
+        return { success: true };
+    } catch (err) {
+        console.error('Error opening backups folder:', err);
+        return { success: false, error: err.message };
     }
 });
 

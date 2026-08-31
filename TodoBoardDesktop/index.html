@@ -1220,8 +1220,12 @@
 
             <!-- Data Hub Cluster -->
             <div class="header-cluster">
+                <button class="header-btn" onclick="openBackupsModal()" title="Daily Backups & Restore Vault (Up to 7 Days)">
+                    <span>🛡️</span> Backups
+                </button>
                 <select id="exportAction" class="header-btn header-select" onchange="handleExportAction(this.value)" title="Export options">
                     <option value="" disabled selected>💾 Export ▾</option>
+                    <option value="backup-vault">🛡️ Backups & Restore (7 Days)</option>
                     <option value="json">Export JSON Backup</option>
                     <option value="csv">Export CSV Tasks</option>
                 </select>
@@ -1693,6 +1697,41 @@
             </div>
             <div class="modal-footer" style="justify-content: flex-end;">
                 <button class="btn" onclick="closeArchiveModal()">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Backups & Restore Vault Modal -->
+    <div class="modal-overlay" id="backupsModal" onclick="if(event.target===this) closeBackupsModal()">
+        <div class="modal-card" style="width: 760px; max-width: 95vw;">
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-weight: 700; font-size: 16px;">🛡️ Automated Daily Backups & Restore Vault</span>
+                    <span class="theme-active-tag" style="background: rgba(74, 222, 128, 0.2); color: #4ADE80; border: 1px solid rgba(74, 222, 128, 0.4);">Up to 7 Days Retained</span>
+                </div>
+                <button class="icon-btn del" onclick="closeBackupsModal()" title="Close">✕</button>
+            </div>
+            <div class="modal-body" style="padding: 16px 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 10px; flex-wrap: wrap;">
+                    <div style="font-size: 12px; color: var(--text-muted); line-height: 1.4; max-width: 460px;">
+                        Your board data is automatically saved to daily snapshots. Up to <strong>7 rolling daily backups</strong> are safely preserved on your system.
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button class="btn" onclick="createInstantManualBackup()" title="Save an immediate snapshot right now">➕ Instant Backup</button>
+                        <button class="btn" id="openBackupsFolderBtn" onclick="openBackupsFolderInExplorer()" title="Open Backups Folder in Windows Explorer">📂 Open Folder</button>
+                    </div>
+                </div>
+                
+                <div id="backupsListContainer" class="archive-list" style="max-height: 48vh;">
+                    <div style="text-align: center; padding: 24px; color: var(--text-muted); font-size: 13px;">Loading daily backups...</div>
+                </div>
+            </div>
+            <div class="modal-footer" style="justify-content: space-between;">
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn" onclick="triggerImport()" title="Import a custom JSON backup file">📥 Import JSON File</button>
+                    <button class="btn" onclick="exportJsonBackup()" title="Download full JSON backup">📤 Export JSON Backup</button>
+                </div>
+                <button class="btn" onclick="closeBackupsModal()">Close</button>
             </div>
         </div>
     </div>
@@ -3177,6 +3216,7 @@
                 window.electronAPI.saveData(jsonStr);
             }
             localStorage.setItem("todoBoardsStudio", jsonStr);
+            saveDailyBackupWeb();
             updateArchiveHeaderCount();
             renderBoardSelector();
             renderWorkspaceDropdownItems();
@@ -5013,6 +5053,8 @@
                 exportJsonBackup();
             } else if (type === 'csv') {
                 exportCsvTasks();
+            } else if (type === 'backup-vault') {
+                openBackupsModal();
             }
         }
 
@@ -5101,8 +5143,15 @@
                 const res = await window.electronAPI.importFileDialog({
                     filters: [{ name: 'JSON Backup', extensions: ['json'] }]
                 });
+                if (res && res.cancelled) {
+                    return; // User cancelled the open file dialog cleanly
+                }
                 if (res && res.success && res.content) {
                     applyImportedJson(res.content);
+                    return;
+                }
+                if (res && res.error) {
+                    alert("Could not read file: " + res.error);
                     return;
                 }
             }
@@ -5110,7 +5159,7 @@
             // Browser fallback file input
             const input = document.createElement("input");
             input.type = "file";
-            input.accept = ".json";
+            input.accept = ".json,application/json";
             input.onchange = (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
@@ -5123,32 +5172,341 @@
 
         function applyImportedJson(rawJson) {
             try {
-                const parsed = JSON.parse(rawJson);
-                if (parsed.columns && parsed.tasks) {
-                    // Single board format
-                    const id = "board-" + Date.now();
-                    parsed.tasks = (parsed.tasks || []).map(sanitizeTask);
-                    boards[id] = parsed;
-                    activeBoardId = id;
-                } else if (typeof parsed === 'object' && Object.keys(parsed).length > 0) {
-                    // Multi-board format
-                    Object.keys(parsed).forEach(k => {
-                        if (parsed[k] && parsed[k].tasks) {
-                            parsed[k].tasks = (parsed[k].tasks || []).map(sanitizeTask);
-                        }
-                    });
-                    boards = parsed;
-                    activeBoardId = Object.keys(boards)[0];
-                } else {
-                    return alert("Invalid JSON format.");
+                if (!rawJson || typeof rawJson !== 'string') {
+                    throw new Error("Empty or invalid file content.");
                 }
 
-                saveData();
-                switchBoard(activeBoardId);
-                showUndoToast("Board data imported successfully!");
+                // Clean any potential BOM or whitespace
+                const cleanJson = rawJson.trim().replace(/^\uFEFF/, '');
+                const parsed = JSON.parse(cleanJson);
+
+                let newBoards = {};
+                let targetBoardId = null;
+
+                if (Array.isArray(parsed)) {
+                    // Case 1: Array of task items
+                    const id = "board-" + Date.now();
+                    const sanitizedTasks = parsed.map(sanitizeTask);
+                    newBoards[id] = {
+                        columns: ["To Do", "In Progress", "Done"],
+                        tasks: sanitizedTasks,
+                        archivedTasks: [],
+                        boardTitle: "Imported Tasks",
+                        theme: (data && data.theme) || "purple",
+                        columnColors: {},
+                        collapsedCols: [],
+                        pinnedCol: null
+                    };
+                    targetBoardId = id;
+                } else if (parsed && typeof parsed === 'object') {
+                    let candidateData = parsed;
+                    if (parsed.boards && typeof parsed.boards === 'object') {
+                        candidateData = parsed.boards;
+                    } else if (parsed.data && typeof parsed.data === 'object') {
+                        candidateData = parsed.data;
+                    }
+
+                    // Check if candidateData is a single board (has tasks array or columns array)
+                    if (Array.isArray(candidateData.tasks) || Array.isArray(candidateData.columns)) {
+                        const id = "board-" + Date.now();
+                        const sanitizedTasks = (candidateData.tasks || []).map(sanitizeTask);
+                        const cols = (Array.isArray(candidateData.columns) && candidateData.columns.length > 0)
+                            ? candidateData.columns
+                            : ["To Do", "In Progress", "Done"];
+
+                        newBoards[id] = {
+                            columns: cols,
+                            tasks: sanitizedTasks,
+                            archivedTasks: (candidateData.archivedTasks || []).map(sanitizeTask),
+                            boardTitle: candidateData.boardTitle || "Imported Board",
+                            theme: candidateData.theme || (data && data.theme) || "purple",
+                            columnColors: candidateData.columnColors || {},
+                            collapsedCols: candidateData.collapsedCols || [],
+                            pinnedCol: candidateData.pinnedCol || null
+                        };
+                        targetBoardId = id;
+                    } else {
+                        // Multi-board format where keys map to board objects
+                        const keys = Object.keys(candidateData);
+                        if (keys.length === 0) {
+                            throw new Error("JSON file contains no board data.");
+                        }
+
+                        keys.forEach(k => {
+                            const b = candidateData[k];
+                            if (b && typeof b === 'object') {
+                                const sanitizedTasks = (b.tasks || []).map(sanitizeTask);
+                                const cols = (Array.isArray(b.columns) && b.columns.length > 0)
+                                    ? b.columns
+                                    : ["To Do", "In Progress", "Done"];
+
+                                newBoards[k] = {
+                                    columns: cols,
+                                    tasks: sanitizedTasks,
+                                    archivedTasks: (b.archivedTasks || []).map(sanitizeTask),
+                                    boardTitle: b.boardTitle || "Imported Board",
+                                    theme: b.theme || (data && data.theme) || "purple",
+                                    columnColors: b.columnColors || {},
+                                    collapsedCols: b.collapsedCols || [],
+                                    pinnedCol: b.pinnedCol || null
+                                };
+                            }
+                        });
+
+                        if (Object.keys(newBoards).length === 0) {
+                            throw new Error("No valid board objects found in file.");
+                        }
+                        targetBoardId = Object.keys(newBoards)[0];
+                    }
+                } else {
+                    throw new Error("Unrecognized JSON structure.");
+                }
+
+                // If importing a single board and we already have boards, add it as a new workspace!
+                const existingBoardCount = Object.keys(boards).length;
+                if (existingBoardCount > 0 && Object.keys(newBoards).length === 1 && !boards[targetBoardId]) {
+                    boards[targetBoardId] = newBoards[targetBoardId];
+                    switchBoard(targetBoardId);
+                    saveData();
+                    showUndoToast(`Imported workspace "${boards[targetBoardId].boardTitle}" successfully!`);
+                } else {
+                    boards = newBoards;
+                    activeBoardId = targetBoardId;
+                    switchBoard(activeBoardId);
+                    saveData();
+                    showUndoToast(`Imported ${Object.keys(boards).length} workspace(s) successfully!`);
+                }
+
             } catch (err) {
-                alert("Error importing file: " + err.message);
+                console.error("Import error:", err);
+                alert("Error importing JSON file: " + err.message);
             }
+        }
+
+        // --- Backups & Restore Vault System ---
+        function openBackupsModal() {
+            document.getElementById('backupsModal').classList.add('active');
+            renderBackupsList();
+        }
+
+        function closeBackupsModal() {
+            document.getElementById('backupsModal').classList.remove('active');
+        }
+
+        async function createInstantManualBackup() {
+            if (window.electronAPI && window.electronAPI.createInstantBackup) {
+                const res = await window.electronAPI.createInstantBackup();
+                if (res && res.success) {
+                    playUiSound('pop');
+                    showUndoToast("Instant backup snapshot created!");
+                    renderBackupsList();
+                    return;
+                }
+            }
+
+            // Web fallback
+            saveDailyBackupWeb(true);
+            playUiSound('pop');
+            showUndoToast("Instant backup snapshot saved to browser storage!");
+            renderBackupsList();
+        }
+
+        async function openBackupsFolderInExplorer() {
+            if (window.electronAPI && window.electronAPI.openBackupsFolder) {
+                await window.electronAPI.openBackupsFolder();
+            } else {
+                alert("This feature is available in the desktop application.");
+            }
+        }
+
+        function formatBackupDate(dateStr) {
+            if (!dateStr) return 'Manual Snapshot';
+            try {
+                const parts = dateStr.split('-');
+                if (parts.length === 3) {
+                    const date = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+                    const todayStr = new Date().toISOString().split('T')[0];
+                    const isToday = dateStr === todayStr;
+                    const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
+                    const formatted = date.toLocaleDateString(undefined, options);
+                    return isToday ? `Today (${formatted})` : formatted;
+                }
+            } catch (e) {}
+            return dateStr;
+        }
+
+        function formatFileSize(bytes) {
+            if (!bytes || bytes <= 0) return '0 B';
+            if (bytes < 1024) return bytes + ' B';
+            return (bytes / 1024).toFixed(1) + ' KB';
+        }
+
+        async function renderBackupsList() {
+            const container = document.getElementById('backupsListContainer');
+            if (!container) return;
+
+            let backups = [];
+            if (window.electronAPI && window.electronAPI.listBackups) {
+                backups = await window.electronAPI.listBackups();
+            } else {
+                backups = listDailyBackupsWeb();
+            }
+
+            if (!backups || backups.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 36px 20px; color: var(--text-muted); font-size: 13px; background: rgba(0,0,0,0.15); border-radius: 8px;">
+                        <div style="font-size: 32px; margin-bottom: 8px;">🛡️</div>
+                        <div style="font-weight: 700; color: var(--text-light); margin-bottom: 4px;">No Backups Found Yet</div>
+                        <div>Your daily backups will appear here automatically as you use the app.</div>
+                        <button class="btn" onclick="createInstantManualBackup()" style="margin-top: 12px;">➕ Create First Backup Now</button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = backups.map((b, idx) => {
+                const isLatest = idx === 0;
+                const dateLabel = formatBackupDate(b.date);
+                const sizeLabel = formatFileSize(b.size);
+                const boardCount = b.boardCount || 1;
+                const taskCount = b.taskCount || 0;
+
+                return `
+                    <div class="archive-card" style="padding: 12px 16px;">
+                        <div style="display: flex; align-items: center; gap: 12px; flex-grow: 1;">
+                            <div style="font-size: 24px; background: rgba(255,255,255,0.06); width: 42px; height: 42px; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-glass);">
+                                ${isLatest ? '⭐' : '📅'}
+                            </div>
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span class="archive-title" style="font-size: 14px;">${escapeHtml(dateLabel)}</span>
+                                    ${isLatest ? '<span class="theme-active-tag" style="background: rgba(74, 222, 128, 0.2); color: #4ADE80; font-size: 10px; padding: 1px 6px;">Latest</span>' : ''}
+                                </div>
+                                <div class="archive-meta" style="margin-top: 4px;">
+                                    <span style="color: var(--text-light); font-weight: 600;">📊 ${boardCount} Board${boardCount !== 1 ? 's' : ''} • ${taskCount} Task${taskCount !== 1 ? 's' : ''}</span>
+                                    <span>•</span>
+                                    <span>💾 ${sizeLabel}</span>
+                                    <span>•</span>
+                                    <span style="font-family: monospace; opacity: 0.7;">${escapeHtml(b.filename)}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <button class="btn" style="background: var(--accent); color: #FFF; font-weight: 600; padding: 6px 12px;" onclick="confirmRestoreBackup('${escapeHtml(b.filename)}')" title="Restore board state from this backup snapshot">
+                                🔄 Restore
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function confirmRestoreBackup(filename) {
+            if (!confirm(`Are you sure you want to restore the backup "${filename}"?\n\nYour current board state will be replaced with this snapshot.`)) {
+                return;
+            }
+
+            try {
+                if (window.electronAPI && window.electronAPI.restoreBackup) {
+                    const res = await window.electronAPI.restoreBackup(filename);
+                    if (res && res.success && res.content) {
+                        applyImportedJson(res.content);
+                        closeBackupsModal();
+                        showUndoToast(`Restored snapshot from ${filename}!`);
+                        return;
+                    } else if (res && res.error) {
+                        throw new Error(res.error);
+                    }
+                }
+
+                // Web fallback
+                const content = restoreDailyBackupWeb(filename);
+                if (content) {
+                    applyImportedJson(content);
+                    closeBackupsModal();
+                    showUndoToast(`Restored snapshot from ${filename}!`);
+                } else {
+                    throw new Error("Could not find backup in browser storage.");
+                }
+            } catch (err) {
+                console.error("Restore error:", err);
+                alert("Failed to restore backup: " + err.message);
+            }
+        }
+
+        // --- Browser Web Fallback for 7 Daily Backups ---
+        function getWebBackupDateKey() {
+            const today = new Date();
+            return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        }
+
+        function saveDailyBackupWeb(force = false) {
+            try {
+                const todayKey = getWebBackupDateKey();
+                const backupKey = `todo_backup_${todayKey}`;
+                let dateIndex = [];
+                try {
+                    dateIndex = JSON.parse(localStorage.getItem('todo_backup_dates') || '[]');
+                } catch (e) { dateIndex = []; }
+
+                if (!localStorage.getItem(backupKey) || force) {
+                    const jsonStr = JSON.stringify(boards);
+                    localStorage.setItem(backupKey, jsonStr);
+                    if (!dateIndex.includes(todayKey)) {
+                        dateIndex.unshift(todayKey);
+                    }
+                    // Retain up to 7 backups
+                    while (dateIndex.length > 7) {
+                        const oldDate = dateIndex.pop();
+                        localStorage.removeItem(`todo_backup_${oldDate}`);
+                    }
+                    localStorage.setItem('todo_backup_dates', JSON.stringify(dateIndex));
+                }
+            } catch (e) {
+                console.error('Web backup error:', e);
+            }
+        }
+
+        function listDailyBackupsWeb() {
+            try {
+                let dateIndex = [];
+                try {
+                    dateIndex = JSON.parse(localStorage.getItem('todo_backup_dates') || '[]');
+                } catch (e) { dateIndex = []; }
+
+                return dateIndex.map(dateStr => {
+                    const raw = localStorage.getItem(`todo_backup_${dateStr}`);
+                    let boardCount = 1;
+                    let taskCount = 0;
+                    let size = raw ? raw.length : 0;
+                    if (raw) {
+                        try {
+                            const parsed = JSON.parse(raw);
+                            const keys = Object.keys(parsed);
+                            boardCount = keys.length;
+                            keys.forEach(k => {
+                                if (parsed[k] && parsed[k].tasks) taskCount += parsed[k].tasks.length;
+                            });
+                        } catch (e) {}
+                    }
+                    return {
+                        filename: `backup_${dateStr}.json`,
+                        date: dateStr,
+                        size: size,
+                        boardCount,
+                        taskCount
+                    };
+                });
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function restoreDailyBackupWeb(filename) {
+            const match = filename.match(/backup_(\d{4}-\d{2}-\d{2})\.json/);
+            if (!match) return null;
+            const dateStr = match[1];
+            return localStorage.getItem(`todo_backup_${dateStr}`);
         }
 
         // --- Shortcuts Modal ---
@@ -5170,6 +5528,7 @@
                 closeThemeModal();
                 closeStatsModal();
                 closeArchiveModal();
+                closeBackupsModal();
                 closeSpotlightHud();
                 closeUpdateModal();
                 if (searchQuery) clearSearch();
