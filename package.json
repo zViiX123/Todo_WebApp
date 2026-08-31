@@ -7,7 +7,8 @@
     "start": "npm --prefix TodoBoardDesktop start",
     "build": "npm --prefix TodoBoardDesktop run build",
     "build:installer": "npm --prefix TodoBoardDesktop run build:installer",
-    "build:portable": "npm --prefix TodoBoardDesktop run build:portable"
+    "build:portable": "npm --prefix TodoBoardDesktop run build:portable",
+    "deploy:web": "npx -y firebase-tools deploy --only hosting"
   },
   "author": "zViiX123",
   "license": "AGPL-3.0"
