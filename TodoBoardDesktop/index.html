@@ -2046,10 +2046,28 @@
         let editingTaskId = null;
         let modalWorkingTags = [];
         let modalWorkingChecklist = [];
-
-        // --- Multi-Action Undo Stack System ---
-        const undoStack = [];
+        let modalWorkingAttachments = [];
         let undoToastTimeoutId = null;
+        const undoStack = [];
+
+        let audioCtx = null;
+        let soundEnabled = true;
+        let confettiEnabled = true;
+        let confettiParticles = [];
+        let confettiAnimId = null;
+
+        let calendarYear = new Date().getFullYear();
+        let calendarMonth = new Date().getMonth();
+        let activeViewMode = 'board';
+        let latestReleaseData = null;
+
+        let draggedCardId = null;
+        let currentCardPlaceholder = null;
+        let draggedColName = null;
+        let currentColPlaceholder = null;
+
+        let resizeTimer = null;
+        let lastNumLanes = -1;
 
         // Activity Logging Helper
         function logTaskActivity(task, text) {
@@ -2147,9 +2165,6 @@
         }
 
         // --- Procedural Web Audio API Sound Synthesizer ---
-        let audioCtx = null;
-        let soundEnabled = true;
-        let confettiEnabled = true;
 
         function initAudioContext() {
             if (!audioCtx) {
@@ -2250,8 +2265,6 @@
         }
 
         // --- HTML5 Canvas Confetti Particle Burst Engine ---
-        let confettiParticles = [];
-        let confettiAnimId = null;
 
         function fireConfetti(originX = null, originY = null) {
             if (!confettiEnabled) return;
@@ -2654,9 +2667,6 @@
         }
 
         // --- Interactive Calendar View ---
-        let calendarYear = new Date().getFullYear();
-        let calendarMonth = new Date().getMonth();
-        let activeViewMode = 'board';
 
         function capitalize(str) {
             if (!str) return '';
@@ -2859,7 +2869,6 @@
         }
 
         // --- File & Link Attachments Manager ---
-        let modalWorkingAttachments = [];
 
         function renderModalAttachments() {
             const list = document.getElementById('modalAttachmentList');
@@ -3046,7 +3055,6 @@
         });
 
         // --- In-App Update Checker ---
-        let latestReleaseData = null;
 
         async function checkForAppUpdates(silent = false) {
             if (!window.electronAPI || !window.electronAPI.checkForUpdates) {
@@ -4229,10 +4237,6 @@
         }
 
         // --- Drag & Drop and Rearranging State ---
-        let draggedCardId = null;
-        let currentCardPlaceholder = null;
-        let draggedColName = null;
-        let currentColPlaceholder = null;
 
         function cardDragStart(ev, id) {
             draggedCardId = id;
@@ -4531,8 +4535,6 @@
         }
 
         // --- Window Resize & Responsive Masonry Lanes ---
-        let resizeTimer = null;
-        let lastNumLanes = -1;
 
         function handleWindowResize() {
             if (resizeTimer) clearTimeout(resizeTimer);
