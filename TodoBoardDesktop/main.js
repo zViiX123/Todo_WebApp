@@ -15,6 +15,10 @@ let localServer = null;
 const FIXED_DESKTOP_PORT = 47890;
 let localPort = FIXED_DESKTOP_PORT;
 
+// Standard Chrome user agent to prevent Google OAuth disallowed_useragent blocks
+const CHROME_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36';
+app.userAgentFallback = CHROME_USER_AGENT;
+
 // Embedded secure local loopback static file server with deterministic port for persistent login sessions
 function startLocalServer() {
     return new Promise((resolve, reject) => {
@@ -157,7 +161,8 @@ async function createWindow() {
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
-            nodeIntegration: false
+            nodeIntegration: false,
+            userAgent: CHROME_USER_AGENT
         }
     });
 
@@ -167,7 +172,7 @@ async function createWindow() {
 
     try {
         const port = await startLocalServer();
-        mainWindow.loadURL(`http://127.0.0.1:${port}/index.html`);
+        mainWindow.loadURL(`http://localhost:${port}/index.html`);
     } catch (e) {
         console.warn('Failed to start local server, falling back to loadFile:', e);
         mainWindow.loadFile('index.html');
@@ -177,8 +182,20 @@ async function createWindow() {
     mainWindow.webContents.setWindowOpenHandler(({ url }) => {
         try {
             const parsed = new URL(url);
-            if (url.includes('accounts.google.com') || url.includes('firebaseapp.com')) {
-                return { action: 'allow' };
+            if (url.includes('accounts.google.com') || url.includes('firebaseapp.com') || url.includes('googleapis.com') || url.includes('google.com/o/oauth2')) {
+                return {
+                    action: 'allow',
+                    overrideBrowserWindowOptions: {
+                        autoHideMenuBar: true,
+                        width: 500,
+                        height: 650,
+                        webPreferences: {
+                            nodeIntegration: false,
+                            contextIsolation: true,
+                            userAgent: CHROME_USER_AGENT
+                        }
+                    }
+                };
             }
             if (parsed.protocol === 'https:' || parsed.protocol === 'http:') {
                 shell.openExternal(url);
@@ -626,7 +643,54 @@ ipcMain.handle('open-attachment-path', async (event, filePath) => {
     }
 });
 
-// Check for App Updates via GitHub Releases API (Secure, Sandboxed, and Validated)
+function fetchJsonFromUrl(url) {
+    return new Promise((resolve, reject) => {
+        const parsed = new URL(url);
+        const options = {
+            hostname: parsed.hostname,
+            path: parsed.pathname + parsed.search,
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+                'Accept': 'application/json, text/plain, */*'
+            }
+        };
+        const req = https.get(options, (res) => {
+            if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+                return fetchJsonFromUrl(res.headers.location).then(resolve).catch(reject);
+            }
+            if (res.statusCode !== 200) {
+                res.resume();
+                return reject(new Error(`HTTP ${res.statusCode}`));
+            }
+            let data = '';
+            res.on('data', chunk => { data += chunk; });
+            res.on('end', () => {
+                try {
+                    resolve(JSON.parse(data));
+                } catch (e) {
+                    reject(e);
+                }
+            });
+        });
+        req.on('error', reject);
+        req.setTimeout(8000, () => { req.destroy(); reject(new Error('Timeout')); });
+    });
+}
+
+function compareSemver(v1, v2) {
+    if (!v1 || !v2) return 0;
+    const clean1 = v1.replace(/^v/, '').split('-')[0].split('.').map(n => parseInt(n, 10) || 0);
+    const clean2 = v2.replace(/^v/, '').split('-')[0].split('.').map(n => parseInt(n, 10) || 0);
+    for (let i = 0; i < Math.max(clean1.length, clean2.length); i++) {
+        const p1 = clean1[i] || 0;
+        const p2 = clean2[i] || 0;
+        if (p1 > p2) return 1;
+        if (p1 < p2) return -1;
+    }
+    return 0;
+}
+
+// Check for App Updates via GitHub Releases API with seamless fallback for rate-limiting (HTTP 403)
 ipcMain.handle('check-for-updates', async () => {
     let currentVersion = '4.1.1';
     try {
@@ -634,102 +698,62 @@ ipcMain.handle('check-for-updates', async () => {
         if (currentPkg && currentPkg.version) currentVersion = currentPkg.version;
     } catch (e) {}
 
-    return new Promise((resolve) => {
-        const options = {
-            hostname: 'api.github.com',
-            path: '/repos/zViiX123/Todo_WebApp/releases/latest',
-            headers: {
-                'User-Agent': 'TodoBoardStudio-DesktopApp',
-                'Accept': 'application/vnd.github.v3+json'
-            }
-        };
+    // First attempt: GitHub Releases API for rich changelogs
+    try {
+        const release = await fetchJsonFromUrl('https://api.github.com/repos/zViiX123/Todo_WebApp/releases/latest');
+        const rawTag = typeof release.tag_name === 'string' ? release.tag_name.trim() : '';
 
-        const MAX_BODY_SIZE = 1024 * 1024; // 1MB maximum response limit
-        let totalBytes = 0;
+        if (/^v?\d+\.\d+\.\d+(-[a-zA-Z0-9.]+)?$/.test(rawTag)) {
+            const latestVersion = rawTag.replace(/^v/, '');
+            const isUpdateAvailable = compareSemver(latestVersion, currentVersion) > 0;
 
-        const req = https.get(options, (res) => {
-            if (res.statusCode !== 200) {
-                res.resume(); // Free memory
-                return resolve({
-                    success: false,
-                    currentVersion,
-                    error: `GitHub API returned HTTP ${res.statusCode}`
-                });
+            let safeReleaseUrl = 'https://github.com/zViiX123/Todo_WebApp/releases';
+            if (typeof release.html_url === 'string' && release.html_url.startsWith('https://github.com/zViiX123/Todo_WebApp/releases')) {
+                safeReleaseUrl = release.html_url;
             }
 
-            let rawData = '';
-            res.on('data', (chunk) => {
-                totalBytes += chunk.length;
-                if (totalBytes > MAX_BODY_SIZE) {
-                    req.destroy();
-                    return resolve({
-                        success: false,
-                        currentVersion,
-                        error: 'Response payload exceeded security threshold (1MB).'
-                    });
-                }
-                rawData += chunk;
-            });
-
-            res.on('end', () => {
-                try {
-                    const release = JSON.parse(rawData);
-                    const rawTag = typeof release.tag_name === 'string' ? release.tag_name.trim() : '';
-
-                    // Validate tag format matches semantic versioning (e.g. v1.0.0 or 1.0.0)
-                    if (!/^v?\d+\.\d+\.\d+(-[a-zA-Z0-9.]+)?$/.test(rawTag)) {
-                        return resolve({
-                            success: false,
-                            currentVersion,
-                            error: 'Invalid release version format received from server.'
-                        });
-                    }
-
-                    const latestVersion = rawTag.replace(/^v/, '');
-                    const isUpdateAvailable = compareSemver(latestVersion, currentVersion) > 0;
-
-                    // Ensure releaseUrl strictly points to official repository releases page
-                    let safeReleaseUrl = 'https://github.com/zViiX123/Todo_WebApp/releases';
-                    if (typeof release.html_url === 'string' && release.html_url.startsWith('https://github.com/zViiX123/Todo_WebApp/releases')) {
-                        safeReleaseUrl = release.html_url;
-                    }
-
-                    resolve({
-                        success: true,
-                        currentVersion,
-                        latestVersion: latestVersion || currentVersion,
-                        isUpdateAvailable,
-                        releaseName: String(release.name || rawTag || 'Latest Release').slice(0, 100),
-                        releaseNotes: String(release.body || 'No release notes provided.').slice(0, 10000),
-                        releaseUrl: safeReleaseUrl,
-                        publishedAt: release.published_at
-                    });
-                } catch (e) {
-                    resolve({ success: false, currentVersion, error: 'Failed to parse update release data.' });
-                }
-            });
-        });
-
-        req.on('error', (err) => {
-            resolve({ success: false, currentVersion, error: err.message });
-        });
-
-        req.setTimeout(8000, () => {
-            req.destroy();
-            resolve({ success: false, currentVersion, error: 'Update check timed out.' });
-        });
-    });
-});
-
-function compareSemver(v1, v2) {
-    if (!v1 || !v2) return 0;
-    const p1 = v1.split('.').map(n => parseInt(n) || 0);
-    const p2 = v2.split('.').map(n => parseInt(n) || 0);
-    for (let i = 0; i < Math.max(p1.length, p2.length); i++) {
-        const num1 = p1[i] || 0;
-        const num2 = p2[i] || 0;
-        if (num1 > num2) return 1;
-        if (num1 < num2) return -1;
+            return {
+                success: true,
+                currentVersion,
+                latestVersion: latestVersion || currentVersion,
+                isUpdateAvailable,
+                releaseName: String(release.name || rawTag || 'Latest Release').slice(0, 100),
+                releaseNotes: String(release.body || 'No release notes provided.').slice(0, 10000),
+                releaseUrl: safeReleaseUrl,
+                publishedAt: release.published_at
+            };
+        }
+    } catch (apiErr) {
+        console.warn('GitHub API rate limit or error, using fallback:', apiErr.message);
     }
-    return 0;
-}
+
+    // Fallback attempt: Fetch version directly from repository package.json (bypasses GitHub API 403 limits)
+    try {
+        const rawPkg = await fetchJsonFromUrl('https://raw.githubusercontent.com/zViiX123/Todo_WebApp/main/package.json');
+        if (rawPkg && rawPkg.version && /^v?\d+\.\d+\.\d+(-[a-zA-Z0-9.]+)?$/.test(rawPkg.version)) {
+            const latestVersion = rawPkg.version.replace(/^v/, '');
+            const isUpdateAvailable = compareSemver(latestVersion, currentVersion) > 0;
+
+            return {
+                success: true,
+                currentVersion,
+                latestVersion: latestVersion || currentVersion,
+                isUpdateAvailable,
+                releaseName: `Version ${latestVersion}`,
+                releaseNotes: isUpdateAvailable
+                    ? `Todo Board Studio v${latestVersion} is now available! Download the latest installer or portable executable from GitHub Releases.`
+                    : `You are running the latest version of Todo Board Studio (v${currentVersion}).`,
+                releaseUrl: `https://github.com/zViiX123/Todo_WebApp/releases/tag/v${latestVersion}`,
+                publishedAt: new Date().toISOString()
+            };
+        }
+    } catch (rawErr) {
+        console.error('Raw package update fallback failed:', rawErr.message);
+    }
+
+    return {
+        success: false,
+        currentVersion,
+        error: 'Unable to contact GitHub update servers. Please check your internet connection.'
+    };
+});

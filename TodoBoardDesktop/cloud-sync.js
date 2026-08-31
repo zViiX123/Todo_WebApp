@@ -187,10 +187,7 @@
                 const result = await this.auth.signInWithPopup(provider);
                 return result.user;
             } catch (err) {
-                if (typeof window !== 'undefined' && window.electronAPI && (err.code === 'auth/popup-blocked' || err.code === 'auth/unauthorized-domain' || (err.message && err.message.includes('disallowed_useragent')))) {
-                    throw new Error('Google Sign-In requires browser verification. Please sign in with Email & Password in the desktop app, or use the Web App at todoboard-studio.web.app.');
-                }
-                if (err.code === 'auth/popup-blocked' || err.code === 'auth/unauthorized-domain') {
+                if (err.code === 'auth/popup-blocked') {
                     // Fallback to redirect in standard web browsers
                     await this.auth.signInWithRedirect(provider);
                     return null;
