@@ -11,10 +11,10 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder --win",
-    "build:installer": "electron-builder --win nsis",
-    "build:portable": "electron-builder --win portable",
-    "build:mac": "electron-builder --mac"
+    "build": "electron-builder --win --publish never",
+    "build:installer": "electron-builder --win nsis --publish never",
+    "build:portable": "electron-builder --win portable --publish never",
+    "build:mac": "electron-builder --mac --publish never"
   },
   "build": {
     "appId": "com.todoboard.desktop",
@@ -53,6 +53,7 @@
     "mac": {
       "icon": "build/icon.png",
       "category": "public.app-category.productivity",
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
       "target": [
         {
           "target": "dmg",

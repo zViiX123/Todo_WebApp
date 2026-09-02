@@ -38,8 +38,6 @@ jobs:
 
       - name: Build Windows Installer (NSIS & Portable)
         working-directory: ./TodoBoardDesktop
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run build
 
       - name: Upload Windows Artifacts
@@ -72,8 +70,6 @@ jobs:
 
       - name: Build macOS DMG & ZIP (Apple Silicon & Intel)
         working-directory: ./TodoBoardDesktop
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run build:mac
 
       - name: Upload macOS Artifacts
@@ -118,6 +114,7 @@ jobs:
           tag_name: ${{ github.ref_name || 'v4.1.2' }}
           draft: false
           prerelease: false
+          overwrite: true
           generate_release_notes: true
           files: |
             release-assets/*.exe
