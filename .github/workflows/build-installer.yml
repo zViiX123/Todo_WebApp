@@ -1,4 +1,4 @@
-﻿name: Build Windows Installer & Release
+name: Build Desktop Installers & Release
 
 on:
   push:
@@ -42,7 +42,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run build
 
-      - name: Upload Build Artifacts
+      - name: Upload Windows Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: Todo-Board-Studio-Windows-Binaries
@@ -51,17 +51,78 @@ jobs:
             TodoBoardDesktop/dist/*.blockmap
           retention-days: 30
 
-      - name: Create GitHub Release
-        if: startsWith(github.ref, 'refs/tags/') || github.event.inputs.create_release == 'true'
+  build-mac:
+    name: Build macOS DMG Installer & ZIP
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: TodoBoardDesktop/package-lock.json
+
+      - name: Install Dependencies
+        working-directory: ./TodoBoardDesktop
+        run: npm ci
+
+      - name: Build macOS DMG & ZIP (Apple Silicon & Intel)
+        working-directory: ./TodoBoardDesktop
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run build:mac
+
+      - name: Upload macOS Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Todo-Board-Studio-macOS-Binaries
+          path: |
+            TodoBoardDesktop/dist/*.dmg
+            TodoBoardDesktop/dist/*.zip
+            TodoBoardDesktop/dist/*.blockmap
+          retention-days: 30
+
+  release:
+    name: Publish Multi-Platform GitHub Release
+    needs: [build-windows, build-mac]
+    if: startsWith(github.ref, 'refs/tags/') || github.event.inputs.create_release == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Create Release Assets Directory
+        run: mkdir -p release-assets
+
+      - name: Download Windows Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: Todo-Board-Studio-Windows-Binaries
+          path: release-assets
+
+      - name: Download macOS Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: Todo-Board-Studio-macOS-Binaries
+          path: release-assets
+
+      - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: Todo Board Studio ${{ github.ref_name || 'v1.0.0' }}
-          tag_name: ${{ github.ref_name || 'v1.0.0' }}
+          name: Todo Board Studio ${{ github.ref_name || 'v4.1.2' }}
+          tag_name: ${{ github.ref_name || 'v4.1.2' }}
           draft: false
           prerelease: false
           generate_release_notes: true
           files: |
-            TodoBoardDesktop/dist/*.exe
-            TodoBoardDesktop/dist/*.blockmap
+            release-assets/*.exe
+            release-assets/*.dmg
+            release-assets/*.zip
+            release-assets/*.blockmap
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

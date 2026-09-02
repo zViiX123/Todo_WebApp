@@ -298,6 +298,64 @@ app.whenReady().then(() => {
     setupTray();
     setupGlobalShortcuts();
 
+    // Standard macOS application menu for native shortcuts (Copy, Paste, Undo, etc.)
+    if (process.platform === 'darwin') {
+        const macMenu = Menu.buildFromTemplate([
+            {
+                label: app.name,
+                submenu: [
+                    { role: 'about' },
+                    { type: 'separator' },
+                    { role: 'services' },
+                    { type: 'separator' },
+                    { role: 'hide' },
+                    { role: 'hideOthers' },
+                    { role: 'unhide' },
+                    { type: 'separator' },
+                    { role: 'quit' }
+                ]
+            },
+            {
+                label: 'Edit',
+                submenu: [
+                    { role: 'undo' },
+                    { role: 'redo' },
+                    { type: 'separator' },
+                    { role: 'cut' },
+                    { role: 'copy' },
+                    { role: 'paste' },
+                    { role: 'selectAll' }
+                ]
+            },
+            {
+                label: 'View',
+                submenu: [
+                    { role: 'reload' },
+                    { role: 'forceReload' },
+                    { role: 'toggleDevTools' },
+                    { type: 'separator' },
+                    { role: 'resetZoom' },
+                    { role: 'zoomIn' },
+                    { role: 'zoomOut' },
+                    { type: 'separator' },
+                    { role: 'togglefullscreen' }
+                ]
+            },
+            {
+                label: 'Window',
+                submenu: [
+                    { role: 'minimize' },
+                    { role: 'zoom' },
+                    { type: 'separator' },
+                    { role: 'front' },
+                    { type: 'separator' },
+                    { role: 'window' }
+                ]
+            }
+        ]);
+        Menu.setApplicationMenu(macMenu);
+    }
+
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) createWindow();
     });
