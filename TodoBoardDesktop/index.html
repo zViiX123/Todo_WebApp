@@ -830,27 +830,33 @@
         /* Subtask Drag & Drop in Modal */
         .subtask-drag-handle {
             display: inline-flex; align-items: center; justify-content: center;
-            width: 14px; height: 20px; cursor: grab; opacity: 0.35;
+            width: 18px; height: 22px; cursor: grab; opacity: 0.45;
             color: var(--text-muted);
-            transition: opacity 0.15s ease, transform 0.15s ease;
+            transition: opacity 0.15s ease, transform 0.15s ease, color 0.15s ease;
             user-select: none; -webkit-user-select: none;
             flex-shrink: 0;
+            border-radius: 4px;
         }
-        .modal-chk-row:hover .subtask-drag-handle { opacity: 0.7; }
-        .subtask-drag-handle:hover { opacity: 1 !important; transform: scale(1.15); color: var(--text-light); }
+        .modal-chk-row:hover .subtask-drag-handle { opacity: 0.8; }
+        .subtask-drag-handle:hover, .subtask-drag-handle:focus-visible {
+            opacity: 1 !important; transform: scale(1.15); color: var(--accent);
+            outline: none;
+        }
         .subtask-drag-handle:active { cursor: grabbing; }
 
         .modal-chk-row.subtask-dragging {
             opacity: 0.35 !important;
             outline: 1px dashed var(--accent) !important;
-            transform: scale(0.98);
+            background: rgba(120, 80, 220, 0.12) !important;
         }
 
         .modal-chk-row.drag-over-top {
             border-top: 2px solid var(--accent) !important;
+            box-shadow: 0 -2px 6px rgba(120, 80, 220, 0.4);
         }
         .modal-chk-row.drag-over-bottom {
             border-bottom: 2px solid var(--accent) !important;
+            box-shadow: 0 2px 6px rgba(120, 80, 220, 0.4);
         }
 
         /* Theme Gallery Modal */
@@ -1707,7 +1713,7 @@
                         <input type="text" id="modalChecklistInput" placeholder="Add subtask (Press Enter)..." onkeydown="if(event.key==='Enter'){addModalChecklistItem(); event.preventDefault();}" style="flex-grow: 1;">
                         <button type="button" class="btn" onclick="addModalChecklistItem()">Add Subtask</button>
                     </div>
-                    <div id="modalChecklistContainer" style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px; max-height: 180px; overflow-y: auto;"></div>
+                    <div id="modalChecklistContainer" ondragover="handleChecklistContainerDragOver(event)" ondrop="handleChecklistContainerDrop(event)" style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px; max-height: 180px; overflow-y: auto;"></div>
                 </div>
 
                 <!-- Local Files & Web Link Attachments -->
@@ -5549,14 +5555,14 @@
                 const itemText = (modalWorkingChecklist[idx].text || '').trim().toLowerCase();
                 if (itemText === 'started' || itemText === 'finished') return;
                 const [removed] = modalWorkingChecklist.splice(idx, 1);
-                ensureFinishedAtBottom(modalWorkingChecklist);
+                ensureDefaultSubtasksOrder(modalWorkingChecklist);
                 syncModalInputsFromChecklist();
                 renderModalChecklist();
                 playUiSound('delete');
                 pushUndoAction(`Deleted subtask "${removed.text || 'Untitled Subtask'}"`, () => {
                     const insertIdx = Math.min(idx, modalWorkingChecklist.length);
                     modalWorkingChecklist.splice(insertIdx, 0, removed);
-                    ensureFinishedAtBottom(modalWorkingChecklist);
+                    ensureDefaultSubtasksOrder(modalWorkingChecklist);
                     const modalEl = document.getElementById('taskModal');
                     const modalOpen = modalEl && (modalEl.classList.contains('active') || modalEl.classList.contains('show'));
                     if (modalOpen) {
@@ -5570,7 +5576,7 @@
                             if (!exists && !modalOpen) {
                                 const tInsertIdx = Math.min(idx, task.checklist.length);
                                 task.checklist.splice(tInsertIdx, 0, removed);
-                                ensureFinishedAtBottom(task.checklist);
+                                ensureDefaultSubtasksOrder(task.checklist);
                                 syncTaskChecklistTimers(task);
                                 task.checklistOpen = true;
                                 task.updatedAt = Date.now();
@@ -5584,54 +5590,107 @@
 
         let draggedSubtaskIdx = null;
 
+        function moveModalSubtask(idx, direction) {
+            const targetIdx = idx + direction;
+            const item = modalWorkingChecklist[idx];
+            if (!item) return;
+            const itemText = (item.text || '').trim().toLowerCase();
+            if (itemText === 'started' || itemText === 'finished') return;
+
+            const hasStarted = modalWorkingChecklist.length > 0 && (modalWorkingChecklist[0].text || '').trim().toLowerCase() === 'started';
+            const lastIdx = modalWorkingChecklist.length - 1;
+            const hasFinished = modalWorkingChecklist.length > 0 && (modalWorkingChecklist[lastIdx].text || '').trim().toLowerCase() === 'finished';
+
+            const minAllowed = hasStarted ? 1 : 0;
+            const maxAllowed = hasFinished ? Math.max(minAllowed, modalWorkingChecklist.length - 2) : modalWorkingChecklist.length - 1;
+
+            if (targetIdx < minAllowed || targetIdx > maxAllowed) return;
+
+            const [moved] = modalWorkingChecklist.splice(idx, 1);
+            modalWorkingChecklist.splice(targetIdx, 0, moved);
+            ensureDefaultSubtasksOrder(modalWorkingChecklist);
+            syncModalInputsFromChecklist();
+            renderModalChecklist();
+            playUiSound('pop');
+        }
+
         function handleSubtaskDragStart(e, idx) {
             const item = modalWorkingChecklist[idx];
             if (!item) return;
             const isProtected = ['started', 'finished'].includes((item.text || '').trim().toLowerCase());
-            if (isProtected || !e.target.closest('.subtask-drag-handle')) {
+            if (isProtected) {
                 e.preventDefault();
                 return false;
             }
             draggedSubtaskIdx = idx;
             e.dataTransfer.setData("text/plain", idx.toString());
             e.dataTransfer.effectAllowed = "move";
-            setTimeout(() => {
-                const el = document.querySelector(`.modal-chk-row[data-idx="${idx}"]`);
-                if (el) el.classList.add('subtask-dragging');
-            }, 0);
+
+            const row = e.target.closest('.modal-chk-row');
+            if (row) {
+                if (e.dataTransfer.setDragImage) {
+                    const rect = row.getBoundingClientRect();
+                    const offsetX = Math.max(10, Math.min(rect.width - 10, (e.clientX || 0) - rect.left));
+                    const offsetY = Math.max(10, Math.min(rect.height - 10, (e.clientY || 0) - rect.top));
+                    e.dataTransfer.setDragImage(row, offsetX, offsetY);
+                }
+                setTimeout(() => {
+                    if (row) row.classList.add('subtask-dragging');
+                }, 0);
+            }
+            e.stopPropagation();
         }
 
         function handleSubtaskDragEnd(e) {
             draggedSubtaskIdx = null;
             document.querySelectorAll('.modal-chk-row').forEach(row => {
                 row.classList.remove('subtask-dragging', 'drag-over-top', 'drag-over-bottom');
-                row.draggable = false;
             });
         }
 
         function handleSubtaskDragOver(e, targetIdx) {
             if (draggedSubtaskIdx === null || draggedSubtaskIdx === targetIdx) return;
             e.preventDefault();
+            e.stopPropagation();
             e.dataTransfer.dropEffect = "move";
 
             const targetRow = e.currentTarget;
             const rect = targetRow.getBoundingClientRect();
             const isAfter = e.clientY > rect.top + rect.height / 2;
 
-            document.querySelectorAll('.modal-chk-row').forEach(r => r.classList.remove('drag-over-top', 'drag-over-bottom'));
-            if (isAfter) {
+            document.querySelectorAll('.modal-chk-row').forEach(r => {
+                if (r !== targetRow) r.classList.remove('drag-over-top', 'drag-over-bottom');
+            });
+
+            const hasStarted = modalWorkingChecklist.length > 0 && (modalWorkingChecklist[0].text || '').trim().toLowerCase() === 'started';
+            const lastIdx = modalWorkingChecklist.length - 1;
+            const hasFinished = modalWorkingChecklist.length > 0 && (modalWorkingChecklist[lastIdx].text || '').trim().toLowerCase() === 'finished';
+
+            if (hasStarted && targetIdx === 0) {
                 targetRow.classList.add('drag-over-bottom');
+                targetRow.classList.remove('drag-over-top');
+            } else if (hasFinished && targetIdx === lastIdx) {
+                targetRow.classList.add('drag-over-top');
+                targetRow.classList.remove('drag-over-bottom');
+            } else if (isAfter) {
+                targetRow.classList.add('drag-over-bottom');
+                targetRow.classList.remove('drag-over-top');
             } else {
                 targetRow.classList.add('drag-over-top');
+                targetRow.classList.remove('drag-over-bottom');
             }
         }
 
         function handleSubtaskDragLeave(e) {
+            if (e.relatedTarget && e.currentTarget.contains(e.relatedTarget)) return;
             e.currentTarget.classList.remove('drag-over-top', 'drag-over-bottom');
         }
 
         function handleSubtaskDrop(e, targetIdx) {
-            if (draggedSubtaskIdx === null || draggedSubtaskIdx === targetIdx) return;
+            if (draggedSubtaskIdx === null || draggedSubtaskIdx === targetIdx) {
+                handleSubtaskDragEnd();
+                return;
+            }
             e.preventDefault();
             e.stopPropagation();
 
@@ -5640,12 +5699,15 @@
             const isAfter = e.clientY > rect.top + rect.height / 2;
 
             let destIdx = isAfter ? targetIdx + 1 : targetIdx;
-            if (destIdx > draggedSubtaskIdx) destIdx--;
 
-            // Guard "Started" at index 0 and "Finished" at bottom
             const hasStarted = modalWorkingChecklist.length > 0 && (modalWorkingChecklist[0].text || '').trim().toLowerCase() === 'started';
             const lastIdx = modalWorkingChecklist.length - 1;
             const hasFinished = modalWorkingChecklist.length > 0 && (modalWorkingChecklist[lastIdx].text || '').trim().toLowerCase() === 'finished';
+
+            if (hasStarted && targetIdx === 0) destIdx = 1;
+            if (hasFinished && targetIdx === lastIdx) destIdx = lastIdx;
+
+            if (destIdx > draggedSubtaskIdx) destIdx--;
 
             const minAllowed = hasStarted ? 1 : 0;
             const maxAllowed = hasFinished ? Math.max(minAllowed, modalWorkingChecklist.length - 2) : modalWorkingChecklist.length - 1;
@@ -5664,6 +5726,34 @@
             handleSubtaskDragEnd();
         }
 
+        function handleChecklistContainerDragOver(e) {
+            if (draggedSubtaskIdx === null) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "move";
+        }
+
+        function handleChecklistContainerDrop(e) {
+            if (draggedSubtaskIdx === null) return;
+            e.preventDefault();
+            const hasStarted = modalWorkingChecklist.length > 0 && (modalWorkingChecklist[0].text || '').trim().toLowerCase() === 'started';
+            const lastIdx = modalWorkingChecklist.length - 1;
+            const hasFinished = modalWorkingChecklist.length > 0 && (modalWorkingChecklist[lastIdx].text || '').trim().toLowerCase() === 'finished';
+
+            const minAllowed = hasStarted ? 1 : 0;
+            const maxAllowed = hasFinished ? Math.max(minAllowed, modalWorkingChecklist.length - 2) : modalWorkingChecklist.length - 1;
+
+            const destIdx = maxAllowed;
+            if (destIdx !== draggedSubtaskIdx) {
+                const [movedItem] = modalWorkingChecklist.splice(draggedSubtaskIdx, 1);
+                modalWorkingChecklist.splice(destIdx, 0, movedItem);
+                ensureDefaultSubtasksOrder(modalWorkingChecklist);
+                syncModalInputsFromChecklist();
+                renderModalChecklist();
+                playUiSound('pop');
+            }
+            handleSubtaskDragEnd();
+        }
+
         function renderModalChecklist() {
             const cont = document.getElementById('modalChecklistContainer');
             const done = modalWorkingChecklist.filter(c => c.done).length;
@@ -5677,9 +5767,13 @@
                     : `<button type="button" class="icon-btn del" onclick="handleModalChecklistDelete(${i})" title="Delete subtask">✕</button>`;
 
                 const dragHandle = isProtected
-                    ? `<span style="width: 14px; height: 20px; min-width: 14px; display: inline-flex; align-items: center; justify-content: center; opacity: 0.35; font-size: 10px; cursor: not-allowed;" title="Default fixed step">🔒</span>`
-                    : `<span class="subtask-drag-handle" onmouseenter="this.closest('.modal-chk-row').draggable = true" onmouseleave="if(draggedSubtaskIdx === null) this.closest('.modal-chk-row').draggable = false" onmousedown="this.closest('.modal-chk-row').draggable = true" title="Drag to reorder subtask">
-                        <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
+                    ? `<span style="width: 18px; height: 22px; min-width: 18px; display: inline-flex; align-items: center; justify-content: center; opacity: 0.35; font-size: 11px; cursor: not-allowed;" title="Default fixed step">🔒</span>`
+                    : `<span class="subtask-drag-handle" draggable="true" tabindex="0"
+                             ondragstart="handleSubtaskDragStart(event, ${i})"
+                             ondragend="handleSubtaskDragEnd(event)"
+                             onkeydown="if(event.key==='ArrowUp'){moveModalSubtask(${i}, -1); event.preventDefault();} else if(event.key==='ArrowDown'){moveModalSubtask(${i}, 1); event.preventDefault();}"
+                             title="Drag to reorder (or use Arrow Up/Down keys)">
+                        <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor" style="pointer-events: none; display: block;">
                             <circle cx="3" cy="2" r="1.3"/>
                             <circle cx="7" cy="2" r="1.3"/>
                             <circle cx="3" cy="7" r="1.3"/>
@@ -5690,9 +5784,7 @@
                        </span>`;
 
                 return `
-                    <div class="modal-chk-row ${isProtected ? 'protected-step' : ''}" data-idx="${i}" draggable="false"
-                         ondragstart="${!isProtected ? `handleSubtaskDragStart(event, ${i})` : 'event.preventDefault()'}"
-                         ondragend="handleSubtaskDragEnd(event)"
+                    <div class="modal-chk-row ${isProtected ? 'protected-step' : ''}" data-idx="${i}"
                          ondragover="handleSubtaskDragOver(event, ${i})"
                          ondragleave="handleSubtaskDragLeave(event)"
                          ondrop="handleSubtaskDrop(event, ${i})"
