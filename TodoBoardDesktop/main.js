@@ -7,6 +7,7 @@ const https = require('https');
 const userDataPath = app.getPath('userData');
 const dataPath = path.join(userDataPath, 'todo_board_data.json');
 const windowStatePath = path.join(userDataPath, 'window_state.json');
+const lastBoardPath = path.join(userDataPath, 'last_board.json');
 
 let mainWindow = null;
 let tray = null;
@@ -470,6 +471,31 @@ ipcMain.on('save-data', (event, jsonData) => {
         performDailyBackup(jsonData);
     } catch (err) {
         console.error('Error saving data:', err);
+    }
+});
+
+// Load last opened board ID
+ipcMain.handle('get-last-board', () => {
+    try {
+        if (fs.existsSync(lastBoardPath)) {
+            const raw = fs.readFileSync(lastBoardPath, 'utf-8');
+            const parsed = JSON.parse(raw);
+            return parsed && parsed.lastBoardId ? parsed.lastBoardId : null;
+        }
+    } catch (err) {
+        console.error('Error loading last board:', err);
+    }
+    return null;
+});
+
+// Save last opened board ID
+ipcMain.on('set-last-board', (event, boardId) => {
+    try {
+        if (boardId) {
+            fs.writeFileSync(lastBoardPath, JSON.stringify({ lastBoardId: boardId }), 'utf-8');
+        }
+    } catch (err) {
+        console.error('Error saving last board:', err);
     }
 });
 

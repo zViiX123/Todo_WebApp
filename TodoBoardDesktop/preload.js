@@ -3,6 +3,8 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('electronAPI', {
     loadData: () => ipcRenderer.invoke('load-data'),
     saveData: (data) => ipcRenderer.send('save-data', data),
+    getLastBoard: () => ipcRenderer.invoke('get-last-board'),
+    setLastBoard: (boardId) => ipcRenderer.send('set-last-board', boardId),
     showNotification: (payload) => ipcRenderer.send('show-notification', payload),
     exportFileDialog: (payload) => ipcRenderer.invoke('export-file-dialog', payload),
     importFileDialog: (payload) => ipcRenderer.invoke('import-file-dialog', payload),

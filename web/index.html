@@ -3806,7 +3806,6 @@
             if (savedJson) {
                 try {
                     boards = JSON.parse(savedJson);
-                    activeBoardId = Object.keys(boards)[0];
                 } catch (e) {
                     console.error("Data parse error:", e);
                 }
@@ -3836,9 +3835,31 @@
                 }
             });
 
-            if (!activeBoardId || !boards[activeBoardId]) {
+            // Restore last opened board if it still exists in the workspace
+            let storedLastBoardId = null;
+            if (window.electronAPI && window.electronAPI.getLastBoard) {
+                try {
+                    storedLastBoardId = await window.electronAPI.getLastBoard();
+                } catch (e) {}
+            }
+            if (!storedLastBoardId) {
+                try {
+                    storedLastBoardId = localStorage.getItem("todoLastActiveBoardId");
+                } catch (e) {}
+            }
+
+            if (storedLastBoardId && boards[storedLastBoardId]) {
+                activeBoardId = storedLastBoardId;
+            } else if (!activeBoardId || !boards[activeBoardId]) {
                 activeBoardId = Object.keys(boards)[0];
             }
+
+            try {
+                localStorage.setItem("todoLastActiveBoardId", activeBoardId);
+                if (window.electronAPI && window.electronAPI.setLastBoard) {
+                    window.electronAPI.setLastBoard(activeBoardId);
+                }
+            } catch (e) {}
 
             data = boards[activeBoardId];
             if (data.settings && data.settings.soundEnabled !== undefined) {
@@ -3891,6 +3912,12 @@
         // --- Persistence ---
         function saveData() {
             boards[activeBoardId] = data;
+            try {
+                localStorage.setItem("todoLastActiveBoardId", activeBoardId);
+                if (window.electronAPI && window.electronAPI.setLastBoard) {
+                    window.electronAPI.setLastBoard(activeBoardId);
+                }
+            } catch (e) {}
             const jsonStr = JSON.stringify(boards);
             if (window.electronAPI && window.electronAPI.saveData) {
                 window.electronAPI.saveData(jsonStr);
@@ -3929,6 +3956,12 @@
             if (!boards[id]) return;
             const isSameBoard = (activeBoardId === id);
             activeBoardId = id;
+            try {
+                localStorage.setItem("todoLastActiveBoardId", id);
+                if (window.electronAPI && window.electronAPI.setLastBoard) {
+                    window.electronAPI.setLastBoard(id);
+                }
+            } catch (e) {}
             data = boards[activeBoardId];
             if (!data) {
                 data = JSON.parse(JSON.stringify(DEFAULT_DATA));
@@ -6840,7 +6873,15 @@
                 const cloudBoards = await window.cloudSyncManager.fetchCloudState();
                 if (cloudBoards && Object.keys(cloudBoards).length > 0) {
                     boards = cloudBoards;
-                    if (!boards[activeBoardId]) activeBoardId = Object.keys(boards)[0];
+                    let lastId = null;
+                    try {
+                        lastId = localStorage.getItem("todoLastActiveBoardId");
+                    } catch (e) {}
+                    if (lastId && boards[lastId]) {
+                        activeBoardId = lastId;
+                    } else if (!boards[activeBoardId]) {
+                        activeBoardId = Object.keys(boards)[0];
+                    }
                     switchBoard(activeBoardId);
                     saveData();
                     closeUserProfileModal();
@@ -6974,7 +7015,13 @@
                 });
 
                 boards = remoteBoards;
-                if (!boards[activeBoardId]) {
+                let lastId = null;
+                try {
+                    lastId = localStorage.getItem("todoLastActiveBoardId");
+                } catch (e) {}
+                if (lastId && boards[lastId]) {
+                    activeBoardId = lastId;
+                } else if (!boards[activeBoardId]) {
                     activeBoardId = Object.keys(boards)[0] || 'default';
                 }
 
