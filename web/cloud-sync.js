@@ -468,7 +468,7 @@
                     cipherText: encryptedData.cipherText,
                     iv: encryptedData.iv,
                     updatedAt: new Date().toISOString(),
-                    clientVersion: '5.0.0',
+                    clientVersion: '5.0.1',
                     userId: uid
                 };
 

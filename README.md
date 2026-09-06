@@ -1,7 +1,7 @@
 # ✦ Todo Board Studio
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-purple.svg)](https://www.gnu.org/licenses/agpl-3.0)
-[![Version: 5.0.0](https://img.shields.io/badge/Version-5.0.0-brightgreen.svg)](https://github.com/zViiX123/Todo_WebApp/releases)
+[![Version: 5.0.1](https://img.shields.io/badge/Version-5.0.1-brightgreen.svg)](https://github.com/zViiX123/Todo_WebApp/releases)
 [![Web App](https://img.shields.io/badge/Live_Web_App-todoboard--studio.web.app-blue.svg)](https://todoboard-studio.web.app/)
 [![Platform](https://img.shields.io/badge/Platform-Web%20%7C%20Windows%20%7C%20macOS%20%7C%20PWA-orange.svg)]()
 
@@ -131,10 +131,10 @@ npm run build:mac
 ```
 
 The compiled binaries will be output to `TodoBoardDesktop/dist/`:
-* **`Todo Board Studio Setup 5.0.0.exe`**: Windows setup installer.
-* **`Todo Board Studio 5.0.0.exe`**: Zero-install Windows portable executable.
-* **`Todo Board Studio-5.0.0.dmg`**: macOS DMG installer (Apple Silicon & Intel).
-* **`Todo Board Studio-5.0.0-mac.zip`**: macOS compressed application bundle.
+* **`Todo Board Studio Setup 5.0.1.exe`**: Windows setup installer.
+* **`Todo Board Studio 5.0.1.exe`**: Zero-install Windows portable executable.
+* **`Todo Board Studio-5.0.1.dmg`**: macOS DMG installer (Apple Silicon & Intel).
+* **`Todo Board Studio-5.0.1-mac.zip`**: macOS compressed application bundle.
 
 ---
 
