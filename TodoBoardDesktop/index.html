@@ -4536,12 +4536,14 @@
         }
 
         // --- Drag & Drop and Rearranging State ---
+        let didDragCard = false;
 
         function cardDragStart(ev, id) {
-            if (!ev.target.closest('.card-drag-handle')) {
+            if (ev.target.closest('button, input, textarea, select, details, summary, .card-checklist-details, [contenteditable="true"]')) {
                 ev.preventDefault();
                 return false;
             }
+            didDragCard = true;
             draggedCardId = id;
             ev.dataTransfer.setData("text/plain", id);
             ev.dataTransfer.effectAllowed = "move";
@@ -4555,10 +4557,10 @@
         function cardDragEnd(ev) {
             draggedCardId = null;
             document.querySelectorAll('.card.dragging').forEach(c => c.classList.remove('dragging'));
-            document.querySelectorAll('.card[draggable="true"]').forEach(c => c.draggable = false);
             document.querySelectorAll('.card-drop-placeholder').forEach(p => p.remove());
             document.querySelectorAll('.card-list').forEach(l => l.classList.remove('drag-over'));
             currentCardPlaceholder = null;
+            setTimeout(() => { didDragCard = false; }, 120);
         }
 
         function cardListDragOver(ev, colName) {
@@ -4663,14 +4665,14 @@
 
         // --- Column Drag & Drop ---
         function colDragStart(ev, name) {
-            if (!ev.target.closest('.col-drag-handle')) {
+            if (ev.target.closest('button, input, textarea, select, [contenteditable="true"]')) {
                 ev.preventDefault();
                 return false;
             }
             if (data.pinnedCol && name === data.pinnedCol) {
                 // Pinned column cannot be dragged away from position 0
                 ev.preventDefault();
-                return;
+                return false;
             }
             draggedColName = name;
             ev.dataTransfer.setData("col-name", name);
@@ -4684,7 +4686,6 @@
         function colDragEnd(ev) {
             draggedColName = null;
             document.querySelectorAll('.column.col-dragging').forEach(c => c.classList.remove('col-dragging'));
-            document.querySelectorAll('.col-header[draggable="true"]').forEach(h => h.draggable = false);
             document.querySelectorAll('.col-drop-placeholder').forEach(p => p.remove());
             currentColPlaceholder = null;
         }
@@ -5042,10 +5043,10 @@
                 };
 
                 colEl.innerHTML = `
-                    <div class="col-header" ${!isPinned ? 'draggable="false"' : ''} ondragstart="${!isPinned ? `colDragStart(event, '${escapeHtml(colName)}')` : 'event.preventDefault()'}" ondragend="colDragEnd(event)" title="${isPinned ? '📌 Pinned Column (locked at 1st position)' : ''}">
+                    <div class="col-header" ${!isPinned ? 'draggable="true"' : ''} ondragstart="${!isPinned ? `colDragStart(event, '${escapeHtml(colName)}')` : 'event.preventDefault()'}" ondragend="colDragEnd(event)" title="${isPinned ? '📌 Pinned Column (locked at 1st position)' : ''}">
                         ${!isPinned ? `
-                        <div class="col-drag-handle" onmouseenter="this.closest('.col-header').draggable = true" onmouseleave="if(!draggedColName) this.closest('.col-header').draggable = false" onmousedown="this.closest('.col-header').draggable = true" title="Drag to reorder column">
-                            <svg class="drag-dots" width="18" height="8" viewBox="0 0 18 8" fill="currentColor">
+                        <div class="col-drag-handle" title="Drag to reorder column">
+                            <svg class="drag-dots" width="18" height="8" viewBox="0 0 18 8" fill="currentColor" style="pointer-events: none; display: block;">
                                 <circle cx="3" cy="2" r="1.4"/>
                                 <circle cx="9" cy="2" r="1.4"/>
                                 <circle cx="15" cy="2" r="1.4"/>
@@ -5087,19 +5088,12 @@
                     const card = document.createElement("div");
                     card.className = "card";
                     card.setAttribute('data-task-id', task.id);
-                    card.draggable = false;
-                    card.ondragstart = (e) => {
-                        if (!e.target.closest('.card-drag-handle')) {
-                            e.preventDefault();
-                            return false;
-                        }
-                        cardDragStart(e, task.id);
-                    };
-                    card.ondragend = (e) => {
-                        card.draggable = false;
-                        cardDragEnd(e);
-                    };
+                    card.draggable = true;
+                    card.setAttribute('draggable', 'true');
+                    card.ondragstart = (e) => cardDragStart(e, task.id);
+                    card.ondragend = (e) => cardDragEnd(e);
                     card.onclick = (e) => {
+                        if (didDragCard) return;
                         if (!e.target.closest('button') && !e.target.closest('input') && !e.target.closest('select') && !e.target.closest('details') && !e.target.closest('summary') && !e.target.closest('.card-checklist-details') && !e.target.isContentEditable && !e.target.closest('[contenteditable="true"]') && !e.target.closest('.card-drag-handle')) {
                             openTaskModal(task.id);
                         }
@@ -5178,8 +5172,8 @@
                     }).join('');
 
                     card.innerHTML = `
-                        <div class="card-drag-handle" onmouseenter="this.closest('.card').draggable = true" onmouseleave="if(!draggedCardId) this.closest('.card').draggable = false" onmousedown="this.closest('.card').draggable = true" title="Drag to move card">
-                            <svg class="drag-dots" width="18" height="8" viewBox="0 0 18 8" fill="currentColor">
+                        <div class="card-drag-handle" title="Drag to move card">
+                            <svg class="drag-dots" width="18" height="8" viewBox="0 0 18 8" fill="currentColor" style="pointer-events: none; display: block;">
                                 <circle cx="3" cy="2" r="1.4"/>
                                 <circle cx="9" cy="2" r="1.4"/>
                                 <circle cx="15" cy="2" r="1.4"/>
@@ -7038,11 +7032,12 @@
 
         // Safety capture listeners to prevent drag-drop interference during inline text editing
         document.addEventListener('mousedown', (e) => {
-            const editable = e.target.closest('[contenteditable="true"], input, textarea');
+            const editable = e.target.closest('[contenteditable="true"], input, textarea, select');
             if (editable) {
-                const draggableParent = editable.closest('[draggable="true"]');
+                const draggableParent = editable.closest('[draggable="true"], .card, .col-header');
                 if (draggableParent) {
                     draggableParent.draggable = false;
+                    draggableParent.setAttribute('draggable', 'false');
                     draggableParent.dataset.wasDraggable = 'true';
                 }
             }
@@ -7051,6 +7046,7 @@
         document.addEventListener('focusout', () => {
             document.querySelectorAll('[data-was-draggable="true"]').forEach(el => {
                 el.draggable = true;
+                el.setAttribute('draggable', 'true');
                 delete el.dataset.wasDraggable;
             });
         }, true);
