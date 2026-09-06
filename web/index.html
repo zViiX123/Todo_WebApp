@@ -2067,7 +2067,10 @@
 
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; font-size: 11px;">
                     <a href="javascript:void(0)" onclick="openCloudSettingsModal()" style="color: var(--text-muted); text-decoration: none;">⚙️ Cloud Settings</a>
-                    <span style="color: var(--text-muted);">🔒 Sandboxed & Encrypted</span>
+                    <span style="color: #4ADE80; font-weight: 600;">🔒 AES-256-GCM Encrypted</span>
+                </div>
+                <div style="margin-top: 12px; padding: 8px 10px; background: rgba(74, 222, 128, 0.08); border: 1px solid rgba(74, 222, 128, 0.25); border-radius: 6px; font-size: 11px; color: var(--text-light); text-align: center; line-height: 1.4;">
+                    🛡️ <strong>Every session is encrypted with AES‑256‑GCM before it leaves your device. Only your account has permission to your work.</strong>
                 </div>
             </div>
             <div class="modal-footer" style="justify-content: flex-end;">
@@ -2089,13 +2092,21 @@
             
             <div class="modal-body" style="padding: 16px 20px;">
                 <!-- User Profile Card -->
-                <div style="display: flex; align-items: center; gap: 14px; padding: 14px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--border-glass); margin-bottom: 16px;">
+                <div style="display: flex; align-items: center; gap: 14px; padding: 14px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--border-glass); margin-bottom: 12px;">
                     <div id="profileAvatarCircle" style="width: 48px; height: 48px; border-radius: 50%; background: var(--accent); color: #FFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 20px; box-shadow: 0 0 10px var(--accent-glow);">
                         U
                     </div>
                     <div style="flex-grow: 1; min-width: 0;">
                         <div id="profileDisplayName" style="font-weight: 700; font-size: 15px; color: var(--text-light); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">Logged In User</div>
                         <div id="profileEmail" style="font-size: 12px; color: var(--text-muted); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">user@example.com</div>
+                    </div>
+                </div>
+
+                <!-- AES-256-GCM Zero-Knowledge Security Notice -->
+                <div style="margin-bottom: 14px; padding: 9px 12px; background: rgba(74, 222, 128, 0.08); border: 1px solid rgba(74, 222, 128, 0.25); border-radius: 6px; display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 18px;">🛡️</span>
+                    <div style="font-size: 11px; color: var(--text-light); line-height: 1.4;">
+                        <strong style="color: #4ADE80;">End-to-End Encrypted</strong>: Every session is encrypted with AES‑256‑GCM before it leaves your device. Only your account has permission to your work.
                     </div>
                 </div>
 

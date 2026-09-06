@@ -29,6 +29,9 @@
             this.pushTimer = null;
             this.lastCloudUpdatedAt = null;
             this.lastSyncedHash = null;
+            this.lastSyncedCipherText = null;
+            this.cachedEncryptionKey = null;
+            this.cachedKeyUid = null;
 
             this.listeners = {
                 status: [],
@@ -204,8 +207,104 @@
         async signOut() {
             if (!this.auth) return;
             this.stopRealtimeListener();
+            this.cachedEncryptionKey = null;
+            this.cachedKeyUid = null;
+            this.lastSyncedCipherText = null;
             await this.auth.signOut();
             this.setStatus('guest');
+        }
+
+        // --- Web Cryptography API: AES-256-GCM Client-Side Encryption ---
+        arrayBufferToBase64(buffer) {
+            const bytes = new Uint8Array(buffer);
+            let binary = '';
+            const len = bytes.byteLength;
+            const chunkSize = 0x8000;
+            for (let i = 0; i < len; i += chunkSize) {
+                binary += String.fromCharCode.apply(null, bytes.subarray(i, Math.min(i + chunkSize, len)));
+            }
+            return btoa(binary);
+        }
+
+        base64ToArrayBuffer(base64) {
+            const binaryString = atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes;
+        }
+
+        async getOrCreateEncryptionKey(uid) {
+            if (this.cachedEncryptionKey && this.cachedKeyUid === uid) {
+                return this.cachedEncryptionKey;
+            }
+
+            if (typeof window === 'undefined' || !window.crypto || !window.crypto.subtle) {
+                throw new Error('Web Cryptography API is not available in this environment.');
+            }
+
+            const enc = new TextEncoder();
+            const keyMaterial = await window.crypto.subtle.importKey(
+                'raw',
+                enc.encode(uid),
+                { name: 'PBKDF2' },
+                false,
+                ['deriveKey']
+            );
+
+            const salt = enc.encode('TodoBoardStudio_AES256GCM_Salt_v2_' + uid);
+            const derivedKey = await window.crypto.subtle.deriveKey(
+                {
+                    name: 'PBKDF2',
+                    salt: salt,
+                    iterations: 100000,
+                    hash: 'SHA-256'
+                },
+                keyMaterial,
+                { name: 'AES-GCM', length: 256 },
+                false,
+                ['encrypt', 'decrypt']
+            );
+
+            this.cachedEncryptionKey = derivedKey;
+            this.cachedKeyUid = uid;
+            return derivedKey;
+        }
+
+        async encryptPayload(boards, uid) {
+            const key = await this.getOrCreateEncryptionKey(uid);
+            const enc = new TextEncoder();
+            const jsonString = JSON.stringify(boards);
+            const iv = window.crypto.getRandomValues(new Uint8Array(12));
+
+            const encryptedBuffer = await window.crypto.subtle.encrypt(
+                { name: 'AES-GCM', iv: iv },
+                key,
+                enc.encode(jsonString)
+            );
+
+            return {
+                cipherText: this.arrayBufferToBase64(encryptedBuffer),
+                iv: this.arrayBufferToBase64(iv.buffer)
+            };
+        }
+
+        async decryptPayload(cipherTextBase64, ivBase64, uid) {
+            const key = await this.getOrCreateEncryptionKey(uid);
+            const ivBytes = this.base64ToArrayBuffer(ivBase64);
+            const cipherBytes = this.base64ToArrayBuffer(cipherTextBase64);
+
+            const decryptedBuffer = await window.crypto.subtle.decrypt(
+                { name: 'AES-GCM', iv: ivBytes },
+                key,
+                cipherBytes
+            );
+
+            const dec = new TextDecoder();
+            const jsonString = dec.decode(decryptedBuffer);
+            return JSON.parse(jsonString);
         }
 
         // --- Realtime Firestore Sync ---
@@ -220,7 +319,7 @@
 
                 this.unsubscribeSnapshot = docRef.onSnapshot(
                     { includeMetadataChanges: true },
-                    doc => {
+                    async doc => {
                         if (!doc.exists) {
                             this.setStatus('synced');
                             isInitialLoad = false;
@@ -233,14 +332,45 @@
                         }
 
                         const data = doc.data();
-                        if (!data || !data.boards) {
+                        if (!data) {
+                            this.setStatus('synced');
+                            isInitialLoad = false;
+                            return;
+                        }
+
+                        let remoteBoards = null;
+
+                        // Check for AES-256-GCM encrypted payload
+                        if (data.encrypted && data.cipherText && data.iv) {
+                            // Fast path: if this is our own write echoing back, skip decryption
+                            if (data.cipherText === this.lastSyncedCipherText) {
+                                this.setStatus('synced');
+                                isInitialLoad = false;
+                                return;
+                            }
+
+                            try {
+                                remoteBoards = await this.decryptPayload(data.cipherText, data.iv, uid);
+                                this.lastSyncedCipherText = data.cipherText;
+                            } catch (decryptErr) {
+                                console.error('Failed to decrypt cloud data with AES-256-GCM:', decryptErr);
+                                this.setStatus('error', 'Decryption verification failed.');
+                                isInitialLoad = false;
+                                return;
+                            }
+                        } else if (data.boards) {
+                            // Backward compatibility: existing plaintext data from previous versions
+                            remoteBoards = data.boards;
+                        }
+
+                        if (!remoteBoards || typeof remoteBoards !== 'object') {
                             this.setStatus('synced');
                             isInitialLoad = false;
                             return;
                         }
 
                         // Check if this update came from another client
-                        const remoteHash = this.computeHash(data.boards);
+                        const remoteHash = this.computeHash(remoteBoards);
                         if (remoteHash === this.lastSyncedHash || (this.pendingBoards && remoteHash === this.computeHash(this.pendingBoards))) {
                             this.setStatus('synced');
                             isInitialLoad = false;
@@ -252,7 +382,7 @@
 
                         this.lastSyncedHash = remoteHash;
                         this.lastCloudUpdatedAt = data.updatedAt;
-                        this.notifyRemoteDataListeners(data.boards, data.updatedAt, isLiveUpdate);
+                        this.notifyRemoteDataListeners(remoteBoards, data.updatedAt, isLiveUpdate);
                         this.setStatus('synced');
                     },
                     err => {
@@ -327,16 +457,24 @@
                 const uid = this.currentUser.uid;
                 const docRef = this.db.collection('users').doc(uid).collection('data').doc('workspaces');
 
+                // Encrypt payload with AES-256-GCM on device before pushing to cloud
+                const encryptedData = await this.encryptPayload(payloadBoards, uid);
+
                 const payload = {
-                    boards: payloadBoards,
+                    encrypted: true,
+                    algorithm: 'AES-256-GCM',
+                    keyDerivation: 'PBKDF2-SHA256',
+                    iterations: 100000,
+                    cipherText: encryptedData.cipherText,
+                    iv: encryptedData.iv,
                     updatedAt: new Date().toISOString(),
-                    clientVersion: '4.1.0',
-                    userId: uid,
-                    email: this.currentUser.email || ''
+                    clientVersion: '4.1.2',
+                    userId: uid
                 };
 
                 await docRef.set(payload);
                 this.lastSyncedHash = currentHash;
+                this.lastSyncedCipherText = encryptedData.cipherText;
                 this.lastCloudUpdatedAt = payload.updatedAt;
                 this.pendingBoards = null;
                 this.setStatus('synced');
@@ -360,7 +498,16 @@
             const doc = await docRef.get();
             if (doc.exists) {
                 const data = doc.data();
-                return data ? data.boards : null;
+                if (!data) return null;
+                if (data.encrypted && data.cipherText && data.iv) {
+                    try {
+                        return await this.decryptPayload(data.cipherText, data.iv, uid);
+                    } catch (e) {
+                        console.error('Failed to decrypt fetched cloud state:', e);
+                        return null;
+                    }
+                }
+                return data.boards || null;
             }
             return null;
         }

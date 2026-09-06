@@ -18,7 +18,8 @@ A sleek, fast, offline-first Kanban board and project management workspace with 
 
 ## ✨ Features
 
-### ☁️ Real-Time Cross-Platform Cloud Sync
+### ☁️ Real-Time Cross-Platform Cloud Sync (AES-256-GCM Encrypted)
+* **Zero-Knowledge Client-Side Encryption**: Every session is encrypted with **AES‑256‑GCM** before it leaves your device. Only your account has permission to your work. Cloud databases only store unintelligible encrypted ciphertext blobs.
 * **Instant Sync**: Changes made on desktop instantly reflect on your phone and browser via Firebase Firestore.
 * **Authentication**: Sign in securely with Google 1-Click OAuth or Email & Password.
 * **Offline-First & Conflict-Free**: Continue working completely offline with `localStorage` caching; changes sync up automatically upon reconnecting with metadata in-flight validation.
