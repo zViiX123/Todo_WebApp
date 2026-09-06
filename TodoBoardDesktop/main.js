@@ -77,7 +77,7 @@ function startLocalServer() {
         // Listen on fixed port on 127.0.0.1 loopback for persistent origin and permanent auth sessions
         localServer.listen(FIXED_DESKTOP_PORT, '127.0.0.1', () => {
             localPort = FIXED_DESKTOP_PORT;
-            console.log(`Local secure app server running on http://127.0.0.1:${localPort}`);
+            console.log(`Local secure app server running on http://localhost:${localPort}`);
             resolve(localPort);
         });
     });
@@ -173,7 +173,7 @@ async function createWindow() {
 
     try {
         const port = await startLocalServer();
-        mainWindow.loadURL(`http://127.0.0.1:${port}/index.html`);
+        mainWindow.loadURL(`http://localhost:${port}/index.html`);
     } catch (e) {
         console.warn('Failed to start local server, falling back to loadFile:', e);
         mainWindow.loadFile('index.html');
