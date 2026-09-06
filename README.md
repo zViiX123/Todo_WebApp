@@ -1,7 +1,7 @@
 # ✦ Todo Board Studio
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-purple.svg)](https://www.gnu.org/licenses/agpl-3.0)
-[![Version: 4.1.2](https://img.shields.io/badge/Version-4.1.2-brightgreen.svg)](https://github.com/zViiX123/Todo_WebApp/releases)
+[![Version: 5.0.0](https://img.shields.io/badge/Version-5.0.0-brightgreen.svg)](https://github.com/zViiX123/Todo_WebApp/releases)
 [![Web App](https://img.shields.io/badge/Live_Web_App-todoboard--studio.web.app-blue.svg)](https://todoboard-studio.web.app/)
 [![Platform](https://img.shields.io/badge/Platform-Web%20%7C%20Windows%20%7C%20macOS%20%7C%20PWA-orange.svg)]()
 
@@ -45,14 +45,26 @@ A sleek, fast, offline-first Kanban board and project management workspace with 
 * **Drag-and-Drop Rescheduling**: Drag any task pill onto another day cell to reschedule its due date instantly!
 * **Gantt-Lite Timeline**: Visual horizontal bars plotting task durations and progress grouped by column stages.
 
-### 📁 Multi-Workspace Management
-* **Workspace Menu**: Fast switching between projects with task progress badges (`done/total`).
-* **Complete Workspace Controls**: Create (<kbd>Ctrl</kbd> + <kbd>B</kbd>), Rename, Duplicate, or Delete workspaces with cloud persistence.
-* **Instant Shortcuts**: Switch workspaces directly using <kbd>Ctrl</kbd> + <kbd>1</kbd> through <kbd>9</kbd>.
+### 🎛️ Quick Filter Chips & Live Board Progress Meter *(New in v5.0)*
+* **1-Click Triage Chips**: Filter active cards instantly by Status (`All`, `⚡ In Progress`, `✓ Done`, `⚠️ Overdue`, `📅 Today`, `☑ Subtasks`) and Priority (`🔴 High`, `🟡 Med`, `🔵 Low`).
+* **Real-Time Board Progress Meter**: Visual completion bar in the toolbar tracking total tasks, finished tasks, and percentage (e.g., `14 / 20 Done • 70%`).
+
+### ↕️ Interactive Subtask Drag-and-Drop Reordering *(New in v5.0)*
+* **Dedicated Drag Handles**: Reorder custom subtasks inside the Task Detail modal using the grip handle (`⋮⋮`).
+* **Protected Progress Milestones**: Default "Started" and "Finished" lifecycle subtasks are permanently safeguarded against deletion, editing, or reordering to preserve time-tracking integrity.
 
 ### ↩️ Multi-Action Undo/Redo Engine
-* Revert task deletions, column deletions, task archives, and color changes in 1 click.
+* Revert task deletions, column deletions, task archives, subtask deletions, and color changes in 1 click.
 * High-visibility non-blocking toast notification positioned above navigation bars.
+
+### 🧠 Persistent Workspace Memory *(New in v5.0)*
+* **Automatic Session Restoration**: The desktop and web apps remember your last opened board across launches and restore it automatically.
+* **Multi-Workspace Management**: Create (<kbd>Ctrl</kbd> + <kbd>B</kbd>), Rename, Duplicate, or Delete workspaces with cloud persistence.
+* **Instant Shortcuts**: Switch workspaces directly using <kbd>Ctrl</kbd> + <kbd>1</kbd> through <kbd>9</kbd>.
+
+### 🛡️ 7-Day Rolling Vault Backups
+* Automatic daily snapshots retained for up to 7 rolling days.
+* 1-click manual instant backup creation and single-click restore with direct OS file explorer integration.
 
 ### 🎨 Custom Themes & Visual Styling
 * Switch between high-contrast dark and light themes (Midnight, Cyberpunk, Monokai, Dracula, Light Mint, Pastel Lavender, Viewport, and more).
@@ -119,10 +131,10 @@ npm run build:mac
 ```
 
 The compiled binaries will be output to `TodoBoardDesktop/dist/`:
-* **`Todo Board Studio Setup 4.1.2.exe`**: Windows setup installer.
-* **`Todo Board Studio 4.1.2.exe`**: Zero-install Windows portable executable.
-* **`Todo Board Studio-4.1.2.dmg`**: macOS DMG installer (Apple Silicon & Intel).
-* **`Todo Board Studio-4.1.2-mac.zip`**: macOS compressed application bundle.
+* **`Todo Board Studio Setup 5.0.0.exe`**: Windows setup installer.
+* **`Todo Board Studio 5.0.0.exe`**: Zero-install Windows portable executable.
+* **`Todo Board Studio-5.0.0.dmg`**: macOS DMG installer (Apple Silicon & Intel).
+* **`Todo Board Studio-5.0.0-mac.zip`**: macOS compressed application bundle.
 
 ---
 
@@ -130,12 +142,15 @@ The compiled binaries will be output to `TodoBoardDesktop/dist/`:
 
 ```text
 Todo_WebApp/
+├── .github/                     # GitHub Actions CI/CD workflows
+│   └── workflows/
+│       └── build-installer.yml  # Automated release & multi-platform build pipeline
 ├── web/                         # Production Web & PWA App
 │   ├── index.html               # Web app frontend UI and logic
 │   ├── cloud-sync.js            # Firebase Firestore cloud sync manager
 │   ├── sw.js                    # Service Worker caching for offline PWA
 │   ├── manifest.json            # PWA Web App Manifest
-│   └── icon-*.png               # Application icons
+│   └── icon.png                 # Application icons
 ├── TodoBoardDesktop/            # Electron Desktop Application
 │   ├── index.html               # Desktop frontend UI
 │   ├── cloud-sync.js            # Desktop cloud sync client
@@ -144,6 +159,7 @@ Todo_WebApp/
 │   └── package.json             # Desktop app metadata & build scripts
 ├── package.json                 # Root build & scripts configuration
 ├── firebase.json                # Firebase hosting configuration
+├── firestore.rules              # Firebase security rules
 └── README.md                    # Documentation & user guide
 ```
 

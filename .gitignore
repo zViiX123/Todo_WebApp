@@ -21,6 +21,7 @@ pnpm-debug.log*
 # User Data and Local Cache
 todo_board_data.json
 window_state.json
+last_board.json
 *.tmp
 *.bak
 

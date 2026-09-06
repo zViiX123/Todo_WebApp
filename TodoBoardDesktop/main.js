@@ -173,7 +173,7 @@ async function createWindow() {
 
     try {
         const port = await startLocalServer();
-        mainWindow.loadURL(`http://localhost:${port}/index.html`);
+        mainWindow.loadURL(`http://127.0.0.1:${port}/index.html`);
     } catch (e) {
         console.warn('Failed to start local server, falling back to loadFile:', e);
         mainWindow.loadFile('index.html');
@@ -776,7 +776,7 @@ function compareSemver(v1, v2) {
 
 // Check for App Updates via GitHub Releases API with seamless fallback for rate-limiting (HTTP 403)
 ipcMain.handle('check-for-updates', async () => {
-    let currentVersion = '4.1.2';
+    let currentVersion = '5.0.0';
     try {
         const currentPkg = require('./package.json');
         if (currentPkg && currentPkg.version) currentVersion = currentPkg.version;
