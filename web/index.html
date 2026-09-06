@@ -816,7 +816,7 @@
             background: var(--bg-col-head); color: var(--text-light); padding: 10px 18px;
             border-radius: 8px; box-shadow: 0 6px 24px rgba(0,0,0,0.45);
             border: 1px solid var(--border-glass);
-            align-items: center; gap: 12px; z-index: 999; display: none;
+            align-items: center; gap: 12px; z-index: 2000; display: none;
         }
         #undoToast.show { display: flex; animation: slideUp 0.2s ease; }
 
@@ -5592,11 +5592,24 @@
             if (task && task.checklist && task.checklist[chkIndex]) {
                 const itemText = (task.checklist[chkIndex].text || '').trim().toLowerCase();
                 if (itemText === 'started' || itemText === 'finished') return;
-                task.checklist.splice(chkIndex, 1);
+                const [removed] = task.checklist.splice(chkIndex, 1);
                 ensureFinishedAtBottom(task.checklist);
                 syncTaskChecklistTimers(task);
                 task.updatedAt = Date.now();
                 saveData();
+                playUiSound('delete');
+                pushUndoAction(`Deleted subtask "${removed.text || 'Untitled Subtask'}"`, () => {
+                    const currentTask = data.tasks.find(t => t.id === taskId);
+                    if (!currentTask) return;
+                    if (!currentTask.checklist) currentTask.checklist = [];
+                    const insertIdx = Math.min(chkIndex, currentTask.checklist.length);
+                    currentTask.checklist.splice(insertIdx, 0, removed);
+                    ensureFinishedAtBottom(currentTask.checklist);
+                    syncTaskChecklistTimers(currentTask);
+                    currentTask.checklistOpen = true;
+                    currentTask.updatedAt = Date.now();
+                    saveData();
+                });
             }
         }
 
@@ -5709,10 +5722,37 @@
             if (modalWorkingChecklist[idx]) {
                 const itemText = (modalWorkingChecklist[idx].text || '').trim().toLowerCase();
                 if (itemText === 'started' || itemText === 'finished') return;
-                modalWorkingChecklist.splice(idx, 1);
+                const [removed] = modalWorkingChecklist.splice(idx, 1);
                 ensureFinishedAtBottom(modalWorkingChecklist);
                 syncModalInputsFromChecklist();
                 renderModalChecklist();
+                playUiSound('delete');
+                pushUndoAction(`Deleted subtask "${removed.text || 'Untitled Subtask'}"`, () => {
+                    const insertIdx = Math.min(idx, modalWorkingChecklist.length);
+                    modalWorkingChecklist.splice(insertIdx, 0, removed);
+                    ensureFinishedAtBottom(modalWorkingChecklist);
+                    const modalEl = document.getElementById('taskModal');
+                    const modalOpen = modalEl && (modalEl.classList.contains('active') || modalEl.classList.contains('show'));
+                    if (modalOpen) {
+                        syncModalInputsFromChecklist();
+                        renderModalChecklist();
+                    }
+                    if (editingTaskId) {
+                        const task = data.tasks.find(t => t.id === editingTaskId);
+                        if (task && task.checklist) {
+                            const exists = task.checklist.some(c => c.text === removed.text && c.done === removed.done);
+                            if (!exists && !modalOpen) {
+                                const tInsertIdx = Math.min(idx, task.checklist.length);
+                                task.checklist.splice(tInsertIdx, 0, removed);
+                                ensureFinishedAtBottom(task.checklist);
+                                syncTaskChecklistTimers(task);
+                                task.checklistOpen = true;
+                                task.updatedAt = Date.now();
+                                saveData();
+                            }
+                        }
+                    }
+                });
             }
         }
 
